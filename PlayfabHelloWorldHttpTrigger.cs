@@ -10,11 +10,11 @@ using Newtonsoft.Json;
 
 namespace SocialEdge.Playfab
 {
-    public static class PlayfabHelloWorldHttpTrigger
+    public class PlayfabHelloWorldHttpTrigger
     {
         [FunctionName("PlayfabHelloWorldHttpTrigger")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+        public async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
