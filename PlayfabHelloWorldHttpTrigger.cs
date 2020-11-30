@@ -12,6 +12,11 @@ namespace SocialEdge.Playfab
 {
     public class PlayfabHelloWorldHttpTrigger
     {
+        public PlayfabHelloWorldHttpTrigger()
+        {
+            
+        }
+    
         [FunctionName("PlayfabHelloWorldHttpTrigger")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
