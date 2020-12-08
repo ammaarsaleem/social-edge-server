@@ -23,8 +23,6 @@ namespace SocialEdge.Server.Util
             PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(Constant.PLAYFAB_DEV_SECRET_KEY, 
                                                                                                     EnvironmentVariableTarget.Process);
 
-            // context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
-
             return context;
         }
     }

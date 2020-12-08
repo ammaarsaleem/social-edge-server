@@ -6,15 +6,10 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
-using PlayFab.Samples;
 using PlayFab;
 using PlayFab.ServerModels;
 using SocialEdge.Playfab.Models;
-using SocialEdge.Server.Constants;
 using SocialEdge.Server.Util;
-using Newtonsoft.Json;
-using System.Net;
-using System.Text;
 namespace SocialEdge.Playfab
 {
     public class GetInitData
@@ -28,7 +23,6 @@ namespace SocialEdge.Playfab
             
             var context = await Util.Init(req);
             dynamic args = context.FunctionArgument;
-            
             
             if(args!=null)
             {
@@ -44,57 +38,39 @@ namespace SocialEdge.Playfab
                 await Task.WhenAll(tasks);
 
                 var result = CreateResult(tasks, playerDataTask, context.CallerEntityProfile.Objects);
-                var abc = JsonConvert.SerializeObject(result);
-                dict["player"] = result.playerData;
-                dict["playerCustomSettings"]  = context.CallerEntityProfile.Objects;
-                ErrorData err = new ErrorData{error = "error",errors="errors"};
-                dict["Error"] = err;
-                return dict;
-                // return result.playerData;
-
-                // return req.CreateResponse(HttpStatusCode.OK, json, "application/json");
-                // return new HttpResponseMessage(HttpStatusCode.OK) 
-                // {
-                //     Content = new StringContent(abc, System.Text.Encoding.UTF8, "application/json")
-                // };
-
+                return result;
             }
-
             catch (Exception e)
             {
                 throw e;
             }
-
-
         }
 
-        private InitDataResult CreateResult(List<Task> tasks,
+        private Dictionary<string,object> CreateResult(List<Task> tasks,
                                                 Task<PlayFabResult<GetPlayerCombinedInfoResult>> playerDataTask,
                                                 Dictionary<string, PlayFab.ProfilesModels.EntityDataObject> playerSettings)
         {
-            InitDataResult result = new InitDataResult();
+            Dictionary<string,object> result = new Dictionary<string, object>();
+            PlayerModel player = new PlayerModel();
             if (playerDataTask.IsCompletedSuccessfully && playerDataTask.Result.Error == null)
             {
-                result.playerData = playerDataTask.Result.Result.InfoResultPayload;
-                    // playerSettings = playerSettings
-                // };
+                player.combinedInfo = playerDataTask.Result.Result.InfoResultPayload;
+                player.customSettings = playerSettings;
+                result["player"] = player;
             }
 
             else if (playerDataTask.IsCompletedSuccessfully && playerDataTask.Result.Error != null)
             {
-                result.error = new
-                {
-                    playerReqError = playerDataTask.Result.Error.Error
-                };
+                string error = playerDataTask.Result.Error.ErrorMessage;
+                result["error"] = error;
             }
 
             else
             {
-                result.error = new
-                {
-                    playerDataTask.Exception.InnerException
-                };
+                 string error = playerDataTask.Exception.InnerException.ToString();
+                 result["error"] = error;
             }
+
 
             return result;
         }

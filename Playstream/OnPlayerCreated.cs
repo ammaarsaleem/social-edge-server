@@ -26,7 +26,7 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("OnPlayerCreated")]
         public async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
