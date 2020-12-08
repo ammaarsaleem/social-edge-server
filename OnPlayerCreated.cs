@@ -31,12 +31,6 @@ namespace SocialEdge.Playfab
         {
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
-
-            // SetObject obj = new SetObject
-            // {
-            //     ObjectName = "playerCustomData",
-            //     EscapedDataObject = "{\'Meta\':{\'backendAppVersion\':20,\'androidURL\':\'https://play.google.com/store/apps/details?id=com.turbolabz.instantchess.android.googleplay\',\'iosURL\':\'https://itunes.apple.com/us/app/chess/id1386718098?mt=8\',\'rateAppThreshold\':1,\'nthWinsRateApp\':10,\'contactSupportURL\':\'https://contactus.huuugegames.com\',\'minimumClientVersion\':\'6.2.20\'}}"
-            // };
             var request = new SetObjectsRequest
             {
                 Entity = new PlayFab.DataModels.EntityKey
@@ -48,7 +42,7 @@ namespace SocialEdge.Playfab
                 {
                     new SetObject{
                         ObjectName = "playerCustomData",
-                        EscapedDataObject = "{\'Meta\':{\'backendAppVersion\':20,\'androidURL\':\'https://play.google.com/store/apps/details?id=com.turbolabz.instantchess.android.googleplay\',\'iosURL\':\'https://itunes.apple.com/us/app/chess/id1386718098?mt=8\',\'rateAppThreshold\':1,\'nthWinsRateApp\':10,\'contactSupportURL\':\'https://contactus.huuugegames.com\',\'minimumClientVersion\':\'6.2.20\'}}"
+                        EscapedDataObject = "{\"Meta\":{\"backendAppVersion\":20,\"androidURL\":\"https://play.google.com/store/apps/details?id=com.turbolabz.instantchess.android.googleplay\",\"iosURL\":\"https://itunes.apple.com/us/app/chess/id1386718098?mt=8\",\"rateAppThreshold\":1,\"nthWinsRateApp\":10,\"contactSupportURL\":\"https://contactus.huuugegames.com\",\"minimumClientVersion\":\"6.2.20\"}}"
                     }
                 }
             };
