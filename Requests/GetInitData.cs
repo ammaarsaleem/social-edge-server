@@ -19,6 +19,7 @@ namespace SocialEdge.Playfab
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            Dictionary<string,object> result = new Dictionary<string, object>();
             string playerId = string.Empty;
             
             var context = await Util.Init(req);
@@ -30,14 +31,13 @@ namespace SocialEdge.Playfab
             }
             try
             {
-                Dictionary<string,object> dict = new Dictionary<string, object>();
                 var playerDataRequest = CreatePlayerDataRequest(context.CallerEntityProfile.Lineage.MasterPlayerAccountId, playerId);
                 var titleNewsRequest = PlayFabServerAPI.GetTitleNewsAsync(new GetTitleNewsRequest());
                 var playerDataTask =  PlayFabServerAPI.GetPlayerCombinedInfoAsync(playerDataRequest);
                 List<Task> tasks = new List<Task> { playerDataTask, titleNewsRequest };
                 await Task.WhenAll(tasks);
 
-                var result = CreateResult(tasks, playerDataTask, context.CallerEntityProfile.Objects);
+                CreatePlayerResult(tasks, playerDataTask, context.CallerEntityProfile.Objects,result);
                 return result;
             }
             catch (Exception e)
@@ -46,11 +46,10 @@ namespace SocialEdge.Playfab
             }
         }
 
-        private Dictionary<string,object> CreateResult(List<Task> tasks,
-                                                Task<PlayFabResult<GetPlayerCombinedInfoResult>> playerDataTask,
-                                                Dictionary<string, PlayFab.ProfilesModels.EntityDataObject> playerSettings)
+        private Dictionary<string,object> CreatePlayerResult(List<Task> tasks, Task<PlayFabResult<GetPlayerCombinedInfoResult>> playerDataTask,
+                                                Dictionary<string, PlayFab.ProfilesModels.EntityDataObject> playerSettings,
+                                                 Dictionary<string,object> result)
         {
-            Dictionary<string,object> result = new Dictionary<string, object>();
             PlayerModel player = new PlayerModel();
             if (playerDataTask.IsCompletedSuccessfully && playerDataTask.Result.Error == null)
             {
