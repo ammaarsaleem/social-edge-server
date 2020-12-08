@@ -15,6 +15,7 @@ namespace PlayFab.Samples
     // Models  via ExecuteFunction API
     public class FunctionExecutionContext<T>
     {
+        public PlayFab.CloudScriptModels.PlayerProfileModel PlayerProfile { get; set; }
         public PlayFab.ProfilesModels.EntityProfileBody CallerEntityProfile { get; set; }
         public TitleAuthenticationContext TitleAuthenticationContext { get; set; }
         public bool? GeneratePlayStreamEvent { get; set; }

@@ -11,7 +11,7 @@ namespace SocialEdge.Playfab
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-
+            
         }
     }
 }

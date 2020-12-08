@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 // using PlayFab.Plugins.CloudScript;
 using PlayFab.Samples;
-using SocialEdge.Playfab.Constants;
+using SocialEdge.Server.Constants;
 using PlayFab;
 
 namespace SocialEdge.Playfab
@@ -31,7 +31,7 @@ namespace SocialEdge.Playfab
             dynamic args = context.FunctionArgument;
             var request = new GetPlayersInSegmentRequest
             {
-                SegmentId = SegmentConstants.ALL_PLAYERS
+                SegmentId = Constant.ALL_PLAYERS
             };
 
             var result = await PlayFabServerAPI.GetPlayersInSegmentAsync(request);

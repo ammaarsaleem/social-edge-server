@@ -18,7 +18,7 @@ namespace PlayFabCS2AFSample.HelloWorld
             FunctionExecutionContext<dynamic> context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
 
             dynamic args = context.FunctionArgument;
-
+            var id = context.TitleAuthenticationContext.Id;
             var message = $"Hello {context.CallerEntityProfile.Lineage.MasterPlayerAccountId}!";
             log.LogInformation(message);
 
