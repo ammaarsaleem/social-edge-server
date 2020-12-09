@@ -31,6 +31,16 @@ namespace SocialEdge.Playfab
         {
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
+
+            var titleDataRequest = new GetTitleDataRequest
+            {
+                Keys = new List<string>{
+                    "playerCustomData"
+                } 
+            };
+            var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
+            var playerCustomData = titleDataResult.Result.Data["playerCustomData"];
+
             var request = new SetObjectsRequest
             {
                 Entity = new PlayFab.DataModels.EntityKey
@@ -42,12 +52,12 @@ namespace SocialEdge.Playfab
                 {
                     new SetObject{
                         ObjectName = "playerCustomData",
-                        EscapedDataObject = "{\"Meta\":{\"backendAppVersion\":20,\"androidURL\":\"https://play.google.com/store/apps/details?id=com.turbolabz.instantchess.android.googleplay\",\"iosURL\":\"https://itunes.apple.com/us/app/chess/id1386718098?mt=8\",\"rateAppThreshold\":1,\"nthWinsRateApp\":10,\"contactSupportURL\":\"https://contactus.huuugegames.com\",\"minimumClientVersion\":\"6.2.20\"}}"
+                        EscapedDataObject = playerCustomData
                     }
                 }
             };
 
-            var a = await PlayFabDataAPI.SetObjectsAsync(request);
+            var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
