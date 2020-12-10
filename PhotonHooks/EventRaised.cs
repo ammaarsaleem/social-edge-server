@@ -32,11 +32,22 @@ namespace SocialEdge.Playfab
 //      AuthCookie: an encrypted object invisible to client, optionally returned by web service upon successful custom authentication. 
 //              It's sent only if SendAuthCookie webflag is set when calling OpRaiseEvent
 
-        [FunctionName("EventRaised")]
+        [FunctionName("RoomJoined")]
         public async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "{appId}/RoomJoined/{id:int?}")] 
-            HttpRequest req, string appId)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] 
+            HttpRequest req)
         {
+
+            PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(Constant.PLAYFAB_DEV_SECRET_KEY, 
+                                                                                                    EnvironmentVariableTarget.Process);
+            WriteTitleEventRequest titleEventRequest = new WriteTitleEventRequest();
+            titleEventRequest.EventName = "room_joined";
+            titleEventRequest.Body = new System.Collections.Generic.Dictionary<string, object> {
+                { "WebHookEvent", "Room Joined" }
+            };
+            await PlayFabServerAPI.WriteTitleEventAsync(titleEventRequest);
+
+
             var tasks = new List<Task<PlayFabResult<UpdatePlayerStatisticsResult>>>();
             var context = await Util.Init(req);
             dynamic args = context.FunctionArgument;
