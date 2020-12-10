@@ -35,11 +35,11 @@ namespace SocialEdge.Playfab
             var titleDataRequest = new GetTitleDataRequest
             {
                 Keys = new List<string>{
-                    "playerCustomData"
+                    Constant.PLAYER_SETTINGS
                 } 
             };
             var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
-            var playerCustomData = titleDataResult.Result.Data["playerCustomData"];
+            var playerCustomData = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
 
             var request = new SetObjectsRequest
             {
@@ -51,7 +51,7 @@ namespace SocialEdge.Playfab
                 Objects = new System.Collections.Generic.List<SetObject>
                 {
                     new SetObject{
-                        ObjectName = "playerCustomData",
+                        ObjectName = Constant.PLAYER_SETTINGS,
                         EscapedDataObject = playerCustomData
                     }
                 }

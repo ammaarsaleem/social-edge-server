@@ -6,6 +6,6 @@ namespace SocialEdge.Playfab.Models
     {
         public GetPlayerCombinedInfoResultPayload combinedInfo;
          public Dictionary<string, PlayFab.ProfilesModels.EntityDataObject> customSettings;
-        // public ;
+        
     }
 }

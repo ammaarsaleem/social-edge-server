@@ -11,5 +11,6 @@ namespace SocialEdge.Server.Constants
         public const string GAME_CURRENT_STATE_KEY = "PLAYER_CURRENT_GAME_STATE";
         public const string GAME_STATE_KEY = "PLAYER_GAME_STATE";
         public const string GAMES_PLAYED_KEY = "PLAYER_GAMES_PLAYED";
+        public const string PLAYER_SETTINGS = "playerSettings";
     }
 }
