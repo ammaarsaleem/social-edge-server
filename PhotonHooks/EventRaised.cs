@@ -35,9 +35,9 @@ namespace SocialEdge.Playfab
         [FunctionName("RoomJoined")]
         public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] 
-            HttpRequest req)
+            HttpRequest req,ILogger log)
         {
-
+            log.LogInformation("Webhook triggered");
             PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(Constant.PLAYFAB_DEV_SECRET_KEY, 
                                                                                                     EnvironmentVariableTarget.Process);
             WriteTitleEventRequest titleEventRequest = new WriteTitleEventRequest();
