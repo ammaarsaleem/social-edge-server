@@ -40,26 +40,38 @@ namespace SocialEdge.Playfab
                     Constant.PLAYER_NAME_ADJECTIVES
                 } 
             };
-            var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
-            string playerCustomData = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
 
-            var request = new SetObjectsRequest
+            var request = new PlayFab.ServerModels.UpdatePlayerStatisticsRequest 
             {
-                Entity = new PlayFab.DataModels.EntityKey
+                PlayFabId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId,
+                Statistics = new List<StatisticUpdate>
                 {
-                    Type = "title_player_account",
-                    Id = context.CallerEntityProfile.Entity.Id
-                },
-                Objects = new System.Collections.Generic.List<SetObject>
-                {
-                    new SetObject{
-                        ObjectName = Constant.PLAYER_SETTINGS,
-                        EscapedDataObject = playerCustomData
-                    }
+                    new StatisticUpdate{StatisticName="won", Value=1}
                 }
             };
+            var updateStatsTask = PlayFabServerAPI.UpdatePlayerStatisticsAsync(request);
             
-            var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
+            // var a = PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(new PlayFab.AdminModels.UpdateUserTitleDisplayNameRequest{});
+            // var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
+            // string playerCustomData = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
+
+            // var request = new SetObjectsRequest
+            // {
+            //     Entity = new PlayFab.DataModels.EntityKey
+            //     {
+            //         Type = "title_player_account",
+            //         Id = context.CallerEntityProfile.Entity.Id
+            //     },
+            //     Objects = new System.Collections.Generic.List<SetObject>
+            //     {
+            //         new SetObject{
+            //             ObjectName = Constant.PLAYER_SETTINGS,
+            //             EscapedDataObject = playerCustomData
+            //         }
+            //     }
+            // };
+            
+            // var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
