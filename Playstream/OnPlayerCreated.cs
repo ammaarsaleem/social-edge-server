@@ -19,7 +19,7 @@ using SocialEdge.Server.Constants;
 using PlayFab;
 using System.Net;
 using System.Text;
-
+using SocialEdge.Server.Util;
 namespace SocialEdge.Playfab
 {
     public class OnPlayerCreated
@@ -29,17 +29,19 @@ namespace SocialEdge.Playfab
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
+            var context = await Util.Init(req);
             dynamic args = context.FunctionArgument;
 
             var titleDataRequest = new GetTitleDataRequest
             {
                 Keys = new List<string>{
-                    Constant.PLAYER_SETTINGS
+                    Constant.PLAYER_SETTINGS,
+                    Constant.PLAYER_NAME_NOUNS,
+                    Constant.PLAYER_NAME_ADJECTIVES
                 } 
             };
             var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
-            var playerCustomData = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
+            string playerCustomData = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
 
             var request = new SetObjectsRequest
             {
@@ -56,7 +58,7 @@ namespace SocialEdge.Playfab
                     }
                 }
             };
-
+            
             var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
