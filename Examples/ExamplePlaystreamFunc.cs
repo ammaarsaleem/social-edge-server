@@ -52,19 +52,38 @@ using SocialEdge.Server.Util;
 
             var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
             var res = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
-            var request = new UpdateUserInternalDataRequest
-            {
-                PlayFabId = context.PlayerProfile.PlayerId,//context.CallerEntityProfile.Lineage.MasterPlayerAccountId,//
-                Data = new Dictionary<string, string>
-                {
-                    { Constant.PLAYER_SETTINGS, res}
-                }
-            };
+            // var request = new UpdateUserInternalDataRequest
+            // {
+            //     PlayFabId = context.PlayerProfile.PlayerId,//context.CallerEntityProfile.Lineage.MasterPlayerAccountId,//
+            //     Data = new Dictionary<string, string>
+            //     {
+            //         { Constant.PLAYER_SETTINGS, res}
+            //     }
+            // };
             // /* Use the ApiSettings and AuthenticationContext provided to the function as context for making API calls. */
             // // var serverApi = new PlayFabServerInstanceAPI(context.ApiSettings, context.AuthenticationContext);
 
             // /* Execute the Server API request */
-            var updateUserDataResponse = await PlayFabServerAPI.UpdateUserInternalDataAsync(request);
+            // var updateUserDataResponse = await PlayFabServerAPI.UpdateUserInternalDataAsync(request);
+
+            var request = new SetObjectsRequest
+            {
+                Entity = new PlayFab.DataModels.EntityKey
+                {
+                    Type = "title_player_account",
+                    Id = context.PlayerProfile.PlayerId
+                },
+                Objects = new System.Collections.Generic.List<SetObject>
+                {
+                    new SetObject{
+                        ObjectName = Constant.PLAYER_SETTINGS,
+                        EscapedDataObject = res
+                    }
+                }
+            };
+            
+            var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
+
 
             log.LogInformation($"Unlocked HighSkillContent for {context.PlayerProfile.DisplayName}");
 
