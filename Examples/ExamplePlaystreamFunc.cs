@@ -41,17 +41,17 @@ using SocialEdge.Server.Util;
 
            
 
-             var titleDataRequest = new GetTitleDataRequest
-            {
-                Keys = new List<string>{
-                    Constant.PLAYER_SETTINGS,
-                    Constant.PLAYER_NAME_NOUNS,
-                    Constant.PLAYER_NAME_ADJECTIVES
-                } 
-            };
+            //  var titleDataRequest = new GetTitleDataRequest
+            // {
+            //     Keys = new List<string>{
+            //         Constant.PLAYER_SETTINGS,
+            //         Constant.PLAYER_NAME_NOUNS,
+            //         Constant.PLAYER_NAME_ADJECTIVES
+            //     } 
+            // };
 
-            var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
-            var res = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
+            // var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
+            // var res = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
             // var request = new UpdateUserInternalDataRequest
             // {
             //     PlayFabId = context.PlayerProfile.PlayerId,//context.CallerEntityProfile.Lineage.MasterPlayerAccountId,//
@@ -77,7 +77,7 @@ using SocialEdge.Server.Util;
                 {
                     new SetObject{
                         ObjectName = Constant.PLAYER_SETTINGS,
-                        EscapedDataObject = res
+                        EscapedDataObject = "something is not good with 100ms limit which i don't like"
                     }
                 }
             };
