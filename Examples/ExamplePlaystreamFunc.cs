@@ -28,30 +28,42 @@ using SocialEdge.Server.Util;
         public static async Task<dynamic> ExamplePlaystreamFunc(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log)
         {
+            // return "abc";
             /* Create the function execution's context through the request */
             var context = JsonConvert.DeserializeObject<PlayerPlayStreamFunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
-            
+            // var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
             PlayFabSettings.staticSettings.TitleId = context.TitleAuthenticationContext.Id;
             PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(Constant.PLAYFAB_DEV_SECRET_KEY, 
                                                                                                     EnvironmentVariableTarget.Process);
-            var args = context.FunctionArgument;
+            // var args = context.FunctionArgument;
 
             var playerStatUpdatedEvent = PlayFabSimpleJson.DeserializeObject<dynamic>(context.PlayStreamEventEnvelope.EventData);
 
-            var request = new UpdateUserInternalDataRequest
+           
+
+             var titleDataRequest = new GetTitleDataRequest
             {
-                PlayFabId = context.PlayerProfile.PlayerId,
-                Data = new Dictionary<string, string>
-                {
-                    { "HighSkillContent", "true" },
-                    { "XPAtHighSkillUnlock", "10" }
-                }
+                Keys = new List<string>{
+                    Constant.PLAYER_SETTINGS,
+                    Constant.PLAYER_NAME_NOUNS,
+                    Constant.PLAYER_NAME_ADJECTIVES
+                } 
             };
 
-            /* Use the ApiSettings and AuthenticationContext provided to the function as context for making API calls. */
-            // var serverApi = new PlayFabServerInstanceAPI(context.ApiSettings, context.AuthenticationContext);
+            var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
+            var res = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
+            var request = new UpdateUserInternalDataRequest
+            {
+                PlayFabId = context.PlayerProfile.PlayerId,//context.CallerEntityProfile.Lineage.MasterPlayerAccountId,//
+                Data = new Dictionary<string, string>
+                {
+                    { Constant.PLAYER_SETTINGS, res}
+                }
+            };
+            // /* Use the ApiSettings and AuthenticationContext provided to the function as context for making API calls. */
+            // // var serverApi = new PlayFabServerInstanceAPI(context.ApiSettings, context.AuthenticationContext);
 
-            /* Execute the Server API request */
+            // /* Execute the Server API request */
             var updateUserDataResponse = await PlayFabServerAPI.UpdateUserInternalDataAsync(request);
 
             log.LogInformation($"Unlocked HighSkillContent for {context.PlayerProfile.DisplayName}");
