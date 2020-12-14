@@ -21,5 +21,17 @@ namespace SocialEdge.Playfab.Photon
             message = "";
             return true;
         }
+
+        public static bool IsGameValid(GameCloseRequest request, out string message)
+        {
+            if (string.IsNullOrEmpty(request.GameId))
+            {
+                message = "Missing GameId.";
+                return false;
+            }
+
+            message = "";
+            return true;
+        }
     }
 }

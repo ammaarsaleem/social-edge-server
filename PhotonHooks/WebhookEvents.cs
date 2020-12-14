@@ -21,8 +21,6 @@ namespace SocialEdge.Playfab.Photon
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            // log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
-
             // Get request body
             GameCreateRequest body = await req.Content.ReadAsAsync<GameCreateRequest>();
 
@@ -30,50 +28,30 @@ namespace SocialEdge.Playfab.Photon
             string message;
             if (!Utils.IsGameValid(body, out message))
             {
-                string error = $"{req.RequestUri} - {message}";
-                log.LogError(error);
-                
                 var errorResponse = new { 
                     ResultCode = 1,
-                    Error = error
+                    Error = message
                 };
 
-            return new OkObjectResult(errorResponse);
-
-                // return JsonConvert.SerializeObject(errorResponse);
-                // string errorResponse = "{ \"ResultCode\" : 1, \"Error\" : " + error + " }";
-                // return req.CreateResponse(
-                //     HttpStatusCode.OK,
-                //     errorResponse,
-                //     JsonMediaTypeFormatter.DefaultMediaType
-                // );
+                return new OkObjectResult(errorResponse);
             }
 
             var okMsg = $"{req.RequestUri} - Room Created";
             log.LogInformation($"{okMsg} :: {JsonConvert.SerializeObject(body)}");
             
             var response = new { 
-                    ResultCode = 0,
-                    Message = "Success"
-                };
-            // string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+                ResultCode = 0,
+                Message = "Success"
+            };
             
             return new OkObjectResult(response);
-            
-            // return req.CreateResponse(
-            //     HttpStatusCode.OK,
-            //     response,
-            //     JsonMediaTypeFormatter.DefaultMediaType
-            // );
-
-            // return JsonConvert.SerializeObject(response);
         }
     }
 
     public class GameJoin
     {
         [FunctionName("GameJoin")]
-        public async Task<HttpResponseMessage> Run(
+        public async Task<OkObjectResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
@@ -94,64 +72,101 @@ namespace SocialEdge.Playfab.Photon
             var okMsg = $"{req.RequestUri} - Recieved Game Join Request";
             log.LogInformation(okMsg);
 
-            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
-            return req.CreateResponse(response);
+            var response = new { 
+                ResultCode = 0,
+                Message = "Success"
+            };
+
+            return new OkObjectResult(response);
         }
     }
 
     public class GameClose
     {
         [FunctionName("GameClose")]
-        public async Task<HttpResponseMessage> Run(
+        public async Task<OkObjectResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+            // Get request body
+            GameCloseRequest body = await req.Content.ReadAsAsync<GameCloseRequest>();
+    
+            // Set name to query string or body data
+            string message;
+            var okMsg = $"{req.RequestUri} - Closed Game - {body.GameId}";
+            if (!Utils.IsGameValid(body, out message))
+            {
+                var errorResponse = new { 
+                    ResultCode = 1,
+                    Error = message
+                };
 
-            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
-            return req.CreateResponse(response);
+                return new OkObjectResult(errorResponse);
+            }
+
+            var state = (string)JsonConvert.SerializeObject(body.State);
+            log.LogInformation(okMsg + " - State: " + state);
+            
+            var response = new { 
+                ResultCode = 0,
+                Message = "Success"
+            };
+
+            return new OkObjectResult(response);
         }
     }
 
     public class GameEvent
     {
         [FunctionName("GameEvent")]
-        public async Task<HttpResponseMessage> Run(
+        public async Task<OkObjectResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
-            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
-            return req.CreateResponse(response);
+            var response = new { 
+                ResultCode = 0,
+                Message = "Success"
+            };
+
+            return new OkObjectResult(response);
         }
     }
 
     public class GameProperties
     {
         [FunctionName("GameProperties")]
-        public async Task<HttpResponseMessage> Run(
+        public async Task<OkObjectResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
-            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
-            return req.CreateResponse(response);
+            var response = new { 
+                ResultCode = 0,
+                Message = "Success"
+            };
+
+            return new OkObjectResult(response);
         }
     }
 
     public class GameLeave
     {
         [FunctionName("GameLeave")]
-        public async Task<HttpResponseMessage> Run(
+        public async Task<OkObjectResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
-            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
-            return req.CreateResponse(response);
+            var response = new { 
+                ResultCode = 0,
+                Message = "Success"
+            };
+
+            return new OkObjectResult(response);
         }
     }
 }
