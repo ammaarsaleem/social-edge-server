@@ -44,7 +44,7 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("GameJoin")]
         public async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] 
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             // [HttpTrigger(AuthorizationLevel.Function, "post")]
             // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
@@ -75,7 +75,7 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("GameCreate")]
         public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] 
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             // [HttpTrigger(AuthorizationLevel.Function, "post")]
             // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
@@ -89,7 +89,7 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("GameClose")]
         public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] 
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             // [HttpTrigger(AuthorizationLevel.Function, "post")]
             // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
@@ -103,7 +103,7 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("GameEvent")]
         public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] 
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             // [HttpTrigger(AuthorizationLevel.Function, "post")]
             // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
@@ -117,7 +117,7 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("GameProperties")]
         public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] 
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             // [HttpTrigger(AuthorizationLevel.Function, "post")]
             // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
@@ -131,7 +131,7 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("GameLeave")]
         public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] 
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             // [HttpTrigger(AuthorizationLevel.Function, "post")]
             // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
