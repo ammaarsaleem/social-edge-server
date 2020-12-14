@@ -24,7 +24,7 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("GetLobby")]
         public async Task<List<PlayerProfile>> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
