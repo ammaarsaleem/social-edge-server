@@ -10,13 +10,14 @@ using System.Net.Http.Formatting;
 using SocialEdge.Server.Constants;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SocialEdge.Playfab.Photon
 {
     public class GameCreate
     {
         [FunctionName("GameCreate")]
-        public async Task<String> Run(
+        public async Task<OkObjectResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
@@ -37,7 +38,9 @@ namespace SocialEdge.Playfab.Photon
                     Error = error
                 };
 
-                return JsonConvert.SerializeObject(errorResponse);
+            return new OkObjectResult(errorResponse);
+
+                // return JsonConvert.SerializeObject(errorResponse);
                 // string errorResponse = "{ \"ResultCode\" : 1, \"Error\" : " + error + " }";
                 // return req.CreateResponse(
                 //     HttpStatusCode.OK,
@@ -51,16 +54,19 @@ namespace SocialEdge.Playfab.Photon
             
             var response = new { 
                     ResultCode = 0,
-                    State = ""
+                    Message = "Success"
                 };
             // string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+            
+            return new OkObjectResult(response);
+            
             // return req.CreateResponse(
             //     HttpStatusCode.OK,
             //     response,
             //     JsonMediaTypeFormatter.DefaultMediaType
             // );
 
-            return JsonConvert.SerializeObject(response);
+            // return JsonConvert.SerializeObject(response);
         }
     }
 
