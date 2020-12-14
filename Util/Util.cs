@@ -15,15 +15,17 @@ namespace SocialEdge.Server.Util
 {
     public static class Util
     {
-        public static async Task<FunctionExecutionContext<dynamic>> Init(HttpRequest req)
+        public static void Init(HttpRequest req)
         {
-            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
+            // var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
             
-            PlayFabSettings.staticSettings.TitleId = context.TitleAuthenticationContext.Id;
+            PlayFabSettings.staticSettings.TitleId = Environment.GetEnvironmentVariable(Constant.PLAYFAB_TITLE_ID, 
+                                                                                                    EnvironmentVariableTarget.Process);
+            // context.TitleAuthenticationContext.Id;
             PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(Constant.PLAYFAB_DEV_SECRET_KEY, 
                                                                                                     EnvironmentVariableTarget.Process);
 
-            return context;
+            // return context;
         }
     }
 }

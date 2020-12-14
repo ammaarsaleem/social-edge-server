@@ -37,6 +37,9 @@ namespace SocialEdge.Playfab
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] 
             HttpRequest req,ILogger log)
         {
+            Util.Init(req);
+            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
+            dynamic args = context.FunctionArgument;
             log.LogInformation("Webhook triggered");
             PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(Constant.PLAYFAB_DEV_SECRET_KEY, 
                                                                                                     EnvironmentVariableTarget.Process);
@@ -46,11 +49,9 @@ namespace SocialEdge.Playfab
                 { "WebHookEvent", "Room Joined" }
             };
             await PlayFabServerAPI.WriteTitleEventAsync(titleEventRequest);
-
-
             var tasks = new List<Task<PlayFabResult<UpdatePlayerStatisticsResult>>>();
-            var context = await Util.Init(req);
-            dynamic args = context.FunctionArgument;
+            // var context = await Util.Init(req);
+            
             if(args!=null)
             {
                 

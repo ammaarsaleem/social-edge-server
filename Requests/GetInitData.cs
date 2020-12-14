@@ -3,13 +3,24 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using PlayFab.ServerModels;
+using PlayFab.Json;
 using System.Collections.Generic;
+using PlayFab.DataModels;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc;
+using System.IO;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+// using PlayFab.Plugins.CloudScript;
+using PlayFab.Samples;
+using SocialEdge.Server.Constants;
 using PlayFab;
-using PlayFab.ServerModels;
-using SocialEdge.Playfab.Models;
+using System.Net;
+using System.Text;
 using SocialEdge.Server.Util;
+using SocialEdge.Playfab.Models;
 namespace SocialEdge.Playfab
 {
     public class GetInitData
@@ -19,12 +30,15 @@ namespace SocialEdge.Playfab
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            Util.Init(req);
+            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
+            dynamic args = context.FunctionArgument;
+
             Dictionary<string,object> result = new Dictionary<string, object>();
             string playerId = string.Empty;
             
-            var context = await Util.Init(req);
-            dynamic args = context.FunctionArgument;
-            
+            // var context = await Util.Init(req);
+
             if(args!=null)
             {
                 playerId = args["playerId"];

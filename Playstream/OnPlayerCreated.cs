@@ -29,49 +29,39 @@ namespace SocialEdge.Playfab
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            var context = await Util.Init(req);
+            Util.Init(req);
+            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
 
-            var titleDataRequest = new GetTitleDataRequest
-            {
-                Keys = new List<string>{
-                    Constant.PLAYER_SETTINGS,
-                    Constant.PLAYER_NAME_NOUNS,
-                    Constant.PLAYER_NAME_ADJECTIVES
-                } 
-            };
-
-            var request = new PlayFab.ServerModels.UpdatePlayerStatisticsRequest 
-            {
-                PlayFabId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId,
-                Statistics = new List<StatisticUpdate>
-                {
-                    new StatisticUpdate{StatisticName="won", Value=1}
-                }
-            };
-            var updateStatsTask = PlayFabServerAPI.UpdatePlayerStatisticsAsync(request);
-            
-            // var a = PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(new PlayFab.AdminModels.UpdateUserTitleDisplayNameRequest{});
-            // var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
-            // string playerCustomData = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
-
-            // var request = new SetObjectsRequest
+            // var titleDataRequest = new GetTitleDataRequest
             // {
-            //     Entity = new PlayFab.DataModels.EntityKey
-            //     {
-            //         Type = "title_player_account",
-            //         Id = context.CallerEntityProfile.Entity.Id
-            //     },
-            //     Objects = new System.Collections.Generic.List<SetObject>
-            //     {
-            //         new SetObject{
-            //             ObjectName = Constant.PLAYER_SETTINGS,
-            //             EscapedDataObject = playerCustomData
-            //         }
-            //     }
+            //     Keys = new List<string>{
+            //         Constant.PLAYER_SETTINGS,
+            //         Constant.PLAYER_NAME_NOUNS,
+            //         Constant.PLAYER_NAME_ADJECTIVES
+            //     } 
             // };
             
-            // var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
+            // var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
+            // var res = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
+
+            var request = new SetObjectsRequest
+            {
+                Entity = new PlayFab.DataModels.EntityKey
+                {
+                    Type = "title_player_account",
+                    Id = context.CallerEntityProfile.Entity.Id
+                },
+                Objects = new System.Collections.Generic.List<SetObject>
+                {
+                    new SetObject{
+                        ObjectName = Constant.PLAYER_SETTINGS,
+                        EscapedDataObject = "{\"Game_Start_Delay\": \"5000\"}"
+                    }
+                }
+            };
+            
+            var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
