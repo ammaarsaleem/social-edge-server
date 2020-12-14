@@ -1,23 +1,15 @@
+using System;
+using PlayFab;
+using System.Net;
+using Newtonsoft.Json;
+using System.Net.Http;
+using PlayFab.ServerModels;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using SocialEdge.Server.Util;
-using System.Net.Http;
-using PlayFab.Samples;
-using System;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting;
-using System.Security.Cryptography;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.Table;
-using PlayFab;
-using SocialEdge.Playfab;
-using PlayFab.ServerModels;
+using System.Net.Http.Formatting;
 using SocialEdge.Server.Constants;
+using Microsoft.Extensions.Logging;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace SocialEdge.Playfab.Photon
 {
@@ -40,15 +32,32 @@ namespace SocialEdge.Playfab.Photon
                 string error = $"{req.RequestUri} - {message}";
                 log.LogError(error);
                 
-                string errorResponse = "{ \"ResultCode\" : 1, \"Error\" : " + error + " }";
-                return req.CreateResponse(errorResponse);
+                var errorResponse = new { 
+                    ResultCode = 1,
+                    Error = error
+                };
+
+                // string errorResponse = "{ \"ResultCode\" : 1, \"Error\" : " + error + " }";
+                return req.CreateResponse(
+                    HttpStatusCode.OK,
+                    errorResponse,
+                    JsonMediaTypeFormatter.DefaultMediaType
+                );
             }
 
             var okMsg = $"{req.RequestUri} - Room Created";
             log.LogInformation($"{okMsg} :: {JsonConvert.SerializeObject(body)}");
             
-            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
-            return req.CreateResponse(response);
+            var response = new { 
+                    ResultCode = 0,
+                    Message = "OK"
+                };
+            // string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+            return req.CreateResponse(
+                HttpStatusCode.OK,
+                response,
+                JsonMediaTypeFormatter.DefaultMediaType
+            );
         }
     }
 
