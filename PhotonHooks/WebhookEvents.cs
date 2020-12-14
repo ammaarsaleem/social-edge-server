@@ -16,15 +16,15 @@ namespace SocialEdge.Playfab.Photon
     public class GameCreate
     {
         [FunctionName("GameCreate")]
-        public async Task<HttpResponseMessage> Run(
+        public async Task<String> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+            // log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
             // Get request body
             GameCreateRequest body = await req.Content.ReadAsAsync<GameCreateRequest>();
-            
+
             // Set name to query string or body data
             string message;
             if (!Utils.IsGameValid(body, out message))
@@ -37,12 +37,13 @@ namespace SocialEdge.Playfab.Photon
                     Error = error
                 };
 
+                return JsonConvert.SerializeObject(errorResponse);
                 // string errorResponse = "{ \"ResultCode\" : 1, \"Error\" : " + error + " }";
-                return req.CreateResponse(
-                    HttpStatusCode.OK,
-                    errorResponse,
-                    JsonMediaTypeFormatter.DefaultMediaType
-                );
+                // return req.CreateResponse(
+                //     HttpStatusCode.OK,
+                //     errorResponse,
+                //     JsonMediaTypeFormatter.DefaultMediaType
+                // );
             }
 
             var okMsg = $"{req.RequestUri} - Room Created";
@@ -53,11 +54,13 @@ namespace SocialEdge.Playfab.Photon
                     State = ""
                 };
             // string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
-            return req.CreateResponse(
-                HttpStatusCode.OK,
-                response,
-                JsonMediaTypeFormatter.DefaultMediaType
-            );
+            // return req.CreateResponse(
+            //     HttpStatusCode.OK,
+            //     response,
+            //     JsonMediaTypeFormatter.DefaultMediaType
+            // );
+
+            return JsonConvert.SerializeObject(response);
         }
     }
 
