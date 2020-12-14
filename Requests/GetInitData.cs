@@ -56,6 +56,7 @@ namespace SocialEdge.Playfab
                 player.combinedInfo = playerDataTask.Result.Result.InfoResultPayload;
                 player.customSettings = playerSettings;
                 result["player"] = player;
+                result["titleData"] = player.combinedInfo.TitleData;
             }
 
             else if (playerDataTask.IsCompletedSuccessfully && playerDataTask.Result.Error != null)
