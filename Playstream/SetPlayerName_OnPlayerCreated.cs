@@ -40,6 +40,8 @@ namespace SocialEdge.Playfab
                 PlayFabId = context.PlayerProfile.PlayerId,
                 DisplayName = newDisplayName
             };
+
+            var result = await PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
