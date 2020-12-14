@@ -15,41 +15,46 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using PlayFab;
+using SocialEdge.Playfab;
 using PlayFab.ServerModels;
 using SocialEdge.Server.Constants;
 
-namespace SocialEdge.Playfab
+namespace SocialEdge.Playfab.Photon
 {
+    public class GameCreate
+    {
+        [FunctionName("GameCreate")]
+        public async Task<HttpResponseMessage> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
+            HttpRequestMessage req, ILogger log)
+        {
+            log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
+            // Get request body
+            GameCreateRequest body = await req.Content.ReadAsAsync<GameCreateRequest>();
+            
+            // Set name to query string or body data
+            string message;
+            if (!Utils.IsGameValid(body, out message))
+            {
+                string error = $"{req.RequestUri} - {message}";
+                log.LogError(error);
+                return req.CreateResponse(HttpStatusCode.BadRequest, error);
+            }
 
-    // {
-    //   "authLevel": "function",
-    //   "name": "req",
-    //   "type": "httpTrigger",
-    //   "direction": "in",
-    //   "methods": [ "post" ],
-    //   "route": "{appId}/GameJoin/{id:int?}"
-
-    // },
-    // {
-    //   "name": "res",
-    //   "type": "http",
-    //   "direction": "out"
-    // }
-
-
-
+            var okMsg = $"{req.RequestUri} - Room Created";
+            log.LogInformation($"{okMsg} :: {JsonConvert.SerializeObject(body)}");
+            return req.CreateResponse(HttpStatusCode.OK, okMsg);
+        }
+    }
 
     public class GameJoin
     {
         [FunctionName("GameJoin")]
         public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
-            // [HttpTrigger(AuthorizationLevel.Function, "post")]
-            // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
         {
-
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
             // Get request body
@@ -71,74 +76,55 @@ namespace SocialEdge.Playfab
         }
     }
 
-    public class GameCreate
-    {
-        [FunctionName("GameCreate")]
-        public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
-            // [HttpTrigger(AuthorizationLevel.Function, "post")]
-            // HttpRequestMessage req, ILogger log)
-            HttpRequestMessage req, ILogger log)
-        {
-
-            log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
-        }
-    }
-
     public class GameClose
     {
         [FunctionName("GameClose")]
-        public async Task Run(
+        public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
-            // [HttpTrigger(AuthorizationLevel.Function, "post")]
-            // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
         {
-
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+
+            return req.CreateResponse(HttpStatusCode.OK, "okMsg");
         }
     }
 
     public class GameEvent
     {
         [FunctionName("GameEvent")]
-        public async Task Run(
+        public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
-            // [HttpTrigger(AuthorizationLevel.Function, "post")]
-            // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
         {
-
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+
+            return req.CreateResponse(HttpStatusCode.OK, "okMsg");
         }
     }
 
     public class GameProperties
     {
         [FunctionName("GameProperties")]
-        public async Task Run(
+        public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
-            // [HttpTrigger(AuthorizationLevel.Function, "post")]
-            // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
         {
-
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+
+            return req.CreateResponse(HttpStatusCode.OK, "okMsg");
         }
     }
 
     public class GameLeave
     {
         [FunctionName("GameLeave")]
-        public async Task Run(
+        public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
-            // [HttpTrigger(AuthorizationLevel.Function, "post")]
-            // HttpRequestMessage req, ILogger log)
             HttpRequestMessage req, ILogger log)
         {
-
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+
+            return req.CreateResponse(HttpStatusCode.OK, "okMsg");
         }
     }
 }
-
