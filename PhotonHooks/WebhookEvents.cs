@@ -50,7 +50,7 @@ namespace SocialEdge.Playfab.Photon
             
             var response = new { 
                     ResultCode = 0,
-                    Message = "OK"
+                    State = ""
                 };
             // string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
             return req.CreateResponse(
