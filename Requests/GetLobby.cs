@@ -31,7 +31,7 @@ namespace SocialEdge.Playfab
             dynamic args = context.FunctionArgument;
             var request = new GetPlayersInSegmentRequest
             {
-                SegmentId = Constant.ALL_PLAYERS
+                SegmentId = Constant.COMMUNITY
             };
 
             var result = await PlayFabServerAPI.GetPlayersInSegmentAsync(request);
