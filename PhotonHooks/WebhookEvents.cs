@@ -39,12 +39,16 @@ namespace SocialEdge.Playfab.Photon
             {
                 string error = $"{req.RequestUri} - {message}";
                 log.LogError(error);
-                return req.CreateResponse(HttpStatusCode.BadRequest, error);
+                
+                string errorResponse = "{ \"ResultCode\" : 1, \"Error\" : " + error + " }";
+                return req.CreateResponse(errorResponse);
             }
 
             var okMsg = $"{req.RequestUri} - Room Created";
             log.LogInformation($"{okMsg} :: {JsonConvert.SerializeObject(body)}");
-            return req.CreateResponse(HttpStatusCode.OK, okMsg);
+            
+            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+            return req.CreateResponse(response);
         }
     }
 
@@ -72,7 +76,8 @@ namespace SocialEdge.Playfab.Photon
             var okMsg = $"{req.RequestUri} - Recieved Game Join Request";
             log.LogInformation(okMsg);
 
-            return req.CreateResponse(HttpStatusCode.OK, okMsg);
+            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+            return req.CreateResponse(response);
         }
     }
 
@@ -85,7 +90,8 @@ namespace SocialEdge.Playfab.Photon
         {
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
-            return req.CreateResponse(HttpStatusCode.OK, "okMsg");
+            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+            return req.CreateResponse(response);
         }
     }
 
@@ -98,7 +104,8 @@ namespace SocialEdge.Playfab.Photon
         {
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
-            return req.CreateResponse(HttpStatusCode.OK, "okMsg");
+            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+            return req.CreateResponse(response);
         }
     }
 
@@ -111,7 +118,8 @@ namespace SocialEdge.Playfab.Photon
         {
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
-            return req.CreateResponse(HttpStatusCode.OK, "okMsg");
+            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+            return req.CreateResponse(response);
         }
     }
 
@@ -124,7 +132,8 @@ namespace SocialEdge.Playfab.Photon
         {
             log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
-            return req.CreateResponse(HttpStatusCode.OK, "okMsg");
+            string response = "{ \"ResultCode\" : 0, \"Message\" : \"OK\" }";
+            return req.CreateResponse(response);
         }
     }
 }
