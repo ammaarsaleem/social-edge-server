@@ -33,7 +33,8 @@ namespace SocialEdge.Playfab
             Util.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
-
+            
+            string playerTitleId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             Dictionary<string,object> result = new Dictionary<string, object>();
             string playerId = string.Empty;
             
@@ -45,12 +46,21 @@ namespace SocialEdge.Playfab
             }
             try
             {
-                var playerDataRequest = CreatePlayerDataRequest(context.CallerEntityProfile.Lineage.MasterPlayerAccountId, playerId);
+                var playerDataRequest = CreatePlayerDataRequest(playerTitleId, playerId);
                 var titleNewsRequest = PlayFabServerAPI.GetTitleNewsAsync(new GetTitleNewsRequest());
+                var playerInternalDataTask = PlayFabServerAPI.GetUserInternalDataAsync(new GetUserDataRequest{PlayFabId = playerTitleId});
                 var playerDataTask =  PlayFabServerAPI.GetPlayerCombinedInfoAsync(playerDataRequest);
-                List<Task> tasks = new List<Task> { playerDataTask, titleNewsRequest };
+                List<Task> tasks = new List<Task> { playerDataTask, titleNewsRequest, playerInternalDataTask };
                 await Task.WhenAll(tasks);
-
+                
+                var internalDataResult = playerInternalDataTask.Result.Result;
+                if(playerInternalDataTask.IsCompletedSuccessfully && playerInternalDataTask.Result.Result!=null)
+                {
+                    if(!internalDataResult.Data.ContainsKey("isInitialized") || internalDataResult.Data["isInitialized"].Value=="false")
+                    {
+                        
+                    }
+                }
                 CreatePlayerResult(tasks, playerDataTask, context.CallerEntityProfile.Objects,result);
                 return result;
             }
@@ -106,7 +116,7 @@ namespace SocialEdge.Playfab
         }
         private GetPlayerCombinedInfoRequestParams SetRequestParams()
         {
-            var infoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            var infoRequestParameters = new PlayFab.ServerModels.GetPlayerCombinedInfoRequestParams
             {
                 GetUserData = true,
                 GetUserAccountInfo = true,

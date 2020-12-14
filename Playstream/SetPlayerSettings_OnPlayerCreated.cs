@@ -22,15 +22,15 @@ using System.Text;
 using SocialEdge.Server.Util;
 namespace SocialEdge.Playfab
 {
-    public class OnPlayerCreated
+    public class SetPlayerSettings_OnPlayerCreated
     {
-        [FunctionName("OnPlayerCreated")]
+        [FunctionName("SetPlayerSettings_OnPlayerCreated")]
         public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             Util.Init(req);
-            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
+            var context = JsonConvert.DeserializeObject<PlayerPlayStreamFunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
 
             // var titleDataRequest = new GetTitleDataRequest
@@ -45,23 +45,24 @@ namespace SocialEdge.Playfab
             // var titleDataResult = await PlayFabServerAPI.GetTitleInternalDataAsync(titleDataRequest);
             // var res = titleDataResult.Result.Data[Constant.PLAYER_SETTINGS];
 
-            var request = new SetObjectsRequest
-            {
-                Entity = new PlayFab.DataModels.EntityKey
-                {
-                    Type = "title_player_account",
-                    Id = context.CallerEntityProfile.Entity.Id
-                },
-                Objects = new System.Collections.Generic.List<SetObject>
-                {
-                    new SetObject{
-                        ObjectName = Constant.PLAYER_SETTINGS,
-                        EscapedDataObject = "{\"Game_Start_Delay\": \"5000\"}"
-                    }
-                }
-            };
+    
+            // var request = new SetObjectsRequest
+            // {
+            //     Entity = new PlayFab.DataModels.EntityKey
+            //     {
+            //         Type = "title_player_account",
+            //         Id = context.CallerEntityProfile.Entity.Id
+            //     },
+            //     Objects = new System.Collections.Generic.List<SetObject>
+            //     {
+            //         new SetObject{
+            //             ObjectName = Constant.PLAYER_SETTINGS,
+            //             EscapedDataObject = "{\"Game_Start_Delay\": \"5000\"}"
+            //         }
+            //     }
+            // };
             
-            var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
+            // var setObjectsResult = await PlayFabDataAPI.SetObjectsAsync(request);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
