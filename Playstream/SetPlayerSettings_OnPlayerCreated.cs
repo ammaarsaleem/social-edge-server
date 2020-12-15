@@ -26,11 +26,11 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("SetPlayerSettings_OnPlayerCreated")]
         public async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            Util.Init(req);
-            var context = JsonConvert.DeserializeObject<PlayerPlayStreamFunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
+            RequestUtil.Init(req);
+            var context = JsonConvert.DeserializeObject<PlayerPlayStreamFunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
 
             // var titleDataRequest = new GetTitleDataRequest

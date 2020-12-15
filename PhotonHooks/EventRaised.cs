@@ -35,10 +35,10 @@ namespace SocialEdge.Playfab
         [FunctionName("RoomJoined")]
         public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] 
-            HttpRequest req,ILogger log)
+            HttpRequestMessage req,ILogger log)
         {
-            Util.Init(req);
-            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
+            RequestUtil.Init(req);
+            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             log.LogInformation("Webhook triggered");
             PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(Constant.PLAYFAB_DEV_SECRET_KEY, 

@@ -11,41 +11,130 @@ using SocialEdge.Server.Constants;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using System.Collections.Generic;
+using SocialEdge.Server.Util;
+using System.Linq;
 namespace SocialEdge.Playfab.Photon
 {
     public class GameCreate
     {
+        /*photon waits for response*/
         [FunctionName("GameCreate")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            // Get request body
+            // call util
+            RequestUtil.Init(req);
+
+
+            string message = string.Empty;
+            List<string> activeChallenges = null;
+
             GameCreateRequest body = await req.Content.ReadAsAsync<GameCreateRequest>();
-
-            // Request data validity check
-            string message;
-            if (!Utils.IsGameValid(body, out message))
-            {
-                var errorResponse = new { 
-                    ResultCode = 1,
-                    Error = message
-                };
-
-                return new OkObjectResult(errorResponse);
-            }
-
-            // Logs for testing. Remove this in production
+            
             var okMsg = $"{req.RequestUri} - Room Created";
             log.LogInformation($"{okMsg} :: {JsonConvert.SerializeObject(body)}");
             
-            var response = new { 
-                ResultCode = 0,
-                Message = "Success"
+            if(Utils.IsGameValid(body, out message))
+            {
+                string currentChallengeId = body.GameId;
+                string playerId = body.UserId;
+
+                //create shared group 
+                var createGroupRequest = new CreateSharedGroupRequest{
+                    SharedGroupId = currentChallengeId
+                };  
+                
+                var getPlayerDataRequest = new GetUserDataRequest{
+                    PlayFabId = playerId,
+                    Keys = new List<string>{"activeChallenges"}
+                };
+
+                var playerDataTask =  PlayFabServerAPI.GetUserInternalDataAsync(getPlayerDataRequest);
+                var groupTask =  PlayFabServerAPI.CreateSharedGroupAsync(createGroupRequest);
+                await Task.WhenAll(playerDataTask,groupTask);
+
+                //update user internal data
+                if(groupTask.IsCompletedSuccessfully && playerDataTask.IsCompletedSuccessfully)
+                {   
+                    log.LogInformation("group created with id: " + groupTask.Result.Result.SharedGroupId);
+                    log.LogInformation("player data fetched");
+
+                    string activeChallengesData = playerDataTask.Result.Result.Data["activeChallenges"].Value;
+                    if(!string.IsNullOrEmpty(activeChallengesData)){
+                        activeChallenges = JsonConvert.DeserializeObject<List<string>>(activeChallengesData);
+                    }
+                    else{
+                        activeChallenges = new List<string>();
+                    }
+
+                    //If current challenge not already added
+                    if(!activeChallenges.Any(s=>s.Equals(currentChallengeId)))
+                    {
+                        activeChallenges.Add(currentChallengeId);
+                        Tuple<bool,string> result = await UpdateUserData(activeChallenges,  playerId);
+                        var success = result.Item1;
+                       
+                        if (success)
+                        {
+                            log.LogInformation("Internal data successfully updated");
+                            return Utils.GetSuccessResponse();
+                        }
+                        else
+                        {
+                            message = result.Item2;
+                            log.LogInformation(message);
+                        }
+                    }
+
+                    else
+                    {
+                        message = "this challenge is already active";
+                        log.LogInformation(message);
+                    }
+                }
+                else{
+                    message = "GroupError: " + groupTask.Result.Error.ErrorMessage + 
+                                ", getPlayerDataError: "+ playerDataTask.Result.Error.ErrorMessage;
+                    
+                    log.LogInformation(message);
+                }
+
+                return Utils.GetErrorResponse(message);
+            }
+            else{
+                message = "Game is not valid";
+                log.LogInformation(message);
+            }
+
+            return Utils.GetErrorResponse(message);
+        }
+
+        private async Task<Tuple<bool,string>> UpdateUserData(List<string> activeChallenges, string playerId)
+        {
+            string errorMessage = string.Empty;
+            bool hasUpdated=false;
+            string activeChallengesJson = JsonConvert.SerializeObject(activeChallenges);
+            var activeChallengesDict = new Dictionary<string, string>();
+            activeChallengesDict["activeChallenges"] = activeChallengesJson;
+
+            var updateDataRequest = new UpdateUserInternalDataRequest
+            {
+                PlayFabId = playerId,
+                Data = activeChallengesDict
             };
-            
-            return new OkObjectResult(response);
+
+             var updateDataResult = await PlayFabServerAPI.UpdateUserInternalDataAsync(updateDataRequest);
+             if(updateDataResult.Error==null)
+             {
+                hasUpdated = true;
+             }
+             else{
+                 errorMessage = updateDataResult.Error.ErrorMessage;
+             }
+
+             return new Tuple<bool, string>(hasUpdated,errorMessage);
         }
     }
 

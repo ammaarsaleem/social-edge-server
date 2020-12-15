@@ -11,11 +11,12 @@ using PlayFab;
 using PlayFab.ServerModels;
 using SocialEdge.Playfab.Models;
 using SocialEdge.Server.Constants;
+using System.Net.Http;
 namespace SocialEdge.Server.Util
 {
-    public static class Util
+    public static class RequestUtil
     {
-        public static void Init(HttpRequest req)
+        public static void Init(HttpRequestMessage req)
         {
             // var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
             

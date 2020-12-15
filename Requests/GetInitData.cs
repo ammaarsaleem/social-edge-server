@@ -27,11 +27,11 @@ namespace SocialEdge.Playfab
     {
         [FunctionName("GetInitData")]
         public async Task<Dictionary<string,object>> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            Util.Init(req);
-            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.ReadAsStringAsync());
+            RequestUtil.Init(req);
+            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             
             string playerTitleId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;

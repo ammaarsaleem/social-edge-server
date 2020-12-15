@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-
+using Microsoft.AspNetCore.Mvc;
 namespace SocialEdge.Playfab.Photon
 {
     // TODO: Refactor duplicate code.
@@ -64,5 +64,26 @@ namespace SocialEdge.Playfab.Photon
             message = "";
             return true;
         }
+
+        public static OkObjectResult GetErrorResponse(string message)
+        {
+            var errorResponse = new { 
+                    ResultCode = 1,
+                    Error = message
+                };
+
+                return new OkObjectResult(errorResponse);
+        }
+
+        public static OkObjectResult GetSuccessResponse()
+        {
+             var response = new { 
+                ResultCode = 0,
+                Message = "Success"
+            };
+            
+            return new OkObjectResult(response);
+        }
+
     }
 }
