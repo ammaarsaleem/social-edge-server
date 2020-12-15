@@ -27,7 +27,7 @@ namespace SocialEdge.Playfab.Photon
             // call util
             RequestUtil.Init(req);
 
-
+            string activeChallengesData = string.Empty;
             string message = string.Empty;
             List<string> activeChallenges = null;
 
@@ -60,8 +60,11 @@ namespace SocialEdge.Playfab.Photon
                 {   
                     log.LogInformation("group created with id: " + groupTask.Result.Result.SharedGroupId);
                     log.LogInformation("player data fetched");
-
-                    string activeChallengesData = playerDataTask.Result.Result.Data["activeChallenges"].Value;
+                    if(playerDataTask.Result.Result.Data.ContainsKey("activeChallenges"))
+                    {
+                        activeChallengesData = playerDataTask.Result.Result.Data["activeChallenges"].Value;
+                    }
+                    
                     if(!string.IsNullOrEmpty(activeChallengesData)){
                         activeChallenges = JsonConvert.DeserializeObject<List<string>>(activeChallengesData);
                     }
