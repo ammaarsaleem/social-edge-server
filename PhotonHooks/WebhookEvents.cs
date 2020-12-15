@@ -120,7 +120,7 @@ namespace SocialEdge.Playfab.Photon
             bool hasUpdated=false;
             string activeChallengesJson = JsonConvert.SerializeObject(activeChallenges);
             var activeChallengesDict = new Dictionary<string, string>();
-            activeChallengesDict["activeChallenges"] = activeChallengesJson;
+            activeChallengesDict.Add("activeChallenges", activeChallengesJson);
 
             var updateDataRequest = new UpdateUserInternalDataRequest
             {
