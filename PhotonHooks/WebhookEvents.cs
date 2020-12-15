@@ -59,17 +59,18 @@ namespace SocialEdge.Playfab.Photon
             
             if(playerDataResult.Error==null)
             {
-                log.LogInformation("group created with id: " + createGroupTask.Result.Result.SharedGroupId);
                 log.LogInformation("player data fetched");
 
                 activeChallenges = UtilMethods.GetActiveChallenges(playerDataResult.Result);
                 var createGroupResult = await createGroupTask;
                 if(createGroupResult.Error==null)
                 {
+                    log.LogInformation("group created with id: " + createGroupTask.Result.Result.SharedGroupId);
                     Tuple<bool,string> addPlayerChallengeResult  = await UtilMethods.AddPlayerChallenge(currentChallengeId,activeChallenges,playerId);
                     bool isChallengedAdded = addPlayerChallengeResult.Item1;
                     if(isChallengedAdded)
                     {
+                        log.LogInformation("player added to group and internal data updated");
                         return Utils.GetSuccessResponse();
                     }
                     else
