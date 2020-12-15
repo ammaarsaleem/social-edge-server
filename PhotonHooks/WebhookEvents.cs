@@ -53,7 +53,7 @@ namespace SocialEdge.Playfab.Photon
                 PlayFabId = playerId,
                 Keys = new List<string>{"activeChallenges"}
             };
-
+   
             var createGroupTask = PlayFabServerAPI.CreateSharedGroupAsync(createGroupRequest);
             var playerDataResult= await PlayFabServerAPI.GetUserInternalDataAsync(getPlayerDataRequest);        
             
@@ -337,9 +337,9 @@ namespace SocialEdge.Playfab.Photon
             if (!activeChallenges.Any(s => s.Equals(currentChallengeId)))
             {
                 activeChallenges.Add(currentChallengeId);
-                var addPlayerToGroupResult =  await AddToGroup(playerId,currentChallengeId);
-                var isPlayerAddedToGroup = addPlayerToGroupResult.Item1;
-                if(isPlayerAddedToGroup)
+               // var addPlayerToGroupResult =  await AddToGroup(playerId,currentChallengeId);
+                //var isPlayerAddedToGroup = addPlayerToGroupResult.Item1;
+                //if(isPlayerAddedToGroup)
                 {
                     var updatePlayerDataResult = await UpdateUserData(activeChallenges, playerId);
                     isPlayerDataUpdated = updatePlayerDataResult.Item1;
@@ -356,9 +356,9 @@ namespace SocialEdge.Playfab.Photon
                     }
                 }
 
-                else
+               // else
                 {
-                    error = addPlayerToGroupResult.Item2;
+                 //   error = addPlayerToGroupResult.Item2;
                     // log.LogInformation(error);
                 }
             }
