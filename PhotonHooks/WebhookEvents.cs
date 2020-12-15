@@ -24,7 +24,7 @@ namespace SocialEdge.Playfab.Photon
             // Get request body
             GameCreateRequest body = await req.Content.ReadAsAsync<GameCreateRequest>();
 
-            // Set name to query string or body data
+            // Request data validity check
             string message;
             if (!Utils.IsGameValid(body, out message))
             {
@@ -36,6 +36,7 @@ namespace SocialEdge.Playfab.Photon
                 return new OkObjectResult(errorResponse);
             }
 
+            // Logs for testing. Remove this in production
             var okMsg = $"{req.RequestUri} - Room Created";
             log.LogInformation($"{okMsg} :: {JsonConvert.SerializeObject(body)}");
             
@@ -55,13 +56,12 @@ namespace SocialEdge.Playfab.Photon
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
-
             // Get request body
             GameLeaveRequest body = await req.Content.ReadAsAsync<GameLeaveRequest>();
 
             PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(Constant.PLAYFAB_DEV_SECRET_KEY, 
                                                                                                     EnvironmentVariableTarget.Process);
+            // Event Log for testing. Remove this in production
             WriteTitleEventRequest titleEventRequest = new WriteTitleEventRequest();
             titleEventRequest.EventName = "room_joined";
             titleEventRequest.Body = new System.Collections.Generic.Dictionary<string, object> {
@@ -69,6 +69,7 @@ namespace SocialEdge.Playfab.Photon
             };
             await PlayFabServerAPI.WriteTitleEventAsync(titleEventRequest);
 
+            // Logs for testing. Remove this in production
             var okMsg = $"{req.RequestUri} - Recieved Game Join Request";
             log.LogInformation(okMsg);
 
@@ -91,9 +92,8 @@ namespace SocialEdge.Playfab.Photon
             // Get request body
             GameCloseRequest body = await req.Content.ReadAsAsync<GameCloseRequest>();
     
-            // Set name to query string or body data
+            // Request data validity check
             string message;
-            var okMsg = $"{req.RequestUri} - Closed Game - {body.GameId}";
             if (!Utils.IsGameValid(body, out message))
             {
                 var errorResponse = new { 
@@ -104,6 +104,8 @@ namespace SocialEdge.Playfab.Photon
                 return new OkObjectResult(errorResponse);
             }
 
+            // Logs for testing. Remove this in production
+            var okMsg = $"{req.RequestUri} - Closed Game - {body.GameId}";
             var state = (string)JsonConvert.SerializeObject(body.State);
             log.LogInformation(okMsg + " - State: " + state);
             
@@ -123,7 +125,12 @@ namespace SocialEdge.Playfab.Photon
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+            // Get request body
+            GameEventRequest body = await req.Content.ReadAsAsync<GameEventRequest>();
+
+            // Logs for testing. Remove this in production
+            var okMsg = $"{req.RequestUri} - Recieved Game Event";
+            log.LogInformation(okMsg);
 
             var response = new { 
                 ResultCode = 0,
@@ -141,7 +148,34 @@ namespace SocialEdge.Playfab.Photon
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+            // Get request body
+            GamePropertiesRequest body = await req.Content.ReadAsAsync<GamePropertiesRequest>();
+
+            // Request data validity check
+            string message;
+            if (!Utils.IsGameValid(body, out message))
+            {
+                var errorResponse = new { 
+                    ResultCode = 1,
+                    Error = message
+                };
+
+                return new OkObjectResult(errorResponse);
+            }
+    
+            if(body.State != null)
+            { 
+                var state = (string)JsonConvert.SerializeObject(body.State);
+                
+                var properties = body.Properties;
+                //// Example of how to get data from properties
+                // object actorNrNext = null;
+                // properties?.TryGetValue("turn", out actorNrNext);
+            }
+
+            // Logs for testing. Remove this in production
+            var okMsg = $"{req.RequestUri} - Uploaded Game Properties";
+            log.LogInformation(okMsg);
 
             var response = new { 
                 ResultCode = 0,
@@ -159,7 +193,33 @@ namespace SocialEdge.Playfab.Photon
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            log.LogInformation($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
+            // Get request body
+            GameLeaveRequest body = await req.Content.ReadAsAsync<GameLeaveRequest>();
+    
+            // Request data validity check
+            string message;
+            if (!Utils.IsGameValid(body, out message))
+            {
+                var errorResponse = new { 
+                    ResultCode = 1,
+                    Error = message
+                };
+
+                return new OkObjectResult(errorResponse);
+            }
+
+            if (body.IsInactive)
+            {
+                // Set to inactive in shared data here
+            }
+            else
+            {
+                // Remove from shared data here
+            }
+
+            // Logs for testing. Remove this in production
+            var okMsg = $"{req.RequestUri} - {body.UserId} left {body.GameId}";
+            log.LogInformation(okMsg);
 
             var response = new { 
                 ResultCode = 0,
