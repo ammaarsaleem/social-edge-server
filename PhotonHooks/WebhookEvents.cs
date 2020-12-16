@@ -227,17 +227,19 @@ namespace SocialEdge.Playfab.Photon
             HttpRequestMessage req, ILogger log)
         {
             log.LogInformation("method begin");
+            RequestUtil.Init(req);
             string message = string.Empty;
             GameCloseRequest body = await req.Content.ReadAsAsync<GameCloseRequest>();
             
             if (!Utils.IsGameValid(body, out message))
             {
-                log.LogInformation("game invalid");
+                log.LogInformation(message);
                 return Utils.GetErrorResponse(message);
             }
             
             dynamic gameState = body.State2;
             string currentChallengeId = body.GameId;
+            log.LogInformation(body.GameId);
             if(gameState!=null && gameState["ActorsList"])
             {
                 log.LogInformation("before getting actor list");
