@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-
+using System;
 namespace SocialEdge.Playfab.Photon
 {
     #region Requests
@@ -188,5 +188,15 @@ namespace SocialEdge.Playfab.Photon
     {
         public int ActorNr;
         public dynamic Properties;
+    }
+
+    public class Actor
+    {
+        public int ActorNr;
+        public string UserId;
+        public string Nickname;
+        public DateTime DeactivationTime;
+
+        // "ActorNr":1,"UserId":"D10B09BEBF3AC77E","Nickname":"","DeactivationTime":"2020-12-16T14:10:55.5012926+00:00"}
     }
 }

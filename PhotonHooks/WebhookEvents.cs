@@ -66,16 +66,15 @@ namespace SocialEdge.Playfab.Photon
                 if(createGroupResult.Error==null)
                 {
                     log.LogInformation("group created with id: " + createGroupTask.Result.Result.SharedGroupId);
-                    Tuple<bool,string> addPlayerChallengeResult  = await UtilMethods.AddPlayerChallenge(currentChallengeId,activeChallenges,playerId);
-                    bool isChallengedAdded = addPlayerChallengeResult.Item1;
-                    if(isChallengedAdded)
+                    Result addPlayerChallengeResult  = await UtilMethods.AddPlayerChallenge(currentChallengeId,activeChallenges,playerId);
+                    if(addPlayerChallengeResult.isSuccess)
                     {
                         log.LogInformation("player added to group and internal data updated");
                         return Utils.GetSuccessResponse();
                     }
                     else
                     {
-                        message = addPlayerChallengeResult.Item2;
+                        message = addPlayerChallengeResult.error;
                         log.LogInformation(message);
                     }
                 }
@@ -131,16 +130,15 @@ namespace SocialEdge.Playfab.Photon
 
                 activeChallenges = UtilMethods.GetActiveChallenges(playerDataResult.Result);
                 
-                Tuple<bool,string> addPlayerChallengeResult  = await UtilMethods.AddPlayerChallenge(currentChallengeId,activeChallenges,playerId);
-                bool isChallengedAdded = addPlayerChallengeResult.Item1;
-                if(isChallengedAdded)
+                Result addPlayerChallengeResult  = await UtilMethods.AddPlayerChallenge(currentChallengeId,activeChallenges,playerId);
+                if(addPlayerChallengeResult.isSuccess)
                 {
                     log.LogInformation("player added to group and internal data updated");
                     return Utils.GetSuccessResponse();
                 }
                 else
                 {
-                    message = addPlayerChallengeResult.Item2;
+                    message = addPlayerChallengeResult.error;
                     log.LogInformation(message);
                 }
             }
@@ -183,10 +181,6 @@ namespace SocialEdge.Playfab.Photon
                     PlayFabId = playerId,
                     Keys = new List<string>{"activeChallenges"}
                 };
-                var getPlayerStatsRequest = new GetPlayerStatisticsRequest{
-                        PlayFabId = playerId,
-                        StatisticNames = new List<string>{"Ranking"}
-                };
 
                 var playerDataResult= await PlayFabServerAPI.GetUserInternalDataAsync(getPlayerDataRequest);
                 
@@ -196,9 +190,8 @@ namespace SocialEdge.Playfab.Photon
 
                     activeChallenges = UtilMethods.GetActiveChallenges(playerDataResult.Result);
                     
-                    Tuple<bool,string> removePlayerChallengeResult  = await UtilMethods.RemovePlayerChallenge(currentChallengeId,activeChallenges,playerId);
-                    bool isChallengedRemoved = removePlayerChallengeResult.Item1;
-                    if(isChallengedRemoved)
+                    Result removePlayerChallengeResult  = await UtilMethods.RemovePlayerChallenge(currentChallengeId,activeChallenges,playerId);
+                    if(removePlayerChallengeResult.isSuccess)
                     {
                         log.LogInformation("player removed from group and internal data updated");
                         if(!body.IsInactive)
@@ -208,7 +201,7 @@ namespace SocialEdge.Playfab.Photon
                     }
                     else
                     {
-                        message = removePlayerChallengeResult.Item2;
+                        message = removePlayerChallengeResult.error;
                         log.LogInformation(message);
                     }
                 }
@@ -251,46 +244,81 @@ namespace SocialEdge.Playfab.Photon
             var state = (string)JsonConvert.SerializeObject(body.State);
             var state2 = (string)JsonConvert.SerializeObject(body.State);
             
-            var gameState = body.State2;
-            if(gameState!=null)
+            dynamic gameState = body.State2;
+            string currentChallengeId = body.GameId;
+            if(gameState!=null && gameState["ActorsList"])
             {
-                var actors = gameState["ActorList"];
-                actors.ToList();
+                var actorsData = gameState["ActorList"];
+                List<Actor> players = JsonConvert.DeserializeObject<List<Actor>>(actorsData.ToString());
+                List<string> ids = players.Select(a => a.UserId).ToList();
+                List<Task> getDataTasks = new List<Task>(); 
+                foreach (var id in ids)
+                {
+                    var getPlayerDataRequest = new GetUserDataRequest
+                    {
+                        PlayFabId = id,
+                        Keys = new List<string> { "activeChallenges" }
+                    };
+                    Task<PlayFabResult<GetUserDataResult>> playerDataTask = PlayFabServerAPI.GetUserInternalDataAsync(getPlayerDataRequest);
+                    getDataTasks.Add(playerDataTask);
+                    
+                }
+                Task getT = Task.WhenAll(getDataTasks);
+                await getT;
 
-                // log.LogInformation(actors.ToString());
-            //     linq for ids;
-            //     List<Task> getDataTasks = null;
-            //     foreach(var id in ids)
-            //     {
-            //         var t = GetPlayerInternalData(id) => only active challenges
-            //         getDataTasks.Add(t);
-            //     }
+                if (getT.Status == TaskStatus.RanToCompletion)
+                {
+                    Result updateResult = await UtilMethods.UpdateUsersData(currentChallengeId, getDataTasks);
+                    if (updateResult.isSuccess)
+                    {
+                        var deleteGroupRequest = new DeleteSharedGroupRequest
+                        {    
+                            SharedGroupId = currentChallengeId
+                        };
 
-            //     Task.WhenAll(getDataTasks);
-            //     if(getDataTasks.isCompletedSuccessfully)
-            //     {
-            //         List<Task> updateDataTasks = null;
-            //         foreach(var item in getDataTasks)
-            //         {
-            //             get active challenges
-            //             remove current challenge
-            //             var t = UpdatePlayerInternalData(id) => only active challenges
-            //             updateDataTasks.Add(t);
-            //         }
-            //         Task.WhenAll(updateDataTasks);
-            //         if(updateDataTasks.isCompletedSuccessfully)
-            //         {
-            //             var removePlayersResult = await RemoveFromSharedGroupRequest(ids);
-            //             if(removePlayersResult.Error==null)
-            //             {
-            //                 return Utils.GetSuccessResponse();
-            //             }
-            //         }
-            //     }
-            // }
-            
-        }
-        return Utils.GetErrorResponse("");
+                        var deleteGroupResult = await PlayFabServerAPI.DeleteSharedGroupAsync(deleteGroupRequest);
+                        if(deleteGroupResult.Error==null)
+                        {
+                            return Utils.GetSuccessResponse();
+                        }
+                        else
+                        {
+                            message = "Group: " +currentChallengeId +" not deleted"
+                        }
+                    }
+                    else
+                    {
+                        message = "Player(s) active challenge not removed";
+                        log.LogInformation(message);
+                    }
+                }
+                else{
+                message = "Unable to get player(s) data";
+                log.LogInformation(message);
+               }
+            }
+            return Utils.GetErrorResponse("");
+    }
+
+        // private static List<Task> GetPlayersActiveChallenges(List<string> ids)
+        // {
+        //     List<Task> getDataTasks = new List<Task>(); ;
+        //     foreach (var id in ids)
+        //     {
+        //         var getPlayerDataRequest = new GetUserDataRequest
+        //         {
+        //             PlayFabId = id,
+        //             Keys = new List<string> { "activeChallenges" }
+        //         };
+        //         Task<PlayFabResult<GetUserDataResult>> playerDataTask = PlayFabServerAPI.GetUserInternalDataAsync(getPlayerDataRequest);
+        //         getDataTasks.Add(playerDataTask);
+        //         Task getT = Task.WhenAll(getDataTasks);
+        //         await getT;
+        //     }
+
+        //     return getDataTasks;
+        // }
+
     }
 
     public class GameEvent
@@ -366,7 +394,7 @@ namespace SocialEdge.Playfab.Photon
     public static class UtilMethods
     {
 
-        public static async Task<Tuple<bool,string>> AddPlayerChallenge(string currentChallengeId, List<string> activeChallenges, string playerId)
+        public static async Task<Result> AddPlayerChallenge(string currentChallengeId, List<string> activeChallenges, string playerId)
         {
             string error = string.Empty;
             bool isPlayerDataUpdated = false;
@@ -374,34 +402,35 @@ namespace SocialEdge.Playfab.Photon
             {
                 activeChallenges.Add(currentChallengeId);
                 var addPlayerToGroupResult =  await AddToGroup(playerId,currentChallengeId);
-                var isPlayerAddedToGroup = addPlayerToGroupResult.Item1;
+                var isPlayerAddedToGroup = addPlayerToGroupResult.isSuccess;
                 if(isPlayerAddedToGroup)
                 {
                     var updatePlayerDataResult = await UpdateUserData(activeChallenges, playerId);
-                    isPlayerDataUpdated = updatePlayerDataResult.Item1;
+                    isPlayerDataUpdated = updatePlayerDataResult.isSuccess;
                     if(isPlayerDataUpdated)
                     {                    
-                        return Tuple.Create(isPlayerDataUpdated,error);
+                        return new Result(isPlayerDataUpdated,error);   
+                        // return Tuple.Create(isPlayerDataUpdated,error);
                     }
                     else
                     {
-                        error = updatePlayerDataResult.Item2;
+                        error = updatePlayerDataResult.error;
                     }
                 }
                 else
                 {
-                    error = addPlayerToGroupResult.Item2;
+                    error = addPlayerToGroupResult.error;
                 }
             }
             else
             {
                 error = "this challenge is already in active challenges list";
             }
-
-            return Tuple.Create(isPlayerDataUpdated,error);
+            return new Result(isPlayerDataUpdated,error);   
+            // return Tuple.Create(isPlayerDataUpdated,error);
         }
 
-        public static async Task<Tuple<bool,string>> RemovePlayerChallenge(string currentChallengeId, List<string> activeChallenges, string playerId)
+        public static async Task<Result> RemovePlayerChallenge(string currentChallengeId, List<string> activeChallenges, string playerId)
         {
             string error = string.Empty;
             bool isPlayerDataUpdated = false;
@@ -409,23 +438,24 @@ namespace SocialEdge.Playfab.Photon
             {
                 activeChallenges.RemoveAll(c=>c.Equals(currentChallengeId));
                 var removePlayerFromGroupResult =  await RemoveFromGroup(playerId,currentChallengeId);
-                var isPlayerRemovedFromGroup = removePlayerFromGroupResult.Item1;
+                var isPlayerRemovedFromGroup = removePlayerFromGroupResult.isSuccess;
                 if(isPlayerRemovedFromGroup)
                 {
                     var updatePlayerDataResult = await UpdateUserData(activeChallenges, playerId);
-                    isPlayerDataUpdated = updatePlayerDataResult.Item1;
+                    isPlayerDataUpdated = updatePlayerDataResult.isSuccess;
                     if(isPlayerDataUpdated)
-                    {                    
-                        return Tuple.Create(isPlayerDataUpdated,error);
+                    {              
+                        return new Result(isPlayerDataUpdated,error);      
+                        // return Tuple.Create(isPlayerDataUpdated,error);
                     }
                     else
                     {
-                        error = updatePlayerDataResult.Item2;
+                        error = updatePlayerDataResult.error;
                     }
                 }
                 else
                 {
-                    error = removePlayerFromGroupResult.Item2;
+                    error = removePlayerFromGroupResult.error;
                 }
             }
             else
@@ -433,7 +463,8 @@ namespace SocialEdge.Playfab.Photon
                 error = "this challenge is not in active challenges list";
             }
 
-            return Tuple.Create(isPlayerDataUpdated,error);
+            return new Result(isPlayerDataUpdated,error);
+            // return Tuple.Create(isPlayerDataUpdated,error);
         }
 
         public static List<string> GetActiveChallenges(GetUserDataResult playerData)
@@ -453,9 +484,9 @@ namespace SocialEdge.Playfab.Photon
             return activeChallenges;
         }
 
-        public static async Task<Tuple<bool,string>> UpdateUserData(List<string> activeChallenges, string playerId)
+        public static async Task<Result> UpdateUserData(List<string> activeChallenges, string playerId)
         {
-            string errorMessage = string.Empty;
+            string error = string.Empty;
             bool hasUpdated=false;
             string activeChallengesJson = JsonConvert.SerializeObject(activeChallenges);
             var activeChallengesDict = new Dictionary<string, string>();
@@ -473,13 +504,14 @@ namespace SocialEdge.Playfab.Photon
                 hasUpdated = true;
              }
              else{
-                 errorMessage = updateDataResult.Error.ErrorMessage;
+                 error = updateDataResult.Error.ErrorMessage;
              }
 
-             return new Tuple<bool, string>(hasUpdated,errorMessage);
+            //  return new Tuple<bool, string>(hasUpdated,errorMessage);
+             return new Result(hasUpdated,error);
         }
 
-        public static async Task<Tuple<bool,string>> AddToGroup(string playerId, string groupId)
+        public static async Task<Result> AddToGroup(string playerId, string groupId)
         {
             string error = string.Empty;
             bool addedToGroup = false;
@@ -495,13 +527,14 @@ namespace SocialEdge.Playfab.Photon
             else
                 error = result.Error.ErrorMessage;
 
-            return new Tuple<bool, string>(addedToGroup,error);
+            // return new Tuple<bool, string>(addedToGroup,error);
+            return new Result(addedToGroup,error);
         }
 
-        public static async Task<Tuple<bool,string>> RemoveFromGroup(string playerId, string groupId)
+        public static async Task<Result> RemoveFromGroup(string playerId, string groupId)
         {
             string error = string.Empty;
-            bool addedToGroup = false;
+            bool removedFromGroup = false;
             var request = new RemoveSharedGroupMembersRequest
             {
                 PlayFabIds = new List<string>{playerId},
@@ -510,11 +543,62 @@ namespace SocialEdge.Playfab.Photon
 
             var result = await PlayFabServerAPI.RemoveSharedGroupMembersAsync(request);
             if(result.Error==null)
-                addedToGroup = true; 
+                removedFromGroup = true; 
             else
                 error = result.Error.ErrorMessage;
 
-            return new Tuple<bool, string>(addedToGroup,error);
+            //return new Tuple<bool, string>(addedToGroup,error);
+            return new Result(removedFromGroup,error);
+        }
+
+        public static async Task<Result> UpdateUsersData(string currentChallengeId, List<Task> getDataTasks)
+        {
+            List<Task> updateDataTasks = new List<Task>();
+            bool isCompleted = false;
+            string error = string.Empty;
+            foreach (Task<PlayFabResult<GetUserDataResult>> playerDataTask in getDataTasks)
+            {
+                List<string> activeChallenges = UtilMethods.GetActiveChallenges(playerDataTask.Result.Result);
+                activeChallenges.RemoveAll(c => c.Equals(currentChallengeId));
+
+                string activeChallengesJson = JsonConvert.SerializeObject(activeChallenges);
+                Dictionary<string, string> activeChallengesDict = new Dictionary<string, string>();
+                activeChallengesDict.Add("activeChallenges", activeChallengesJson);
+
+                var request = new UpdateUserInternalDataRequest
+                {
+                    Data = activeChallengesDict,
+                    PlayFabId = playerDataTask.Result.Result.PlayFabId
+                };
+
+                Task<PlayFabResult<UpdateUserDataResult>> updateTask = PlayFabServerAPI.UpdateUserInternalDataAsync(request);
+                updateDataTasks.Add(updateTask);
+            }
+
+            Task updateT = Task.WhenAll(updateDataTasks);
+            await updateT;
+            if(updateT.Status == TaskStatus.RanToCompletion)
+            {
+                isCompleted = true;
+            }
+            else 
+            {
+                error = updateT.Status.ToString();
+            }
+
+            return new Result(isCompleted,error);//Tuple.Create(isCompleted,error);
         }
     }
+
+    public class Result
+    {
+        public bool isSuccess = false;
+        public string error = string.Empty;
+        public Result(bool success, string err)
+        {
+            isSuccess = success;
+            error = err;
+        }
+    }
+
 }
