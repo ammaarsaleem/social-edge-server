@@ -240,7 +240,7 @@ namespace SocialEdge.Playfab.Photon
             dynamic gameState = body.State2;
             string currentChallengeId = body.GameId;
             log.LogInformation(body.GameId);
-            if(gameState!=null && gameState["ActorsList"]!=null)
+            if(gameState!=null /*&& gameState["ActorsList"]!=null*/)
             {
                 log.LogInformation("before getting actor list");
                 var actorsData = gameState["ActorList"];
