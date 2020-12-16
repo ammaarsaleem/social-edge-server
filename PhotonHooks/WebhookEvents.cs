@@ -236,7 +236,7 @@ namespace SocialEdge.Playfab.Photon
                 log.LogInformation(message);
                 return Utils.GetErrorResponse(message);
             }
-            
+            log.LogInformation("before getting state");
             dynamic gameState = body.State2;
             string currentChallengeId = body.GameId;
             log.LogInformation(body.GameId);
