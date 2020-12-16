@@ -226,31 +226,25 @@ namespace SocialEdge.Playfab.Photon
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
+            log.LogInformation("method begin");
             string message = string.Empty;
             GameCloseRequest body = await req.Content.ReadAsAsync<GameCloseRequest>();
             
             if (!Utils.IsGameValid(body, out message))
             {
-                var errorResponse = new { 
-                    ResultCode = 1,
-                    Error = message
-                };
-
-                return new OkObjectResult(errorResponse);
+                log.LogInformation("game invalid");
+                return Utils.GetErrorResponse(message);
             }
-
-            // Logs for testing. Remove this in production
-            // var okMsg = $"{req.RequestUri} - Closed Game - {body.GameId}";
-            // var state = (string)JsonConvert.SerializeObject(body.State);
-            // var state2 = (string)JsonConvert.SerializeObject(body.State);
             
             dynamic gameState = body.State2;
             string currentChallengeId = body.GameId;
             if(gameState!=null && gameState["ActorsList"])
             {
+                log.LogInformation("before getting actor list");
                 var actorsData = gameState["ActorList"];
                 List<Actor> players = JsonConvert.DeserializeObject<List<Actor>>(actorsData.ToString());
                 List<string> ids = players.Select(a => a.UserId).ToList();
+                log.LogInformation("ids: " + ids.ToString());
                 List<Task> getDataTasks = new List<Task>(); 
                 foreach (var id in ids)
                 {
@@ -259,15 +253,19 @@ namespace SocialEdge.Playfab.Photon
                         PlayFabId = id,
                         Keys = new List<string> { "activeChallenges" }
                     };
+                    log.LogInformation("before calling get user intetnal data");
                     Task<PlayFabResult<GetUserDataResult>> playerDataTask = PlayFabServerAPI.GetUserInternalDataAsync(getPlayerDataRequest);
                     getDataTasks.Add(playerDataTask);
                     
                 }
+
                 Task getT = Task.WhenAll(getDataTasks);
                 await getT;
 
+                log.LogInformation("all tasks awaited");
                 if (getT.Status == TaskStatus.RanToCompletion)
                 {
+                    log.LogInformation("all get tasks ran to completion");
                     Result updateResult = await UtilMethods.UpdateUsersData(currentChallengeId, getDataTasks);
                     if (updateResult.isSuccess)
                     {
@@ -297,7 +295,7 @@ namespace SocialEdge.Playfab.Photon
                 log.LogInformation(message);
                }
             }
-            return Utils.GetErrorResponse("");
+            return Utils.GetErrorResponse("Invalid game or players do not exist");
     }
 
         // private static List<Task> GetPlayersActiveChallenges(List<string> ids)
