@@ -250,16 +250,47 @@ namespace SocialEdge.Playfab.Photon
             var okMsg = $"{req.RequestUri} - Closed Game - {body.GameId}";
             var state = (string)JsonConvert.SerializeObject(body.State);
             var state2 = (string)JsonConvert.SerializeObject(body.State);
-           
-            log.LogInformation(okMsg + " - State1: " + state);
-            log.LogInformation(okMsg + " - State2: " + state2);
-            var response = new { 
-                ResultCode = 0,
-                Message = "Success"
-            };
+            
+            var gameState = body.State2;
+            if(gameState!=null)
+            {
+                var actors = gameState["ActorList"];
+                actors.ToList();
 
-            return new OkObjectResult(response);
+                // log.LogInformation(actors.ToString());
+            //     linq for ids;
+            //     List<Task> getDataTasks = null;
+            //     foreach(var id in ids)
+            //     {
+            //         var t = GetPlayerInternalData(id) => only active challenges
+            //         getDataTasks.Add(t);
+            //     }
+
+            //     Task.WhenAll(getDataTasks);
+            //     if(getDataTasks.isCompletedSuccessfully)
+            //     {
+            //         List<Task> updateDataTasks = null;
+            //         foreach(var item in getDataTasks)
+            //         {
+            //             get active challenges
+            //             remove current challenge
+            //             var t = UpdatePlayerInternalData(id) => only active challenges
+            //             updateDataTasks.Add(t);
+            //         }
+            //         Task.WhenAll(updateDataTasks);
+            //         if(updateDataTasks.isCompletedSuccessfully)
+            //         {
+            //             var removePlayersResult = await RemoveFromSharedGroupRequest(ids);
+            //             if(removePlayersResult.Error==null)
+            //             {
+            //                 return Utils.GetSuccessResponse();
+            //             }
+            //         }
+            //     }
+            // }
+            
         }
+        return Utils.GetErrorResponse("");
     }
 
     public class GameEvent
