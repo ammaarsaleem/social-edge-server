@@ -237,9 +237,9 @@ namespace SocialEdge.Playfab.Photon
                 return Utils.GetErrorResponse(message);
             }
             log.LogInformation("before getting state");
-            dynamic gameState = body.State2;
+            dynamic gameState = body.State;
             string currentChallengeId = body.GameId;
-            log.LogInformation(body.GameId);
+            log.LogInformation(currentChallengeId);
             if(gameState!=null /*&& gameState["ActorsList"]!=null*/)
             {
                 log.LogInformation("before getting actor list");
