@@ -240,9 +240,9 @@ namespace SocialEdge.Playfab.Photon
             }
 
             // Logs for testing. Remove this in production
-            var okMsg = $"{req.RequestUri} - Closed Game - {body.GameId}";
-            var state = (string)JsonConvert.SerializeObject(body.State);
-            var state2 = (string)JsonConvert.SerializeObject(body.State);
+            // var okMsg = $"{req.RequestUri} - Closed Game - {body.GameId}";
+            // var state = (string)JsonConvert.SerializeObject(body.State);
+            // var state2 = (string)JsonConvert.SerializeObject(body.State);
             
             dynamic gameState = body.State2;
             string currentChallengeId = body.GameId;
