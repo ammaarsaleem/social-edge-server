@@ -240,7 +240,7 @@ namespace SocialEdge.Playfab.Photon
             dynamic gameState = body.State;
             string currentChallengeId = body.GameId;
             log.LogInformation(currentChallengeId);
-            if(gameState!=null /*&& gameState["ActorsList"]!=null*/)
+            if(gameState!=null && gameState["ActorsList"]!=null)
             {
                 log.LogInformation("before getting actor list");
                 var actorsData = gameState["ActorList"];
@@ -279,6 +279,7 @@ namespace SocialEdge.Playfab.Photon
                         var deleteGroupResult = await PlayFabServerAPI.DeleteSharedGroupAsync(deleteGroupRequest);
                         if(deleteGroupResult.Error==null)
                         {
+                            log.LogInformation("group deleted successfully");
                             return Utils.GetSuccessResponse();
                         }
                         else
