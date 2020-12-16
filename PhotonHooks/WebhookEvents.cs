@@ -283,7 +283,7 @@ namespace SocialEdge.Playfab.Photon
                         }
                         else
                         {
-                            message = "Group: " +currentChallengeId +" not deleted"
+                            message = "Group: " +currentChallengeId +" not deleted";
                         }
                     }
                     else
