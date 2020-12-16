@@ -174,54 +174,54 @@ namespace SocialEdge.Playfab.Photon
                 log.LogInformation(message);
                 return Utils.GetErrorResponse(message);
             }
-                
-            string currentChallengeId = body.GameId;
-            string playerId = body.UserId;
-            
-            var getPlayerDataRequest = new GetUserDataRequest{
-                PlayFabId = playerId,
-                Keys = new List<string>{"activeChallenges"}
-            };
-            var getPlayerStatsRequest = new GetPlayerStatisticsRequest{
-                    PlayFabId = playerId,
-                    StatisticNames = new List<string>{"Ranking"}
-            };
-
-            var playerDataResult= await PlayFabServerAPI.GetUserInternalDataAsync(getPlayerDataRequest);
-            
-            if(playerDataResult.Error==null)
+            if(!body.IsInactive)
             {
-                log.LogInformation("player data fetched");
-
-                activeChallenges = UtilMethods.GetActiveChallenges(playerDataResult.Result);
+                string currentChallengeId = body.GameId;
+                string playerId = body.UserId;
                 
-                Tuple<bool,string> removePlayerChallengeResult  = await UtilMethods.RemovePlayerChallenge(currentChallengeId,activeChallenges,playerId);
-                bool isChallengedRemoved = removePlayerChallengeResult.Item1;
-                if(isChallengedRemoved)
+                var getPlayerDataRequest = new GetUserDataRequest{
+                    PlayFabId = playerId,
+                    Keys = new List<string>{"activeChallenges"}
+                };
+                var getPlayerStatsRequest = new GetPlayerStatisticsRequest{
+                        PlayFabId = playerId,
+                        StatisticNames = new List<string>{"Ranking"}
+                };
+
+                var playerDataResult= await PlayFabServerAPI.GetUserInternalDataAsync(getPlayerDataRequest);
+                
+                if(playerDataResult.Error==null)
                 {
-                    log.LogInformation("player removed from group and internal data updated");
-                    if(!body.IsInactive)
+                    log.LogInformation("player data fetched");
+
+                    activeChallenges = UtilMethods.GetActiveChallenges(playerDataResult.Result);
+                    
+                    Tuple<bool,string> removePlayerChallengeResult  = await UtilMethods.RemovePlayerChallenge(currentChallengeId,activeChallenges,playerId);
+                    bool isChallengedRemoved = removePlayerChallengeResult.Item1;
+                    if(isChallengedRemoved)
                     {
-                        var updatePlayerStatsRequest = new UpdatePlayerStatisticsRequest{Statistics = new List<StatisticUpdate>()};
-                        var updatePlayerStatsResult = await PlayFabServerAPI.UpdatePlayerStatisticsAsync(updatePlayerStatsRequest);
-                        if(updatePlayerStatsResult.Error==null)
+                        log.LogInformation("player removed from group and internal data updated");
+                        if(!body.IsInactive)
                         {
                             return Utils.GetSuccessResponse();
                         }
                     }
+                    else
+                    {
+                        message = removePlayerChallengeResult.Item2;
+                        log.LogInformation(message);
+                    }
                 }
                 else
                 {
-                    message = removePlayerChallengeResult.Item2;
+                    message = "Unable to get user internal data";
                     log.LogInformation(message);
                 }
             }
             else
             {
-                message = "Unable to get user internal data";
-                log.LogInformation(message);
+                return Utils.GetSuccessResponse();
             }
-
             return Utils.GetErrorResponse(message);
         }
     }
@@ -233,11 +233,9 @@ namespace SocialEdge.Playfab.Photon
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            // Get request body
+            string message = string.Empty;
             GameCloseRequest body = await req.Content.ReadAsAsync<GameCloseRequest>();
-    
-            // Request data validity check
-            string message;
+            
             if (!Utils.IsGameValid(body, out message))
             {
                 var errorResponse = new { 
@@ -251,8 +249,10 @@ namespace SocialEdge.Playfab.Photon
             // Logs for testing. Remove this in production
             var okMsg = $"{req.RequestUri} - Closed Game - {body.GameId}";
             var state = (string)JsonConvert.SerializeObject(body.State);
-            log.LogInformation(okMsg + " - State: " + state);
-            
+            var state2 = (string)JsonConvert.SerializeObject(body.State);
+           
+            log.LogInformation(okMsg + " - State1: " + state);
+            log.LogInformation(okMsg + " - State2: " + state2);
             var response = new { 
                 ResultCode = 0,
                 Message = "Success"
