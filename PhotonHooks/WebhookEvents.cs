@@ -352,12 +352,9 @@ namespace SocialEdge.Playfab.Photon
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] 
             HttpRequestMessage req, ILogger log)
         {
-            // Get request body
             GamePropertiesRequest body = await req.Content.ReadAsAsync<GamePropertiesRequest>();
             log.LogInformation(body.Type);
-            // string k = body.Properties.Keys.ToString();
             log.LogInformation(JsonConvert.SerializeObject(body.Properties));
-            // Request data validity check
             string message;
             if (!Utils.IsGameValid(body, out message))
             {
@@ -371,15 +368,24 @@ namespace SocialEdge.Playfab.Photon
     
             if(body.State != null)
             { 
-                var state = (string)JsonConvert.SerializeObject(body.State);
                 
-                var properties = body.Properties;
                 //// Example of how to get data from properties
                 // object actorNrNext = null;
                 // properties?.TryGetValue("turn", out actorNrNext);
             }
 
-            // Logs for testing. Remove this in production
+            if(body.Properties!=null)
+            {
+                var state = (string)JsonConvert.SerializeObject(body.State);
+                var properties = body.Properties;
+                object winner = null;
+                properties?.TryGetValue("WonPlayerId",out winner);
+                if(winner!=null)
+                {
+                    log.LogInformation(JsonConvert.SerializeObject(winner));
+                }
+            }
+
             var okMsg = $"{req.RequestUri} - Uploaded Game Properties";
             log.LogInformation(okMsg);
 
