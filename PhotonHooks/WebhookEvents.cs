@@ -384,7 +384,7 @@ namespace SocialEdge.Playfab.Photon
                 // if(winner!=null)
                 {
                     string win = a["WonPlayerId"].ToString();
-                    log.LogInformation(win);
+                    // log.LogInformation(win);
                     log.LogInformation(JsonConvert.SerializeObject(data));
                     
                 }
