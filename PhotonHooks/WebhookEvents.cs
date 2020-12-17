@@ -374,13 +374,13 @@ namespace SocialEdge.Playfab.Photon
                 // properties?.TryGetValue("turn", out actorNrNext);
             }
 
-            if(body.Properties!=null)
+            if(body.Properties.Count>0)
             {
-                var state = (string)JsonConvert.SerializeObject(body.State);
+                // var state = (string)JsonConvert.SerializeObject(body.State);
                 var properties = body.Properties;
                 object winner = null;
                 properties?.TryGetValue("WonPlayerId",out winner);
-                if(winner!=null)
+                // if(winner!=null)
                 {
                     log.LogInformation(JsonConvert.SerializeObject(winner));
                 }
