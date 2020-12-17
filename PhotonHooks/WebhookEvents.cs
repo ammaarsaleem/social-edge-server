@@ -381,10 +381,12 @@ namespace SocialEdge.Playfab.Photon
                 object data = null;
                 properties?.TryGetValue("GSK",out data);
                 dynamic a = data;
+                string s =JsonConvert.SerializeObject(a);
+                log.LogInformation(s);
                 // if(winner!=null)
                 {
-                    var abc = JsonConvert.DeserializeObject<Dictionary<string,string>>(a);
-                    string win = a["WonPlayerId"].ToString();
+                    var abc = JsonConvert.DeserializeObject<Dictionary<string,string>>(s);
+                    string win = abc["WonPlayerId"].ToString();
                     // log.LogInformation(win);
                     log.LogInformation(JsonConvert.SerializeObject(data));
                     
