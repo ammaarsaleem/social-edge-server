@@ -380,13 +380,13 @@ namespace SocialEdge.Playfab.Photon
                 var properties = body.Properties;
                 object data = null;
                 properties?.TryGetValue("GSK",out data);
-                var a = data;
+                dynamic a = data;
                 // if(winner!=null)
                 {
+                    string win = a["WonPlayerId"].ToString();
+                    log.LogInformation(win);
                     log.LogInformation(JsonConvert.SerializeObject(data));
-                    var json = JsonConvert.SerializeObject(data);
-                    var dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-                    log.LogInformation(dictionary["WonPlayerId"].ToString());
+                    
                 }
             }
 
