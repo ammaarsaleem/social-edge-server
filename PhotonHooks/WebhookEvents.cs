@@ -383,6 +383,7 @@ namespace SocialEdge.Playfab.Photon
                 dynamic a = data;
                 // if(winner!=null)
                 {
+                    var abc = JsonConvert.DeserializeObject<Dictionary<string,string>>(a);
                     string win = a["WonPlayerId"].ToString();
                     // log.LogInformation(win);
                     log.LogInformation(JsonConvert.SerializeObject(data));
