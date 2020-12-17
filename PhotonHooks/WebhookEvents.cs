@@ -354,7 +354,8 @@ namespace SocialEdge.Playfab.Photon
         {
             // Get request body
             GamePropertiesRequest body = await req.Content.ReadAsAsync<GamePropertiesRequest>();
-
+            log.LogInformation(body.Type);
+            log.LogInformation(JsonConvert.SerializeObject(body.Properties.ToString()));
             // Request data validity check
             string message;
             if (!Utils.IsGameValid(body, out message))
