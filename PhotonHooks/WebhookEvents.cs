@@ -363,34 +363,64 @@ namespace SocialEdge.Playfab.Photon
                     ResultCode = 1,
                     Error = message
                 };
-
                 return new OkObjectResult(errorResponse);
             }
 
-
             if(body.Properties.Count>0)
             {
-                var properties = body.Properties;
                 bool? winnerExists = false;
                 object winnerId = null;
-                winnerExists = properties?.TryGetValue("WinnerId", out winnerId);
-                if(winnerExists==true)
+                object matchFinished = null;
+                if(body.Properties?.TryGetValue("FK", out matchFinished)==true)
                 {
-                    var id = winnerId.ToString();
-                    log.LogInformation("Winner Id is: " + winnerId);
-                }
-              
+                    winnerExists = body.Properties?.TryGetValue("WinnerId", out winnerId);
+                    if(winnerExists==true)
+                    {
+                        var playFabId = winnerId.ToString();
+                        log.LogInformation("Winner Id is: " + winnerId);
+                        var getStatsRequest = new GetPlayerStatisticsRequest
+                        {
+                            StatisticNames = new List<string>{"Score"},
+                            PlayFabId = playFabId
+                        };
+
+                        PlayFabResult<GetPlayerStatisticsResult> getPlayerStatsResult = await PlayFabServerAPI.GetPlayerStatisticsAsync(getStatsRequest);
+                        if(getPlayerStatsResult.Error==null)
+                        {
+                            log.LogInformation("player statistics fetched");
+                            var statistics = getPlayerStatsResult.Result.Statistics;
+                            StatisticValue scoreStatistic = statistics.Where(s=>s.StatisticName.Equals("Score")).FirstOrDefault();
+                            log.LogInformation("player score: " + scoreStatistic.Value);
+                            int score = scoreStatistic.Value + 1;
+
+                            StatisticUpdate updatedScore = new StatisticUpdate{
+                                StatisticName = "Score",
+                                Value = score
+                            };
+                            var updateStatsRequest = new UpdatePlayerStatisticsRequest
+                            {
+                                Statistics = new List<StatisticUpdate>{updatedScore},
+                                PlayFabId = playFabId
+                            };
+
+                            PlayFabResult<UpdatePlayerStatisticsResult> updateStatsResult = await PlayFabServerAPI.
+                                                                                            UpdatePlayerStatisticsAsync(updateStatsRequest);
+
+                            if(updateStatsResult.Error==null)
+                            {
+                                log.LogInformation("Score updated");
+                                return Utils.GetSuccessResponse();
+                            }                        
+                        }
+                        else
+                        {
+                            message = "Unablee to get player statistics";
+                            log.LogInformation(message);
+                        }
+                    }
+                }   
             }
-
-            var okMsg = $"{req.RequestUri} - Uploaded Game Properties";
-            log.LogInformation(okMsg);
-
-            var response = new { 
-                ResultCode = 0,
-                Message = "Success"
-            };
-
-            return new OkObjectResult(response);
+            return Utils.GetErrorResponse(message);
         }
     }
 
