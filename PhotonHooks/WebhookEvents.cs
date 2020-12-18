@@ -366,56 +366,20 @@ namespace SocialEdge.Playfab.Photon
 
                 return new OkObjectResult(errorResponse);
             }
-    
-            if(body.State != null)
-            { 
-                
-                //// Example of how to get data from properties
-                // object actorNrNext = null;
-                // properties?.TryGetValue("turn", out actorNrNext);
-            }
+
 
             if(body.Properties.Count>0)
             {
-                // var state = (string)JsonConvert.SerializeObject(body.State);
                 var properties = body.Properties;
-                object data = null;
-                object matchFinished = null;
-                properties?.TryGetValue("FK", out matchFinished);
-                if(matchFinished!=null)
+                bool? winnerExists = false;
+                object winnerId = null;
+                winnerExists = properties?.TryGetValue("Winnerid", out winnerId);
+                if(winnerExists==true)
                 {
-                    
+                    var id = winnerId.ToString();
+                    log.LogInformation("Winner Id is: " + winnerId);
                 }
-                bool valueget=false;
-                valueget = properties.ContainsValue("WonPlayerId");
-                if(valueget)
-                    log.LogInformation("players data in key");
-                else
-                    log.LogInformation("players data in key not found");
-
-                // properties?.TryGetValue("PlayersData",out data);
-                // dynamic a = data;
-                // string s =JsonConvert.SerializeObject(a);
-                // log.LogInformation(s);
-                // if(winner!=null)
-                // {
-                    
-                //    Type myType = data.GetType();
-                //     IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
-
-                //     foreach (PropertyInfo prop in props)
-                //     {
-                //         object propValue = prop.GetValue(data, null);
-                //         // prop.Name
-                //         log.LogInformation(prop.Name);
-                //         // Do something with propValue
-                //     }
-                //     // var abc = JsonConvert.DeserializeObject<Dictionary<string,string>>(s);
-                //     // string win = abc["WonPlayerId"].ToString();
-                //     // log.LogInformation(win);
-                //     log.LogInformation(JsonConvert.SerializeObject(data));
-                    
-                // }
+              
             }
 
             var okMsg = $"{req.RequestUri} - Uploaded Game Properties";
