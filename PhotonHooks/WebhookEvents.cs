@@ -373,7 +373,7 @@ namespace SocialEdge.Playfab.Photon
                 var properties = body.Properties;
                 bool? winnerExists = false;
                 object winnerId = null;
-                winnerExists = properties?.TryGetValue("Winnerid", out winnerId);
+                winnerExists = properties?.TryGetValue("WinnerId", out winnerId);
                 if(winnerExists==true)
                 {
                     var id = winnerId.ToString();

@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
-// using PlayFab.Plugins.CloudScript;
+using SocialEdge.Server.Util;
 using PlayFab.Samples;
 using SocialEdge.Server.Constants;
 using PlayFab;
@@ -27,6 +27,7 @@ namespace SocialEdge.Playfab
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
+            RequestUtil.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             var request = new GetPlayersInSegmentRequest
