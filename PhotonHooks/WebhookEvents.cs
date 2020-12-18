@@ -393,11 +393,11 @@ namespace SocialEdge.Playfab.Photon
                             if(statistics!=null)
                             {
                                 StatisticValue scoreStatistic = statistics.Where(s=>s.StatisticName.Equals("Score")).FirstOrDefault();
-                                oldScore = scoreStatistic.Value;
+                                oldScore = scoreStatistic==null ? 0 :scoreStatistic.Value;
                                 log.LogInformation("player score: " + scoreStatistic.Value);
                             } 
                             int newScore = oldScore + 1;
-
+                            log.LogInformation("player score incremented");
                             StatisticUpdate updatedScore = new StatisticUpdate{
                                 StatisticName = "Score",
                                 Value = newScore
@@ -407,7 +407,7 @@ namespace SocialEdge.Playfab.Photon
                                 Statistics = new List<StatisticUpdate>{updatedScore},
                                 PlayFabId = playFabId
                             };
-
+                            log.LogInformation("request created");
                             PlayFabResult<UpdatePlayerStatisticsResult> updateStatsResult = await PlayFabServerAPI.
                                                                                             UpdatePlayerStatisticsAsync(updateStatsRequest);
 
