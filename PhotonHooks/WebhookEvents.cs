@@ -380,29 +380,35 @@ namespace SocialEdge.Playfab.Photon
                 // var state = (string)JsonConvert.SerializeObject(body.State);
                 var properties = body.Properties;
                 object data = null;
-                properties?.TryGetValue("GSK",out data);
+                object matchFinished = null;
+                properties?.TryGetValue("FK", out matchFinished);
+                if(matchFinished!=null)
+                {
+                    
+                }
+                properties?.TryGetValue("PlayersData",out data);
                 dynamic a = data;
                 string s =JsonConvert.SerializeObject(a);
                 log.LogInformation(s);
                 // if(winner!=null)
-                {
+                // {
                     
-                   Type myType = data.GetType();
-                    IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
+                //    Type myType = data.GetType();
+                //     IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
 
-                    foreach (PropertyInfo prop in props)
-                    {
-                        object propValue = prop.GetValue(data, null);
-                        // prop.Name
-                        log.LogInformation(prop.Name);
-                        // Do something with propValue
-                    }
-                    // var abc = JsonConvert.DeserializeObject<Dictionary<string,string>>(s);
-                    // string win = abc["WonPlayerId"].ToString();
-                    // log.LogInformation(win);
-                    log.LogInformation(JsonConvert.SerializeObject(data));
+                //     foreach (PropertyInfo prop in props)
+                //     {
+                //         object propValue = prop.GetValue(data, null);
+                //         // prop.Name
+                //         log.LogInformation(prop.Name);
+                //         // Do something with propValue
+                //     }
+                //     // var abc = JsonConvert.DeserializeObject<Dictionary<string,string>>(s);
+                //     // string win = abc["WonPlayerId"].ToString();
+                //     // log.LogInformation(win);
+                //     log.LogInformation(JsonConvert.SerializeObject(data));
                     
-                }
+                // }
             }
 
             var okMsg = $"{req.RequestUri} - Uploaded Game Properties";
