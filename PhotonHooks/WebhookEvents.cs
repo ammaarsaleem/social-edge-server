@@ -387,15 +387,20 @@ namespace SocialEdge.Playfab.Photon
                         PlayFabResult<GetPlayerStatisticsResult> getPlayerStatsResult = await PlayFabServerAPI.GetPlayerStatisticsAsync(getStatsRequest);
                         if(getPlayerStatsResult.Error==null)
                         {
+                            int oldScore = 0;
                             log.LogInformation("player statistics fetched");
                             var statistics = getPlayerStatsResult.Result.Statistics;
-                            StatisticValue scoreStatistic = statistics.Where(s=>s.StatisticName.Equals("Score")).FirstOrDefault();
-                            log.LogInformation("player score: " + scoreStatistic.Value);
-                            int score = scoreStatistic.Value + 1;
+                            if(statistics!=null)
+                            {
+                                StatisticValue scoreStatistic = statistics.Where(s=>s.StatisticName.Equals("Score")).FirstOrDefault();
+                                oldScore = scoreStatistic.Value;
+                                log.LogInformation("player score: " + scoreStatistic.Value);
+                            } 
+                            int newScore = oldScore + 1;
 
                             StatisticUpdate updatedScore = new StatisticUpdate{
                                 StatisticName = "Score",
-                                Value = score
+                                Value = newScore
                             };
                             var updateStatsRequest = new UpdatePlayerStatisticsRequest
                             {
@@ -410,7 +415,8 @@ namespace SocialEdge.Playfab.Photon
                             {
                                 log.LogInformation("Score updated");
                                 return Utils.GetSuccessResponse();
-                            }                        
+                            }                    
+                               
                         }
                         else
                         {
