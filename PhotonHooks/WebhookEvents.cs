@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using SocialEdge.Server.Util;
 using System.Linq;
+using System.Reflection;
 namespace SocialEdge.Playfab.Photon
 {
     public class GameCreate
@@ -385,8 +386,16 @@ namespace SocialEdge.Playfab.Photon
                 log.LogInformation(s);
                 // if(winner!=null)
                 {
-                    string b =a["WonPlayerId"];
-                    log.LogInformation(JsonConvert.SerializeObject(b));
+                    
+                   Type myType = data.GetType();
+                    IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
+
+                    foreach (PropertyInfo prop in props)
+                    {
+                        object propValue = prop.GetValue(data, null);
+                        log.LogInformation(propValue.ToString());
+                        // Do something with propValue
+                    }
                     // var abc = JsonConvert.DeserializeObject<Dictionary<string,string>>(s);
                     // string win = abc["WonPlayerId"].ToString();
                     // log.LogInformation(win);
