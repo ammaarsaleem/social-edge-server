@@ -389,7 +389,7 @@ namespace SocialEdge.Playfab.Photon
                         {
                             int oldScore = 0;
                             log.LogInformation("player statistics fetched");
-                            var statistics = getPlayerStatsResult.Result.Statistics;
+                            var statistics = getPlayerStatsResult?.Result?.Statistics;
                             if(statistics!=null)
                             {
                                 StatisticValue scoreStatistic = statistics.Where(s=>s.StatisticName.Equals("Score")).FirstOrDefault();
