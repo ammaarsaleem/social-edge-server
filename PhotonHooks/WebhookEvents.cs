@@ -386,10 +386,17 @@ namespace SocialEdge.Playfab.Photon
                 {
                     
                 }
-                properties?.TryGetValue("PlayersData",out data);
-                dynamic a = data;
-                string s =JsonConvert.SerializeObject(a);
-                log.LogInformation(s);
+                bool valueget=false;
+                valueget = properties.ContainsValue("PlayersData");
+                if(valueget)
+                    log.LogInformation("players data in key");
+                else
+                    log.LogInformation("players data in key not found");
+
+                // properties?.TryGetValue("PlayersData",out data);
+                // dynamic a = data;
+                // string s =JsonConvert.SerializeObject(a);
+                // log.LogInformation(s);
                 // if(winner!=null)
                 // {
                     
