@@ -387,7 +387,7 @@ namespace SocialEdge.Playfab.Photon
                     
                 }
                 bool valueget=false;
-                valueget = properties.ContainsValue("PlayersData");
+                valueget = properties.ContainsValue("WonPlayerId");
                 if(valueget)
                     log.LogInformation("players data in key");
                 else
