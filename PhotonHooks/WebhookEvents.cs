@@ -393,7 +393,8 @@ namespace SocialEdge.Playfab.Photon
                     foreach (PropertyInfo prop in props)
                     {
                         object propValue = prop.GetValue(data, null);
-                        log.LogInformation(propValue.ToString());
+                        // prop.Name
+                        log.LogInformation(prop.Name);
                         // Do something with propValue
                     }
                     // var abc = JsonConvert.DeserializeObject<Dictionary<string,string>>(s);
