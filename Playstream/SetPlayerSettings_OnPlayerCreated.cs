@@ -18,8 +18,7 @@ using PlayFab.Samples;
 using SocialEdge.Server.Constants;
 using PlayFab;
 using System.Net;
-using System.Text;
-using SocialEdge.Server.Util;
+using SocialEdge.Server.Utils;
 namespace SocialEdge.Playfab
 {
     public class SetPlayerSettings_OnPlayerCreated

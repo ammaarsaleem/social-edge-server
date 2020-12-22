@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
-using SocialEdge.Server.Util;
+using SocialEdge.Server.Utils;
 using PlayFab.Samples;
 using SocialEdge.Server.Constants;
 using PlayFab;

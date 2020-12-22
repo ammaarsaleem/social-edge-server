@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace SocialEdge.Playfab.Photon
 {
     // TODO: Refactor duplicate code.
-    public static class Utils
+    public static class PhotonUtils
     {
         public static bool IsGameValid(GameCreateRequest request, out string message)
         {

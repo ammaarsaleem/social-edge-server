@@ -6,15 +6,12 @@ using System.Net.Http;
 using PlayFab.ServerModels;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using System.Net.Http.Formatting;
-using SocialEdge.Server.Constants;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using SocialEdge.Server.Util;
+using SocialEdge.Server.Utils;
 using System.Linq;
-using System.Reflection;
 namespace SocialEdge.Playfab.Photon
 {
     public class GameCreate
@@ -37,11 +34,11 @@ namespace SocialEdge.Playfab.Photon
             var okMsg = $"{req.RequestUri} - Room Created";
             log.LogInformation($"{okMsg} :: {JsonConvert.SerializeObject(body)}");
             
-            if(!Utils.IsGameValid(body, out message))
+            if(!PhotonUtils.IsGameValid(body, out message))
             {
                 message = "game is not valid";
                 log.LogInformation(message);
-                return Utils.GetErrorResponse(message);
+                return PhotonUtils.GetErrorResponse(message);
             }
 
             string currentChallengeId = body.GameId;
@@ -71,7 +68,7 @@ namespace SocialEdge.Playfab.Photon
                     if(addPlayerChallengeResult.isSuccess)
                     {
                         log.LogInformation("player added to group and internal data updated");
-                        return Utils.GetSuccessResponse();
+                        return PhotonUtils.GetSuccessResponse();
                     }
                     else
                     {
@@ -90,7 +87,7 @@ namespace SocialEdge.Playfab.Photon
                 log.LogInformation(message);
             }
 
-            return Utils.GetErrorResponse(message);
+            return PhotonUtils.GetErrorResponse(message);
         }
     }
 
@@ -109,11 +106,11 @@ namespace SocialEdge.Playfab.Photon
             
             var msg = $"{req.RequestUri} - Room Joined";
             log.LogInformation($"{msg} :: {JsonConvert.SerializeObject(body)}");
-            if(!Utils.IsGameValid(body,out message))
+            if(!PhotonUtils.IsGameValid(body,out message))
             {
                 message = "Game is not valid";
                 log.LogInformation(message);
-                return Utils.GetErrorResponse(message);
+                return PhotonUtils.GetErrorResponse(message);
             }
                 
             string currentChallengeId = body.GameId;
@@ -135,7 +132,7 @@ namespace SocialEdge.Playfab.Photon
                 if(addPlayerChallengeResult.isSuccess)
                 {
                     log.LogInformation("player added to group and internal data updated");
-                    return Utils.GetSuccessResponse();
+                    return PhotonUtils.GetSuccessResponse();
                 }
                 else
                 {
@@ -149,7 +146,7 @@ namespace SocialEdge.Playfab.Photon
                 log.LogInformation(message);
             }
 
-            return Utils.GetErrorResponse(message);
+            return PhotonUtils.GetErrorResponse(message);
         }
     }
 
@@ -167,11 +164,11 @@ namespace SocialEdge.Playfab.Photon
             
             var msg = $"{req.RequestUri} - Room Joined";
             log.LogInformation($"{msg} :: {JsonConvert.SerializeObject(body)}");
-            if(!Utils.IsGameValid(body,out message))
+            if(!PhotonUtils.IsGameValid(body,out message))
             {
                 message = "Game is not valid";
                 log.LogInformation(message);
-                return Utils.GetErrorResponse(message);
+                return PhotonUtils.GetErrorResponse(message);
             }
             if(!body.IsInactive)
             {
@@ -197,7 +194,7 @@ namespace SocialEdge.Playfab.Photon
                         log.LogInformation("player removed from group and internal data updated");
                         if(!body.IsInactive)
                         {
-                            return Utils.GetSuccessResponse();
+                            return PhotonUtils.GetSuccessResponse();
                         }
                     }
                     else
@@ -214,9 +211,9 @@ namespace SocialEdge.Playfab.Photon
             }
             else
             {
-                return Utils.GetSuccessResponse();
+                return PhotonUtils.GetSuccessResponse();
             }
-            return Utils.GetErrorResponse(message);
+            return PhotonUtils.GetErrorResponse(message);
         }
     }
 
@@ -232,10 +229,10 @@ namespace SocialEdge.Playfab.Photon
             string message = string.Empty;
             GameCloseRequest body = await req.Content.ReadAsAsync<GameCloseRequest>();
             
-            if (!Utils.IsGameValid(body, out message))
+            if (!PhotonUtils.IsGameValid(body, out message))
             {
                 log.LogInformation(message);
-                return Utils.GetErrorResponse(message);
+                return PhotonUtils.GetErrorResponse(message);
             }
             log.LogInformation("before getting state");
             dynamic gameState = body.State;
@@ -281,7 +278,7 @@ namespace SocialEdge.Playfab.Photon
                         if(deleteGroupResult.Error==null)
                         {
                             log.LogInformation("group deleted successfully");
-                            return Utils.GetSuccessResponse();
+                            return PhotonUtils.GetSuccessResponse();
                         }
                         else
                         {
@@ -299,7 +296,7 @@ namespace SocialEdge.Playfab.Photon
                 log.LogInformation(message);
                }
             }
-            return Utils.GetErrorResponse("Invalid game or players do not exist");
+            return PhotonUtils.GetErrorResponse("Invalid game or players do not exist");
     }
 
         // private static List<Task> GetPlayersActiveChallenges(List<string> ids)
@@ -357,7 +354,7 @@ namespace SocialEdge.Playfab.Photon
             log.LogInformation(body.Type);
             log.LogInformation(JsonConvert.SerializeObject(body.Properties));
             string message;
-            if (!Utils.IsGameValid(body, out message))
+            if (!PhotonUtils.IsGameValid(body, out message))
             {
                 var errorResponse = new { 
                     ResultCode = 1,
@@ -414,7 +411,7 @@ namespace SocialEdge.Playfab.Photon
                             if(updateStatsResult.Error==null)
                             {
                                 log.LogInformation("Score updated");
-                                return Utils.GetSuccessResponse();
+                                return PhotonUtils.GetSuccessResponse();
                             }                    
                                
                         }
@@ -426,7 +423,7 @@ namespace SocialEdge.Playfab.Photon
                     }
                 }   
             }
-            return Utils.GetErrorResponse(message);
+            return PhotonUtils.GetErrorResponse(message);
         }
     }
 

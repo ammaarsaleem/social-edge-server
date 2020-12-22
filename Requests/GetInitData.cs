@@ -4,23 +4,14 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using PlayFab.ServerModels;
-using PlayFab.Json;
 using System.Collections.Generic;
-using PlayFab.DataModels;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
-// using PlayFab.Plugins.CloudScript;
 using PlayFab.Samples;
-using SocialEdge.Server.Constants;
 using PlayFab;
-using System.Net;
-using System.Text;
-using SocialEdge.Server.Util;
+using SocialEdge.Server.Utils;
 using SocialEdge.Playfab.Models;
+using SocialEdge.Server.Constants;
 namespace SocialEdge.Playfab
 {
     public class GetInitData
@@ -36,9 +27,13 @@ namespace SocialEdge.Playfab
             
             string playerTitleId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             Dictionary<string,object> result = new Dictionary<string, object>();
+            string playerSettings = string.Empty;
+            List<Task> tasks = null;
+            Task<PlayFabResult<PlayFab.AdminModels.UpdateUserTitleDisplayNameResult>> updateNameT = null;
+            Task<PlayFabResult<UpdateUserDataResult>> initPlayerT = null;
             string playerId = string.Empty;
-            
-            // var context = await Util.Init(req);
+            GetPlayerCombinedInfoResultPayload playerDataResult = null;
+            GetUserDataResult playerInternalDataResult = null;
 
             if(args!=null)
             {
@@ -46,22 +41,45 @@ namespace SocialEdge.Playfab
             }
             try
             {
-                var playerDataRequest = CreatePlayerDataRequest(playerTitleId, playerId);
-                var titleNewsRequest = PlayFabServerAPI.GetTitleNewsAsync(new GetTitleNewsRequest());
-                var playerInternalDataTask = PlayFabServerAPI.GetUserInternalDataAsync(new GetUserDataRequest{PlayFabId = playerTitleId});
-                var playerDataTask =  PlayFabServerAPI.GetPlayerCombinedInfoAsync(playerDataRequest);
-                List<Task> tasks = new List<Task> { playerDataTask, titleNewsRequest, playerInternalDataTask };
-                await Task.WhenAll(tasks);
                 
-                var internalDataResult = playerInternalDataTask.Result.Result;
-                if(playerInternalDataTask.IsCompletedSuccessfully && playerInternalDataTask.Result.Result!=null)
+                var playerDataRequest = CreatePlayerDataRequest(playerTitleId, playerId);
+                var playerDataT = PlayFabServerAPI.GetPlayerCombinedInfoAsync(playerDataRequest);
+                var titleNewsT = PlayFabServerAPI.GetTitleNewsAsync(new GetTitleNewsRequest());
+                var internalDataT = PlayFabServerAPI.GetUserInternalDataAsync(new GetUserDataRequest
+                                        {
+                                            PlayFabId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId
+                                        });
+                
+
+                await Task.WhenAll(internalDataT,playerDataT,titleNewsT);
+
+                if (playerDataT.IsCompletedSuccessfully && playerDataT.Result.Error == null 
+                    && internalDataT.IsCompletedSuccessfully && internalDataT.Result.Error==null)
                 {
-                    if(!internalDataResult.Data.ContainsKey("isInitialized") || internalDataResult.Data["isInitialized"].Value=="false")
+                    tasks = new List<Task>();
+                    playerDataResult = playerDataT.Result.Result.InfoResultPayload;
+                    playerInternalDataResult = internalDataT.Result.Result;
+
+                    if(internalDataT.IsCompletedSuccessfully && internalDataT.Result.Error==null)
                     {
-                        
+                        initPlayerT = InitializePlayer(playerDataResult,playerInternalDataResult.Data);      
+                        tasks.Add(initPlayerT);
                     }
+                    
+
+                    if (string.IsNullOrEmpty(playerDataResult.PlayerProfile.DisplayName))
+                    {
+                        updateNameT = UpdateDisplayName(context.CallerEntityProfile.Lineage.MasterPlayerAccountId, playerDataT.Result.Result.PlayFabId);   
+                        tasks.Add(updateNameT);
+                    }
+
+                    CreatePlayerResult(playerDataT, result);
+
+                    if(tasks.Count>0)
+                        await Task.WhenAll(tasks);
                 }
-                CreatePlayerResult(tasks, playerDataTask, context.CallerEntityProfile.Objects,result);
+               
+
                 return result;
             }
             catch (Exception e)
@@ -70,15 +88,79 @@ namespace SocialEdge.Playfab
             }
         }
 
-        private Dictionary<string,object> CreatePlayerResult(List<Task> tasks, Task<PlayFabResult<GetPlayerCombinedInfoResult>> playerDataTask,
-                                                Dictionary<string, PlayFab.ProfilesModels.EntityDataObject> playerSettings,
-                                                 Dictionary<string,object> result)
+
+
+        private async Task<PlayFabResult<UpdateUserDataResult>> InitializePlayer(GetPlayerCombinedInfoResultPayload result, 
+                                                                                    Dictionary<string, UserDataRecord> internalData )
         {
-            PlayerModel player = new PlayerModel();
+            PlayFabResult<UpdateUserDataResult> updatePlayerDataResult = null;
+            var readOnlyData = result.UserReadOnlyData;
+            var titleData = result.TitleData;
+            string defaultSettings = GetDefaultSettingsFromTitle(result.TitleData);
+            if(!IsPlayerInitialized(readOnlyData) && defaultSettings!=null)
+            {          
+                var updatePlayerInternalDataReq = new UpdateUserInternalDataRequest
+                {
+                    Data = new Dictionary<string, string>
+                    {
+                        {Constant.PLAYER_SETTINGS, defaultSettings},{"IsInitialized","true"}
+                    },
+                    PlayFabId = result.PlayerProfile.PlayerId
+                };
+                updatePlayerDataResult = await PlayFabServerAPI.UpdateUserInternalDataAsync(updatePlayerInternalDataReq);
+            }
+
+            return updatePlayerDataResult;
+        }
+
+        private async Task<PlayFabResult<PlayFab.AdminModels.UpdateUserTitleDisplayNameResult>> UpdateDisplayName(string masterAccountId, string playFabId)
+        {
+            string displayName = CreateDisplayName(playFabId);
+            var updateNameRequest = new PlayFab.AdminModels.UpdateUserTitleDisplayNameRequest
+            {
+                PlayFabId = masterAccountId,
+                DisplayName = displayName
+            };
+            PlayFabResult<PlayFab.AdminModels.UpdateUserTitleDisplayNameResult> result = await PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(updateNameRequest);
+            return result;
+        }
+
+        private bool IsPlayerInitialized(Dictionary<string, UserDataRecord> data)
+        {
+            if(data.ContainsKey("IsInitialized") && data["IsInitialized"].Value == "true") 
+            {
+                return true;
+            }
+
+            return false;
+        }
+        private string CreateDisplayName(string playFabId)
+        {
+            return "Guest" + playFabId.GetHashCode().ToString();
+        }
+
+        private Dictionary<string,object> CreatePlayerResult(Task<PlayFabResult<GetPlayerCombinedInfoResult>> playerDataTask,                                                
+                                                            Dictionary<string,object> result)
+        {
+            string playFabId = playerDataTask.Result.Result.PlayFabId;
+            var playerDataResult = playerDataTask.Result.Result.InfoResultPayload;
+            if(string.IsNullOrEmpty(playerDataResult.PlayerProfile.DisplayName))
+            {
+                playerDataResult.PlayerProfile.DisplayName = CreateDisplayName(playFabId);
+            }
+
+            if(!playerDataResult.UserReadOnlyData.ContainsKey(Constant.PLAYER_SETTINGS))
+            {
+                playerDataResult.UserReadOnlyData.Add(Constant.PLAYER_SETTINGS, new UserDataRecord
+                                                                        { Value = GetDefaultSettingsFromTitle(playerDataResult.TitleData)});
+            }
+   
             if (playerDataTask.IsCompletedSuccessfully && playerDataTask.Result.Error == null)
             {
-                player.combinedInfo = playerDataTask.Result.Result.InfoResultPayload;
-                player.customSettings = playerSettings;
+                PlayerModel player = new PlayerModel();
+                
+                player.combinedInfo = playerDataResult;
+                // player.customSettings = null;
                 result["player"] = player;
                 result["titleData"] = player.combinedInfo.TitleData;
             }
@@ -97,6 +179,17 @@ namespace SocialEdge.Playfab
 
 
             return result;
+        }
+
+
+        private string GetDefaultSettingsFromTitle(Dictionary<string, string> readOnlyData)
+        {
+            if(readOnlyData.ContainsKey(Constant.PLAYER_SETTINGS))
+            {
+                return readOnlyData[Constant.PLAYER_SETTINGS];
+            }
+
+            return string.Empty;
         }
 
         private GetPlayerCombinedInfoRequest CreatePlayerDataRequest(string titlePlayerAccountId, string playerId)

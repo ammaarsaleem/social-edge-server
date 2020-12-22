@@ -1,18 +1,8 @@
 using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
-using PlayFab.Samples;
 using PlayFab;
-using PlayFab.ServerModels;
-using SocialEdge.Playfab.Models;
 using SocialEdge.Server.Constants;
 using System.Net.Http;
-namespace SocialEdge.Server.Util
+namespace SocialEdge.Server.Utils
 {
     public static class RequestUtil
     {
