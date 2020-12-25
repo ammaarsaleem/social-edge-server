@@ -55,6 +55,7 @@ namespace SocialEdge.Playfab.Photon.Events
                 }
                 else
                 {
+                    log.LogInformation(playerDataResult.Error.ErrorMessage);
                     message = "Unable to get user readonly data";
                     log.LogInformation(message);
                 }
