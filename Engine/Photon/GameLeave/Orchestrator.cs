@@ -61,7 +61,7 @@ namespace SocialEdge.Playfab.Photon.Events
             var reqBody = context.GetInput<GameLeaveRequest>();
             List<Task> tasks = new List<Task>();
             tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_LEAVE_ENGINE_ACTIVITY, reqBody));
-            tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_LEAVE_TITLE_ACTIVITY, reqBody));
+            // tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_LEAVE_TITLE_ACTIVITY, reqBody));
 
             Task t = Task.WhenAll(tasks);
             await t;
