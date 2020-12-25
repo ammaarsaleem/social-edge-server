@@ -11,9 +11,9 @@ using SocialEdge.Server.Common.Models;
 using SocialEdge.Server.Constants;
 namespace SocialEdge.Playfab.Photon.Events
 {
-    public partial class GameJoin
+    public partial class GameCreate
     {
-          [FunctionName("GameJoin")]
+          [FunctionName("GameCreate")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestMessage req,
@@ -22,7 +22,7 @@ namespace SocialEdge.Playfab.Photon.Events
         {
             SocialEdgeEnvironment.Init(req);
             string message = string.Empty;
-            GameLeaveRequest body = await req.Content.ReadAsAsync<GameLeaveRequest>();
+            GameCreateRequest body = await req.Content.ReadAsAsync<GameCreateRequest>();
 
             if (!Utils.IsGameValid(body.GameId, body.UserId, out message))
             {
@@ -31,9 +31,9 @@ namespace SocialEdge.Playfab.Photon.Events
                 return Utils.GetErrorResponse(message);
             }
 
-            log.LogInformation("Game join start");
+            log.LogInformation("Game create start");
 
-            string instanceId = await starter.StartNewAsync(Constant.GAME_JOIN_ORCHESTRATOR, body);
+            string instanceId = await starter.StartNewAsync(Constant.GAME_CREATE_ORCHESTRATOR, body);
 
             log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
             HttpResponseMessage result =  starter.CreateCheckStatusResponse(req, instanceId,true);
@@ -47,16 +47,16 @@ namespace SocialEdge.Playfab.Photon.Events
             }
         }
 
-        [FunctionName(Constant.GAME_JOIN_ORCHESTRATOR)]
+        [FunctionName(Constant.GAME_CREATE_ORCHESTRATOR)]
         public static async Task<Result> Orchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
             SocialEdgeEnvironment.Init();
             var outputs = new List<OkObjectResult>();
-            var reqBody = context.GetInput<GameLeaveRequest>();
+            var reqBody = context.GetInput<GameCreateRequest>();
             List<Task> tasks = new List<Task>();
-            log.LogInformation("Game join orchestrator");
-            tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_JOIN_ENGINE_ACTIVITY, reqBody));
+            log.LogInformation("Game createe orchestrator");
+            tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_CREATE_ENGINE_ACTIVITY, reqBody));
             // tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_JOIN_ACTIVITY_TITLE, reqBody));
 
             Task t = Task.WhenAll(tasks);

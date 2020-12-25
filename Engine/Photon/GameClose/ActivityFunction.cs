@@ -1,37 +1,25 @@
-using System;
 using PlayFab;
-using Newtonsoft.Json;
-using System.Net.Http;
-using PlayFab.ServerModels;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System.Collections.Generic;
-using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Common.Models;
+using PlayFab.ServerModels;
 using SocialEdge.Server.Constants;
+using Newtonsoft.Json;
 using System.Linq;
 namespace SocialEdge.Playfab.Photon.Events
 {
-    public class GameClose
+    public partial class GameClose
     {
-        [FunctionName("GameClose")]
-        public async Task<OkObjectResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
-            HttpRequestMessage req, ILogger log)
+        [FunctionName("GameCloseEngineActivity")]
+        public async Task<OkObjectResult> ActivityFunc(
+            [ActivityTrigger] GameCloseRequest body, ILogger log)
         {
-            SocialEdgeEnvironment.Init(req);
             string message = string.Empty;
-            GameCloseRequest body = await req.Content.ReadAsAsync<GameCloseRequest>();
-
-            if (!Utils.IsGameValid(body.GameId, out message))
-            {
-                log.LogInformation(message);
-                return Utils.GetErrorResponse(message);
-            }
-
             dynamic gameState = body.State;
             string currentChallengeId = body.GameId;
 

@@ -1,41 +1,26 @@
-using System;
 using PlayFab;
-using System.Net.Http;
-using PlayFab.ServerModels;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System.Collections.Generic;
-using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Common.Models;
+using PlayFab.ServerModels;
 using SocialEdge.Server.Constants;
 namespace SocialEdge.Playfab.Photon.Events
 {
-    public class GameCreate
+    public partial class GameCreate
     {
         /*photon waits for response*/
-        [FunctionName("GameCreate")]
-        public async Task<OkObjectResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
-            HttpRequestMessage req, ILogger log)
+        [FunctionName("GameCreateEngineActivity")]
+        public async Task<OkObjectResult> ActivityFunc(
+            [ActivityTrigger] GameCreateRequest body, ILogger log)
         {
-            // call util
-            SocialEdgeEnvironment.Init(req);
-
             string activeChallengesData = string.Empty;
             string message = string.Empty;
             List<string> activeChallenges = null;
-
-            GameCreateRequest body = await req.Content.ReadAsAsync<GameCreateRequest>();
-
-            if (!Utils.IsGameValid(body.GameId, body.UserId, out message))
-            {
-                message = "game is not valid";
-                log.LogInformation(message);
-                return Utils.GetErrorResponse(message);
-            }
 
             string currentChallengeId = body.GameId;
             string playerId = body.UserId;

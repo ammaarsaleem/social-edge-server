@@ -1,8 +1,4 @@
-using System;
-using PlayFab;
-using Newtonsoft.Json;
 using System.Net.Http;
-using PlayFab.ServerModels;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;

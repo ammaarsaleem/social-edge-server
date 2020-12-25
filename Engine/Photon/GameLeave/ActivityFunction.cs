@@ -1,16 +1,12 @@
 using System;
 using PlayFab;
-using Newtonsoft.Json;
-using System.Net.Http;
 using PlayFab.ServerModels;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Common.Models;
 using SocialEdge.Server.Constants;
 namespace SocialEdge.Playfab.Photon.Events

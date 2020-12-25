@@ -1,11 +1,9 @@
 using PlayFab;
 using Newtonsoft.Json;
-using System.Net.Http;
 using PlayFab.ServerModels;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,28 +11,18 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace SocialEdge.Playfab.Photon.Events
 {
-    public class GameProperties
+    public partial class GameProperties
     {
-        [FunctionName("GameProperties")]
-        public async Task<OkObjectResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
-            HttpRequestMessage req, ILogger log,
-            [DurableClient] IDurableOrchestrationClient starter)
+        [FunctionName("GamePropertyEngineActivity")]
+
+        public async Task<OkObjectResult> ActivityFunc(
+            [ActivityTrigger] GamePropertiesRequest body, ILogger log)
         {
-            GamePropertiesRequest body = await req.Content.ReadAsAsync<GamePropertiesRequest>();
+            
             log.LogInformation(body.Type);
             log.LogInformation(JsonConvert.SerializeObject(body.Properties));
-            string message;
-            if (!Utils.IsGameValid(body.GameId, body.UserId, out message))
-            {
-                var errorResponse = new
-                {
-                    ResultCode = 1,
-                    Error = message
-                };
-                return new OkObjectResult(errorResponse);
-            }
-
+            string message=string.Empty;
+            
             if (body.Properties.Count > 0)
             {
                 bool? winnerExists = false;
@@ -99,7 +87,5 @@ namespace SocialEdge.Playfab.Photon.Events
             return Utils.GetErrorResponse(message);
         }
     
-            private async Task EngineMethod()
-            {}
     }
 }

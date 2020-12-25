@@ -1,14 +1,11 @@
 using PlayFab;
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System.Collections.Generic;
-using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Common.Models;
 using PlayFab.ServerModels;
 using SocialEdge.Server.Constants;
