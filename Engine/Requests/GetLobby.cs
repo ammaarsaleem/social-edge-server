@@ -13,12 +13,12 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
-using SocialEdge.Server.Utils;
+using SocialEdge.Server.Common.Utils;
 using PlayFab.Samples;
 using SocialEdge.Server.Constants;
 using PlayFab;
 
-namespace SocialEdge.Playfab
+namespace SocialEdge.Server.Requests
 {
     public class GetLobby
     {
@@ -27,20 +27,27 @@ namespace SocialEdge.Playfab
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            RequestUtil.Init(req);
+            SocialEdgeEnvironment.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
-            var request = new GetPlayersInSegmentRequest
+            try
             {
-                SegmentId = Constant.COMMUNITY
-            };
+                var request = new GetPlayersInSegmentRequest
+                {
+                    SegmentId = Constant.COMMUNITY_SEGMENT
+                };
 
-            var result = await PlayFabServerAPI.GetPlayersInSegmentAsync(request);
-            if(result.Error!=null)
-            {
-                throw new Exception($"An error occured while fetching the segment: {result.Error.GenerateErrorReport()}");
+                var result = await PlayFabServerAPI.GetPlayersInSegmentAsync(request);
+                if (result.Error != null)
+                {
+                    throw new Exception($"An error occured while fetching the segment: {result.Error.GenerateErrorReport()}");
+                }
+                return result.Result.PlayerProfiles;
             }
-            return result.Result.PlayerProfiles;
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

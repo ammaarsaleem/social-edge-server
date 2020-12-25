@@ -134,7 +134,7 @@ namespace SocialEdge.Playfab.Photon
 
         public string Message { get; set; }
 
-        public int ResultCodes => (int) ResultCode.Failed;
+        public int ResultCodes => (int)ResultCode.Failed;
 
         #endregion
     }
@@ -143,7 +143,7 @@ namespace SocialEdge.Playfab.Photon
     {
         #region Public Properties
 
-        public int ResultCodes => (int) ResultCode.Ok;
+        public int ResultCodes => (int)ResultCode.Ok;
 
         /// <summary>
         /// the game state as saved at game close 
@@ -162,7 +162,7 @@ namespace SocialEdge.Playfab.Photon
         /// </summary>
         public Dictionary<string, object> Data { get; set; }
 
-        public int ResultCodes => (int) ResultCode.Ok;
+        public int ResultCodes => (int)ResultCode.Ok;
 
         #endregion
     }
@@ -171,7 +171,7 @@ namespace SocialEdge.Playfab.Photon
     {
         #region Public Properties
 
-        public int ResultCodes => (int) ResultCode.Ok;
+        public int ResultCodes => (int)ResultCode.Ok;
 
         #endregion
     }

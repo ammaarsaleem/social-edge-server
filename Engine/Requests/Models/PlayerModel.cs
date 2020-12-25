@@ -1,11 +1,11 @@
 using PlayFab.ServerModels;
 using System.Collections.Generic;
-namespace SocialEdge.Playfab.Models
+namespace SocialEdge.Server.Requests.Models
 {
     public class PlayerModel
     {
         public GetPlayerCombinedInfoResultPayload combinedInfo;
-         public Dictionary<string, PlayFab.ProfilesModels.EntityDataObject> customSettings;
-        
+        public Dictionary<string, PlayFab.ProfilesModels.EntityDataObject> customSettings;
+
     }
 }

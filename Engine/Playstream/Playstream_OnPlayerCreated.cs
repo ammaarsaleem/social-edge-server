@@ -19,17 +19,17 @@ using SocialEdge.Server.Constants;
 using PlayFab;
 using System.Net;
 using System.Text;
-using SocialEdge.Server.Utils;
+using SocialEdge.Server.Common.Utils;
 namespace SocialEdge.Playfab
 {
-    public class SetPlayerName_OnPlayerCreated
+    public class Playstream_OnPlayerCreated
     {
-        [FunctionName("SetPlayerName_OnPlayerCreated")]
+        [FunctionName("Playstream_OnPlayerCreated")]
         public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            RequestUtil.Init(req);
+            SocialEdgeEnvironment.Init(req);
             var context = JsonConvert.DeserializeObject<PlayerPlayStreamFunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
 
