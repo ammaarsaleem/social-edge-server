@@ -27,7 +27,6 @@ namespace SocialEdge.Playfab.Photon.Events
             SocialEdgeEnvironment.Init(req);
             string message = string.Empty;
             GameLeaveRequest body = await req.Content.ReadAsAsync<GameLeaveRequest>();
-            // body.UserId = "10";
 
             if (!Utils.IsGameValid(body.GameId, body.UserId, out message))
             {
@@ -57,6 +56,7 @@ namespace SocialEdge.Playfab.Photon.Events
         public static async Task<Result> Orchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
+            SocialEdgeEnvironment.Init();
             var outputs = new List<OkObjectResult>();
             var reqBody = context.GetInput<GameLeaveRequest>();
             List<Task> tasks = new List<Task>();

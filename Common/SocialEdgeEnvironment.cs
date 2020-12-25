@@ -6,7 +6,7 @@ namespace SocialEdge.Server.Common.Utils
 {
     public static class SocialEdgeEnvironment
     {
-        public static void Init(HttpRequestMessage req)
+        public static void Init(HttpRequestMessage req=null)
         {   
             PlayFabSettings.staticSettings.TitleId = Environment.GetEnvironmentVariable(Constant.PLAYFAB_TITLE_ID, 
                                                                                         EnvironmentVariableTarget.Process);
