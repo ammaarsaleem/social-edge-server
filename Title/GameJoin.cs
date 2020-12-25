@@ -12,12 +12,12 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace SocialEdge.Playfab.Photon.Events
 {
-    public partial class GameProperties
+    public partial class GameJoin
     {
-        [FunctionName(Constant.GAME_PROPERTY_ENGINE_ACTIVITY)]
+        [FunctionName(Constant.GAME_JOIN_TITLE_ACTIVITY)]
 
-        public async Task<OkObjectResult> ActivityFunc(
-            [ActivityTrigger] GamePropertiesRequest body, ILogger log)
+        public async Task<OkObjectResult> TitleActivityFunc(
+            [ActivityTrigger] GameLeaveRequest body, ILogger log)
         {
             
            

@@ -57,7 +57,7 @@ namespace SocialEdge.Playfab.Photon.Events
             List<Task> tasks = new List<Task>();
             log.LogInformation("Game properties orchestrator");
             tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_PROPERTY_ENGINE_ACTIVITY, reqBody));
-            // tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_JOIN_ACTIVITY_TITLE, reqBody));
+            tasks.Add(context.CallActivityAsync<OkObjectResult>(Constant.GAME_PROPERTY_TITLE_ACTIVITY, reqBody));
 
             Task t = Task.WhenAll(tasks);
             await t;

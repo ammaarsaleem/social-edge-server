@@ -14,7 +14,7 @@ namespace SocialEdge.Playfab.Photon.Events
     public partial class GameCreate
     {
         /*photon waits for response*/
-        [FunctionName("GameCreateEngineActivity")]
+        [FunctionName(Constant.GAME_CREATE_ENGINE_ACTIVITY)]
         public async Task<OkObjectResult> ActivityFunc(
             [ActivityTrigger] GameCreateRequest body, ILogger log)
         {

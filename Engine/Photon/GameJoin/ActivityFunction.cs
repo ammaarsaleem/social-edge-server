@@ -13,7 +13,7 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameJoin
     {
-        [FunctionName("GameJoinEngineActivity")]
+        [FunctionName(Constant.GAME_JOIN_ENGINE_ACTIVITY)]
         public async Task<OkObjectResult> ActivityFunc(
             [ActivityTrigger] GameLeaveRequest body, ILogger log)
         {

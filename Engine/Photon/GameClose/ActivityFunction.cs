@@ -15,7 +15,7 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameClose
     {
-        [FunctionName("GameCloseEngineActivity")]
+        [FunctionName(Constant.GAME_CLOSE_ENGINE_ACTIVITY)]
         public async Task<OkObjectResult> ActivityFunc(
             [ActivityTrigger] GameCloseRequest body, ILogger log)
         {

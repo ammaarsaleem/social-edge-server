@@ -13,7 +13,7 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameLeave
     {
-        [FunctionName("GameLeaveEngineActivity")]
+        [FunctionName(Constant.GAME_LEAVE_ENGINE_ACTIVITY)]
         public async Task<OkObjectResult> ActivityFunc(
             [ActivityTrigger] GameLeaveRequest body, ILogger log)
         {
