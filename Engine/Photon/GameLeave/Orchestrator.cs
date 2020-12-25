@@ -47,7 +47,6 @@ namespace SocialEdge.Playfab.Photon.Events
 
             else
             {
-                
                 return Utils.GetErrorResponse(result.StatusCode.ToString());
             }
         }

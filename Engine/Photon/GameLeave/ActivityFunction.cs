@@ -44,6 +44,7 @@ namespace SocialEdge.Playfab.Photon.Events
                         {
                             if (!body.IsInactive)
                             {
+                                log.LogInformation("Game leave activity function successful");
                                 return Utils.GetSuccessResponse();
                             }
                         }

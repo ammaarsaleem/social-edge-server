@@ -23,7 +23,7 @@ namespace SocialEdge.Playfab.Photon.Events
             string message = string.Empty;
             List<string> activeChallenges = null;
 
-            log.LogInformation("Game join activity");
+            log.LogInformation("Game join activity function started");
             string currentChallengeId = body.GameId;
             string playerId = body.UserId;
 
@@ -44,6 +44,7 @@ namespace SocialEdge.Playfab.Photon.Events
                     Result addPlayerChallengeResult = await Utils.AddPlayerChallenge(currentChallengeId, activeChallenges, playerId);
                     if (addPlayerChallengeResult.isSuccess)
                     {
+                        log.LogInformation("Game join activity function successful");
                         return Utils.GetSuccessResponse();
                     }
                     else

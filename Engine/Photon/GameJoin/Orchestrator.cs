@@ -55,6 +55,7 @@ namespace SocialEdge.Playfab.Photon.Events
         public static async Task<Result> Orchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
+            SocialEdgeEnvironment.Init();
             var outputs = new List<OkObjectResult>();
             var reqBody = context.GetInput<GameLeaveRequest>();
             List<Task> tasks = new List<Task>();
