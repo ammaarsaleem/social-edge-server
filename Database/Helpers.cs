@@ -81,7 +81,8 @@ namespace SocialEdge.Server.Common.Db
                 { "name", name}, { "playerId", playFabId } 
             };
 
-           await _playerCollection.InsertOneAsync(doc);
+            await _playerCollection.FindAsync(filter);
+        //    await _playerCollection.InsertOneAsync(doc);
             
         }
     }
