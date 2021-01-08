@@ -60,11 +60,12 @@ namespace SocialEdge.Server.Common.Db
 
 
           [FunctionName("TestDb")]
-        public async Task Run(
+        public async Task<string> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
             ILogger log)
         
         {   
+            try{
             // var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var args = JsonConvert.DeserializeObject<Dictionary<string,string>>(requestBody);
@@ -82,8 +83,13 @@ namespace SocialEdge.Server.Common.Db
             };
 
             await _playerCollection.FindAsync(filter);
+            return "OK";
+            }
         //    await _playerCollection.InsertOneAsync(doc);
-            
+            catch(Exception e)
+            {
+                return e.InnerException.Message;
+            }
         }
     }
 }
