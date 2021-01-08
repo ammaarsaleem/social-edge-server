@@ -13,7 +13,7 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameEvent
     {
-          [FunctionName("GameJoin")]
+          [FunctionName("GameEvent")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestMessage req,

@@ -4,6 +4,7 @@
     "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=socialedgeserverdevelopm;AccountKey=tHKZGUQxgezOKKZzqCcbDTBJA/LMft1Td5lpO5s3XZCCGT+Lb5Ey9lHkgPC6P33z3WO+NNAmEkGwe7tJzWCacA==;EndpointSuffix=core.windows.net",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "PLAYFAB_TITLE_ID": "9F379",
-    "PLAYFAB_DEV_SECRET_KEY": "UY9Q9JPUXMWAJMERW7GPO6DZ4H1C6R8UI1JIJBCOTKMAKHUSKP"
+    "PLAYFAB_DEV_SECRET_KEY": "UY9Q9JPUXMWAJMERW7GPO6DZ4H1C6R8UI1JIJBCOTKMAKHUSKP",
+    "MONGO_CONNECTION_STRING": "mongodb+srv://MyMongoDBUser:MyMongoDBUserPasswordsocialedgecluster.hsxfp.mongodb.net/Development?retryWrites=true&w=majority"
   }
 }

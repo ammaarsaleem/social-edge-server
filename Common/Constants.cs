@@ -10,6 +10,6 @@ namespace SocialEdge.Server.Common.Constants
         public const string PLAYER_NAME_ADJECTIVES = "DisplayNameAdjectives";
         public const string PLAYER_NAME_NOUNS = "DisplayNameNouns";
 
-        
+        public const string DATABASE = "default";
     }
 }
