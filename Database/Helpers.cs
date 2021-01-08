@@ -76,7 +76,12 @@ namespace SocialEdge.Server.Common.Db
                                                         // .Set("lastLogin", loginTime);
             
             var options = new UpdateOptions{IsUpsert = true};
-            var upsertTask = await _playerCollection.UpdateOneAsync(filter,update,options);
+            // var upsertTask = await _playerCollection.UpdateOneAsync(filter,update,options);
+            var doc = new BsonDocument{
+                { "name", name}, { "playerId", playFabId } 
+            };
+
+           await _playerCollection.InsertOneAsync(doc);
             
         }
     }
