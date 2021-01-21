@@ -9,11 +9,18 @@ using System.Collections.Generic;
 using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Common.Models;
 using SocialEdge.Server.Constants;
+using SocialEdge.Server.Cache;
 namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameClose
     {
-          [FunctionName("GameClose")]
+        private ICache _cache;
+        public GameClose(ICache cache)
+        {
+            _cache = cache;
+        }
+
+        [FunctionName("GameClose")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestMessage req,

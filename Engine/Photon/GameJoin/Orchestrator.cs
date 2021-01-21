@@ -9,11 +9,18 @@ using System.Collections.Generic;
 using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Common.Models;
 using SocialEdge.Server.Constants;
+using SocialEdge.Server.Cache;
 namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameJoin
     {
-          [FunctionName("GameJoin")]
+        private ICache _cache;
+        public GameJoin(ICache cache)
+        {
+            _cache = cache;
+        }
+
+        [FunctionName("GameJoin")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestMessage req,

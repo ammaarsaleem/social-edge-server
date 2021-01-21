@@ -56,13 +56,19 @@ namespace SocialEdge.Playfab.Photon.Events
                             };
 
                             var deleteGroupResult = await PlayFabServerAPI.DeleteSharedGroupAsync(deleteGroupRequest);
-                            if (deleteGroupResult.Error == null)
+                            
+                            var deleteGroupT = PlayFabServerAPI.DeleteSharedGroupAsync(deleteGroupRequest);
+                            Task deleteRoomT = _cache.DeleteRoom(currentChallengeId);
+                            Task t = Task.WhenAll(deleteGroupT,deleteRoomT);
+                            await t;
+                            
+                            if (t.IsCompletedSuccessfully)
                             {
                                 return Utils.GetSuccessResponse();
                             }
                             else
                             {
-                                message = "Group: " + currentChallengeId + " not deleted";
+                                message = "Group: " + currentChallengeId + " not deleted. " + t.Exception.Message;
                             }
                         }
                         else

@@ -9,10 +9,17 @@ using System.Collections.Generic;
 using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Common.Models;
 using SocialEdge.Server.Constants;
+using SocialEdge.Server.Cache;
 namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameLeave
-    {
+    {   
+        private ICache _cache;
+        public GameLeave(ICache cache)
+        {
+            _cache = cache;
+        }
+
           [FunctionName("GameLeave")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]

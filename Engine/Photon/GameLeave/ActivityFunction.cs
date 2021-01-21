@@ -35,8 +35,14 @@ namespace SocialEdge.Playfab.Photon.Events
                     if (playerDataResult.Error == null)
                     {
                         activeChallenges = Utils.GetActiveChallenges(playerDataResult.Result);
-                        Result removePlayerChallengeResult = await Utils.RemovePlayerChallenge(currentChallengeId, activeChallenges, playerId);
-                        if (removePlayerChallengeResult.isSuccess)
+                        // Result removePlayerChallengeResult = await Utils.RemovePlayerChallenge(currentChallengeId, activeChallenges, playerId);
+                        
+                        Task removePlayerChallengeT =  Utils.RemovePlayerChallenge(currentChallengeId, activeChallenges, playerId);
+                        Task removePlayerToCacheT =  _cache.AddPlayerToRoom(currentChallengeId,playerId);
+                        Task t = Task.WhenAll(removePlayerChallengeT,removePlayerToCacheT);
+                        await t;
+
+                        if (t.IsCompletedSuccessfully)
                         {
                             if (!body.IsInactive)
                             {
@@ -46,7 +52,7 @@ namespace SocialEdge.Playfab.Photon.Events
                         }
                         else
                         {
-                            message = removePlayerChallengeResult.error;
+                            message = t.Exception.Message;
                             log.LogInformation(message);
                         }
                     }

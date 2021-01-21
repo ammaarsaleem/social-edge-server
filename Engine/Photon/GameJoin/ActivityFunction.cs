@@ -38,15 +38,20 @@ namespace SocialEdge.Playfab.Photon.Events
                 {
                     activeChallenges = Utils.GetActiveChallenges(playerDataResult.Result);
 
-                    Result addPlayerChallengeResult = await Utils.AddPlayerChallenge(currentChallengeId, activeChallenges, playerId);
-                    if (addPlayerChallengeResult.isSuccess)
+                    Task addPlayerChallengeT =  Utils.AddPlayerChallenge(currentChallengeId, activeChallenges, playerId);
+                    Task addPlayerToCacheT =  _cache.AddPlayerToRoom(currentChallengeId,playerId);
+                    Task t = Task.WhenAll(addPlayerChallengeT,addPlayerToCacheT);
+                    await t;
+
+
+                     if (t.IsCompletedSuccessfully)//addPlayerChallengeResult.isSuccess)
                     {
-                        log.LogInformation("Game join activity function successful");
+                        // log.LogInformation("player added to group and internal data updated");
                         return Utils.GetSuccessResponse();
                     }
                     else
                     {
-                        message = addPlayerChallengeResult.error;
+                        message = t.Exception.Message;
                         log.LogInformation(message);
                     }
                 }

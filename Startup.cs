@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Linq;
+using StackExchange.Redis;
+using SocialEdge.Server.Cache;
 [assembly: FunctionsStartup(typeof(SocialEdge.Playfab.Startup))]
 namespace SocialEdge.Playfab
 {
@@ -26,6 +28,17 @@ namespace SocialEdge.Playfab
                 MongoClient client = new MongoClient("mongodb+srv://MyMongoDBUser:MyMongoDBUserPassword@socialedgecluster.hsxfp.mongodb.net/Development?retryWrites=true&w=majority");
                 return client;
             });
+
+            builder.Services.AddSingleton((r) =>
+            {
+                
+                string connString = "socialedgeserver.redis.cache.windows.net:6380,password=Gf7aTTxpvRfk+IKGqCbQwW7j+bWIKcr5B6bXAqj+ZSQ=,ssl=True,abortConnect=False";
+                ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connString);
+                return redis;
+            });
+
+            builder.Services.AddSingleton<ICache,Cache>();
+            // builder.Services.AddSingleton<IDbHelper,DBHelper>();
         }
     }
 }
