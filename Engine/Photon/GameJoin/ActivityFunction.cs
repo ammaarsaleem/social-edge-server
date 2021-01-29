@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using SocialEdge.Server.Common.Models;
 using PlayFab.ServerModels;
 using SocialEdge.Server.Constants;
+using System.Linq;
 namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameJoin
@@ -37,22 +38,30 @@ namespace SocialEdge.Playfab.Photon.Events
                 if (playerDataResult.Error == null)
                 {
                     activeChallenges = Utils.GetActiveChallenges(playerDataResult.Result);
-
-                    Task addPlayerChallengeT =  Utils.AddPlayerChallenge(currentChallengeId, activeChallenges, playerId);
-                    Task addPlayerToCacheT =  _cache.AddPlayerToRoom(currentChallengeId,playerId);
-                    Task t = Task.WhenAll(addPlayerChallengeT,addPlayerToCacheT);
-                    await t;
-
-
-                     if (t.IsCompletedSuccessfully)//addPlayerChallengeResult.isSuccess)
+                    if (!activeChallenges.Any(s => s.Equals(currentChallengeId)))
                     {
-                        // log.LogInformation("player added to group and internal data updated");
-                        return Utils.GetSuccessResponse();
+                        Task addPlayerChallengeT =  Utils.AddPlayerChallenge(currentChallengeId, activeChallenges, playerId);
+                        Task addPlayerToCacheT =  _cache.AddPlayerToRoom(currentChallengeId,playerId);
+                        Task t = Task.WhenAll(addPlayerChallengeT,addPlayerToCacheT);
+                        await t;
+
+
+                        if (t.IsCompletedSuccessfully)//addPlayerChallengeResult.isSuccess)
+                        {
+                            // log.LogInformation("player added to group and internal data updated");
+                            return Utils.GetSuccessResponse();
+                        }
+                        else
+                        {
+                            message = t.Exception.Message;
+                            log.LogInformation(message);
+                        }
                     }
                     else
                     {
-                        message = t.Exception.Message;
-                        log.LogInformation(message);
+                        log.LogInformation(playerDataResult.Error.ErrorMessage);
+                         message = "this challenge is already in active challenges list";
+                         log.LogInformation(message);
                     }
                 }
                 else

@@ -102,8 +102,8 @@ namespace SocialEdge.Playfab.Photon
         {
             string error = string.Empty;
             bool isPlayerDataUpdated = false;
-            if (activeChallenges.Any(s => s.Equals(currentChallengeId)))
-            {
+            // if (activeChallenges.Any(s => s.Equals(currentChallengeId)))
+            // {
                 activeChallenges.RemoveAll(c => c.Equals(currentChallengeId));
                 var removePlayerFromGroupResult = await RemoveFromGroup(playerId, currentChallengeId);
                 var isPlayerRemovedFromGroup = removePlayerFromGroupResult.isSuccess;
@@ -124,11 +124,11 @@ namespace SocialEdge.Playfab.Photon
                 {
                     error = removePlayerFromGroupResult.error;
                 }
-            }
-            else
-            {
-                error = "this challenge is not in active challenges list";
-            }
+            // }
+            // else
+            // {
+            //     error = "this challenge is not in active challenges list";
+            // }
 
             return new Result(isPlayerDataUpdated, error);
         }

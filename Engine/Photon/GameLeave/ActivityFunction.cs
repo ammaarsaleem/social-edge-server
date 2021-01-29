@@ -21,9 +21,10 @@ namespace SocialEdge.Playfab.Photon.Events
             List<string> activeChallenges = null;
             try
             {
-                log.LogInformation(body.IsInactive.ToString());
+                log.LogInformation("IsInactive value: " + body.IsInactive.ToString());
                 if (!body.IsInactive)
                 {
+                    log.LogInformation("we here inside isinactive check");
                     string currentChallengeId = body.GameId;
                     string playerId = body.UserId;
 
