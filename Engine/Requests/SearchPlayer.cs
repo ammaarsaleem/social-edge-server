@@ -3,15 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using PlayFab.ServerModels;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
 using SocialEdge.Server.Common.Utils;
 using PlayFab.Samples;
-using SocialEdge.Server.Constants;
 using MongoDB.Bson;
 using SocialEdge.Server.Db;
 namespace SocialEdge.Server.Requests

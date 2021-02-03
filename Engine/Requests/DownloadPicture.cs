@@ -4,19 +4,10 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using PlayFab.ServerModels;
-using PlayFab.Json;
-using System.Collections.Generic;
-using PlayFab.DataModels;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
 using SocialEdge.Server.Common.Utils;
 using PlayFab.Samples;
-using SocialEdge.Server.Constants;
-using PlayFab.AdminModels;
 using PlayFab;
 
 namespace SocialEdge.Server.Requests

@@ -18,7 +18,6 @@ using PlayFab.Samples;
 using SocialEdge.Server.Constants;
 using PlayFab;
 using System.Net;
-using System.Text;
 using SocialEdge.Server.Common.Utils;
 namespace SocialEdge.Playfab
 {

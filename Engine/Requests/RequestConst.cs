@@ -1,4 +1,3 @@
-using System;
 namespace SocialEdge.Server.Constants
 {
     public static partial class Constant

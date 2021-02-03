@@ -12,10 +12,17 @@ using PlayFab;
 using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Requests.Models;
 using SocialEdge.Server.Constants;
+using SocialEdge.Server.Db;
 namespace SocialEdge.Server.Requests
 {
     public class GetInitData
     {
+        IDbHelper _dbHelper;
+        public GetInitData(IDbHelper dbHelper)
+        {
+            _dbHelper = dbHelper;
+        }
+
         [FunctionName("GetInitData")]
         public async Task<Dictionary<string, object>> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
@@ -87,8 +94,6 @@ namespace SocialEdge.Server.Requests
                 throw e;
             }
         }
-
-
 
         private async Task<PlayFabResult<UpdateUserDataResult>> InitializePlayer(GetPlayerCombinedInfoResultPayload result,
                                                                                     Dictionary<string, UserDataRecord> internalData)

@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System.Collections.Generic;
-using SocialEdge.Server.Common.Models;
 using PlayFab.ServerModels;
 using SocialEdge.Server.Constants;
 using System.Linq;
