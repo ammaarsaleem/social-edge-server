@@ -39,7 +39,7 @@ namespace SocialEdge.Playfab.Photon.Events
                         // Result removePlayerChallengeResult = await Utils.RemovePlayerChallenge(currentChallengeId, activeChallenges, playerId);
                         
                         Task removePlayerChallengeT =  Utils.RemovePlayerChallenge(currentChallengeId, activeChallenges, playerId);
-                        Task removePlayerToCacheT =  _cache.AddPlayerToRoom(currentChallengeId,playerId);
+                        Task removePlayerToCacheT =  _cache.RemovePlayerFromRoom(currentChallengeId,playerId);
                         Task t = Task.WhenAll(removePlayerChallengeT,removePlayerToCacheT);
                         await t;
 

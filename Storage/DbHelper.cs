@@ -10,7 +10,6 @@ using Newtonsoft.Json;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
-using SocialEdge.Server.Cache;
 namespace SocialEdge.Server.Db
 {
     public class DbHelper: IDbHelper
@@ -20,16 +19,16 @@ namespace SocialEdge.Server.Db
         private readonly IMongoCollection<BsonDocument> _playerCollection;
         // private readonly ILogger _logger;
 
-        public DbHelper(MongoClient dbclient,ICache cache)
+        public DbHelper(MongoClient dbclient)
         {
             SocialEdgeEnvironment.Init();
             _dbClient = dbclient;
             string dbName = ConfigConstants.DATABASE;
             _database = _dbClient.GetDatabase(dbName);
-            _playerCollection = _database.GetCollection<BsonDocument>("Player");                     
+            _playerCollection = _database.GetCollection<BsonDocument>(Constants.PLAYER_COLLECTION);                     
         }
 
-        public async Task<UpdateResult> RegisterPlayer(string playFabId, string name, DateTime loginTime)
+        public async Task<bool> RegisterPlayer(string playFabId, string name, DateTime loginTime)
         {   
 
             var filter = Builders<BsonDocument>.Filter.Eq("playerId",playFabId);
@@ -39,14 +38,14 @@ namespace SocialEdge.Server.Db
             
             var options = new UpdateOptions{IsUpsert = true};
             var upsertTask = await _playerCollection.UpdateOneAsync(filter,update,options);
-            return upsertTask;
+            return true;
         }
 
-        public async Task<BsonDocument> SearchPlayer(string name)
+        public async Task<Dictionary<string,object>> SearchPlayerByName(string name)
         {
             var nameFilter = Builders<BsonDocument>.Filter.Eq("displayName", name);
             var findTask = await _playerCollection.FindAsync(nameFilter);
-            return findTask.FirstOrDefault();
+            return findTask.FirstOrDefault().ToDictionary();
         }
 
 

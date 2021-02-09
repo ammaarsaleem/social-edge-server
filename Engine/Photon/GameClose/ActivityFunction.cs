@@ -55,7 +55,7 @@ namespace SocialEdge.Playfab.Photon.Events
                                 SharedGroupId = currentChallengeId
                             };
 
-                            var deleteGroupResult = await PlayFabServerAPI.DeleteSharedGroupAsync(deleteGroupRequest);
+                            // var deleteGroupResult = await PlayFabServerAPI.DeleteSharedGroupAsync(deleteGroupRequest);
                             
                             var deleteGroupT = PlayFabServerAPI.DeleteSharedGroupAsync(deleteGroupRequest);
                             Task deleteRoomT = _cache.DeleteRoom(currentChallengeId);

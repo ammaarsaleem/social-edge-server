@@ -10,5 +10,6 @@ namespace SocialEdge.Server.Cache
         Task AddPlayerToRoom(string roomId, string playerId, string playerName="");
         Task<bool> DeleteRoom(string roomId);
         Task<HashEntry[]> GetRoom(string roomId);
+        Task RemovePlayerFromRoom(string roomId, string playerId, string playerName="");
     }
 }

@@ -47,20 +47,24 @@ namespace SocialEdge.Playfab.Photon.Events
                     {
                         log.LogInformation("group created with id: " + createGroupResult.Result.SharedGroupId);
 
-                        Task addPlayerChallengeT =  Utils.AddPlayerChallenge(currentChallengeId, activeChallenges, playerId);
-                        Task addPlayerToCacheT =  _cache.AddPlayerToRoom(currentChallengeId,playerId);
-                        Task t = Task.WhenAll(addPlayerChallengeT,addPlayerToCacheT);
-                        await t;
-                        
-                        // Result addPlayerChallengeResult = await Utils.AddPlayerChallenge(currentChallengeId, activeChallenges, playerId);
-                        if (t.IsCompletedSuccessfully)//addPlayerChallengeResult.isSuccess)
+                        var addPlayerChallengeResult =  await Utils.AddPlayerChallenge(currentChallengeId, activeChallenges, playerId);
+                        if(addPlayerChallengeResult.isSuccess)
                         {
-                            // log.LogInformation("player added to group and internal data updated");
-                            return Utils.GetSuccessResponse();
+                            var addPlayerToCacheT =  _cache.AddPlayerToRoom(currentChallengeId,playerId);
+                            if(addPlayerToCacheT.IsCompletedSuccessfully)
+                            {
+                                return Utils.GetSuccessResponse();
+                            }
+                            else
+                            {
+                                message = addPlayerToCacheT.Exception.Message;
+                                log.LogInformation(message);
+                            }
                         }
+                        
                         else
                         {
-                            message = t.Exception.Message;
+                            message = addPlayerChallengeResult.error;
                             log.LogInformation(message);
                         }
                     }

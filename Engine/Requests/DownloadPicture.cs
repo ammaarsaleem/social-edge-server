@@ -50,7 +50,7 @@ namespace SocialEdge.Server.Requests
             var request = new GetContentDownloadUrlRequest
             {
                 Key = key,
-                ThruCDN = false
+                ThruCDN = true
             };
 
             PlayFabResult<GetContentDownloadUrlResult> result= await PlayFabServerAPI.GetContentDownloadUrlAsync(request);

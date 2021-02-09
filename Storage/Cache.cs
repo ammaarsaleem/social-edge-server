@@ -8,7 +8,6 @@ namespace SocialEdge.Server.Cache
 {
     public class Cache : ICache
     {
-        private readonly IMongoCollection<BsonDocument> _playerCollection;
         private readonly ConnectionMultiplexer _redis;
         private readonly IDatabase _cacheDb;
 
@@ -44,7 +43,7 @@ namespace SocialEdge.Server.Cache
 
         public async Task AddPlayerToRoom(string roomId, string playerId, string playerName = "")
         {
-            string hashKey = "roomId::"+roomId;
+            string hashKey = GetRoomKey(roomId);
             if(!string.IsNullOrEmpty(playerId))
             {
                 var player = CreateCachePlayer(playerId,playerName);
@@ -52,11 +51,11 @@ namespace SocialEdge.Server.Cache
             }
         }
 
-        public async Task RemovePlayerFromRoom(string roomId, string playerId, string playerName)
+        public async Task RemovePlayerFromRoom(string roomId, string playerId, string playerName="")
         {
-            string hashKey = "roomId::"+roomId;
-            string userIdKey = "user::"+playerId;
-            string nameKey = "user::"+playerName+"::name";
+            string hashKey = GetRoomKey(roomId);
+            string userIdKey = GetUserIdKey(playerId);
+            string nameKey = GetUserNameKey(playerId);
 
             if(!string.IsNullOrEmpty(playerId))
             {
@@ -70,22 +69,22 @@ namespace SocialEdge.Server.Cache
 
         public async Task<bool> DeleteRoom(string roomId)
         {
-            string hashKey = "roomId::"+roomId;
+            string hashKey = GetRoomKey(roomId);
             bool result = await _cacheDb.KeyDeleteAsync(hashKey);
             return result;
         }
 
         public async Task<HashEntry[]> GetRoom(string roomId)
         {
-            string hashKey = "roomId::"+roomId;
+            string hashKey = GetRoomKey(roomId);
             HashEntry[] result = await _cacheDb.HashGetAllAsync(hashKey);
             return result;
         }
 
         public HashEntry[] CreateCachePlayer(string id, string name)
         {
-            string userKey = "user::"+id;
-            string nameKey = "user::"+id+"::name";
+            string userKey = GetUserIdKey(id);
+            string nameKey = GetUserNameKey(id);
 
             var player = new HashEntry[] {
             new HashEntry(userKey, id),
@@ -93,6 +92,21 @@ namespace SocialEdge.Server.Cache
             };
 
             return player;
+        }
+
+        private string GetRoomKey(string roomId)
+        {
+            return "roomId::"+roomId;
+        }
+
+        private string GetUserIdKey(string id)
+        {
+            return "user::"+id;
+        }
+
+        private string GetUserNameKey(string id)
+        {
+            return "user::"+id+"::name";
         }
 
     }

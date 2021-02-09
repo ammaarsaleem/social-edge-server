@@ -7,7 +7,7 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using SocialEdge.Server.Common.Utils;
 using PlayFab.Samples;
-using MongoDB.Bson;
+using System.Collections.Generic;
 using SocialEdge.Server.Db;
 namespace SocialEdge.Server.Requests
 {
@@ -31,10 +31,10 @@ namespace SocialEdge.Server.Requests
             try
             {
                 string name = string.Empty;
-                BsonDocument result = await _dbHelper.SearchPlayer(queryName);
-                if(result!=null)
+                Dictionary<string,object> resultDict = await _dbHelper.SearchPlayerByName(queryName);
+                if(resultDict!=null && resultDict.ContainsKey("playerId"))
                 {
-                    name = result.GetValue("playerId").ToString();
+                    name = resultDict["playerId"].ToString();   
                 }
                 
                 else

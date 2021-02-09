@@ -7,10 +7,14 @@ namespace SocialEdge.Server.Common.Utils
     {
         public static void Init(HttpRequestMessage req=null)
         {   
-            PlayFabSettings.staticSettings.TitleId = Environment.GetEnvironmentVariable(ConfigConstants.PLAYFAB_TITLE_ID, 
+            if(string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
+            {    PlayFabSettings.staticSettings.TitleId = Environment.GetEnvironmentVariable(ConfigConstants.PLAYFAB_TITLE_ID, 
                                                                                         EnvironmentVariableTarget.Process);
-            PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(ConfigConstants.PLAYFAB_DEV_SECRET_KEY, 
+            }
+            if(string.IsNullOrEmpty(PlayFabSettings.staticSettings.DeveloperSecretKey))
+            {    PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable(ConfigConstants.PLAYFAB_DEV_SECRET_KEY, 
                                                                                                     EnvironmentVariableTarget.Process);
+            }
         }
     }
 }
