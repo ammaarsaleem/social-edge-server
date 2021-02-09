@@ -15,6 +15,9 @@ namespace SocialEdge.Playfab
 {
     public class Startup : FunctionsStartup
     {
+        /// <summary>
+        /// Configures dependencies of services
+        /// </summary>
         public override void Configure(IFunctionsHostBuilder builder)
         {
               builder.Services.AddLogging(loggingBuilder =>

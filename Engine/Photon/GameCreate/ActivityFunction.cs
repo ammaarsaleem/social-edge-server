@@ -13,6 +13,12 @@ namespace SocialEdge.Playfab.Photon.Events
     public partial class GameCreate
     {
         /*photon waits for response*/
+
+        /// <summary>
+        /// Creates a shared group and room in cache
+        /// Add challenge to the active challenges of the callee
+        /// </summary>
+        /// <param name="GameCreateRequest"></param>
         [FunctionName(Constant.GAME_CREATE_ENGINE_ACTIVITY)]
         public async Task<OkObjectResult> ActivityFunc(
             [ActivityTrigger] GameCreateRequest body, ILogger log)

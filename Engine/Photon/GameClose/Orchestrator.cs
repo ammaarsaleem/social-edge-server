@@ -20,6 +20,10 @@ namespace SocialEdge.Playfab.Photon.Events
             _cache = cache;
         }
 
+        /// <summary>
+        /// Http trigger.Trigerred when a game is closed and the room is shutting down
+        /// </summary>
+        /// <param name="GameCloseRequest"></param>
         [FunctionName("GameClose")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]

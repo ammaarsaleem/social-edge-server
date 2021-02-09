@@ -19,7 +19,10 @@ namespace SocialEdge.Playfab.Photon.Events
         {
             _cache = cache;
         }
-
+        /// <summary>
+        /// Http trigger.Trigerred when a room is created
+        /// </summary>
+        /// <param name="GameCreateRequest"></param>
           [FunctionName("GameCreate")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]

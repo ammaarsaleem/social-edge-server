@@ -15,6 +15,12 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameClose
     {
+        /// <summary>
+        /// Removes challenge from active challenges of players that are still in the room
+        /// Deletes shared group from playfab
+        /// deletes room from cache
+        /// </summary>
+        /// <param name="GameCloseRequest"></param>
         [FunctionName(Constant.GAME_CLOSE_ENGINE_ACTIVITY)]
         public async Task<OkObjectResult> ActivityFunc(
             [ActivityTrigger] GameCloseRequest body, ILogger log)

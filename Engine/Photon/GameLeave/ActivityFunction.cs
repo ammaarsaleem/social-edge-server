@@ -12,6 +12,11 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameLeave
     {
+        /// <summary>
+        /// Removes challenge from active challenges of player
+        /// Removes player from shared group and cache room
+        /// </summary>
+        /// <param name="GameLeaveRequest"></param>
         [FunctionName(Constant.GAME_LEAVE_ENGINE_ACTIVITY)]
         public async Task<OkObjectResult> ActivityFunc(
             [ActivityTrigger] GameLeaveRequest body, ILogger log)

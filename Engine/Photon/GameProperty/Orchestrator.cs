@@ -13,6 +13,11 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameProperties
     {
+
+        /// <summary>
+        /// Http trigger.Trigerred whenever a property is updated
+        /// </summary>
+        /// <param name="GamePropertiesRequest"></param>
           [FunctionName("GameProperties")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]

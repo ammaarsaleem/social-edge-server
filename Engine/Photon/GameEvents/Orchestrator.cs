@@ -13,6 +13,11 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameEvent
     {
+        /// <summary>
+        /// Http trigger.Trigerred when a player raises an event
+        /// </summary>
+        /// <param name="GameEventRequest"></param>
+
           [FunctionName("GameEvent")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]

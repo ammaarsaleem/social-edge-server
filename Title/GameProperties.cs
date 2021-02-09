@@ -14,7 +14,11 @@ namespace SocialEdge.Playfab.Photon.Events
     public partial class GameProperties
     {
         [FunctionName(Constant.GAME_PROPERTY_TITLE_ACTIVITY)]
-
+        /// <summary>
+        /// Reads gamee state to check match status.
+        /// If match is finished, increments the score statistic of the winner 
+        /// </summary>
+        /// <param name="GamePropertiesRequest"></param>
         public async Task<OkObjectResult> TitleActivityFunc(
             [ActivityTrigger] GamePropertiesRequest body, ILogger log)
         {

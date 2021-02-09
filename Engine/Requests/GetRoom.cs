@@ -26,7 +26,11 @@ namespace SocialEdge.Server.Requests
         {
             _cache = cache;
         }
-
+        /// <summary>
+        /// Fetches a room with players and their data
+        /// </summary>
+        /// <param name="roomId">the roomId of the user to fetch data</param>
+        /// <returns>Serialized json</returns>
         [FunctionName("GetRoom")]
         public async Task<string> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,

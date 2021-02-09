@@ -13,6 +13,11 @@ namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameJoin
     {
+        /// <summary>
+        /// Adds player to shared group and room in cache
+        /// Add challenge to the active challenges of the callee
+        /// </summary>
+        /// <param name="GameLeaveRequest"></param>
         [FunctionName(Constant.GAME_JOIN_ENGINE_ACTIVITY)]
         public async Task<OkObjectResult> ActivityFunc(
             [ActivityTrigger] GameLeaveRequest body, ILogger log)

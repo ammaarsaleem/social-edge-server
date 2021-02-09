@@ -27,7 +27,7 @@ namespace SocialEdge.Server.Requests
         /// Fetches player and title data. To be used for initialisation
         /// When called for the first time for a player, initialises the player, assigns a random name and sets default values
         /// </summary>
-        /// <param name="playerId">the playerId of the user to fetch data/param>
+        /// <param name="playerId">the playerId of the user to fetch data</param>
         /// <returns>Dictionary with player data and title data</returns>
         [FunctionName("GetInitData")]
         public async Task<Dictionary<string, object>> Run(

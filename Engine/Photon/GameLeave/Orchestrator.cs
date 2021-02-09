@@ -20,6 +20,10 @@ namespace SocialEdge.Playfab.Photon.Events
             _cache = cache;
         }
 
+        /// <summary>
+        /// Http trigger.Trigerred when a player leaves a game
+        /// </summary>
+        /// <param name="GameLeaveRequest"></param>
           [FunctionName("GameLeave")]
         public async Task<OkObjectResult> Run(
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = null)]

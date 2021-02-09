@@ -18,7 +18,11 @@ namespace SocialEdge.Server.Requests
         {
             _dbHelper = dbHelper;
         }
-
+        /// <summary>
+        /// Wild search for a player by namee
+        /// </summary>
+        /// <param name="name">the name of the user to fetch</param>
+        /// <returns>serialiazed json</returns>
         [FunctionName("SearchPlayerByName")]
         public async Task<string> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
