@@ -42,8 +42,6 @@ namespace SocialEdge.Server.Requests
             Dictionary<string, object> result = null;
             string playerSettings = string.Empty;
             List<Task> tasks = null;
-            // Task<PlayFabResult<PlayFab.AdminModels.UpdateUserTitleDisplayNameResult>> updateNameT = null;
-            // Task<PlayFabResult<UpdateUserDataResult>> initPlayerT = null;
             string playerId = string.Empty;
             GetPlayerCombinedInfoResultPayload playerDataResult = null;
             GetUserDataResult playerInternalDataResult = null;
@@ -61,11 +59,8 @@ namespace SocialEdge.Server.Requests
                     PlayFabId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId
                 });
 
-                
                 await Task.WhenAll(internalDataT, playerDataT/*, titleNewsT*/);
 
-                // if(UtilFunc.IsTaskCompleted(playerDataT))
-                // {}
 
                 if (playerDataT.IsCompletedSuccessfully && playerDataT.Result.Error == null
                     && internalDataT.IsCompletedSuccessfully && internalDataT.Result.Error == null)
@@ -74,6 +69,11 @@ namespace SocialEdge.Server.Requests
                     playerDataResult = playerDataT.Result.Result.InfoResultPayload;
                     playerInternalDataResult = internalDataT.Result.Result;
 
+                    if(playerDataResult.TitleData.ContainsKey("StoreId"))
+                    {
+                        string storeId = playerDataResult.TitleData["storeId"];
+                    }
+                    
                     if (!IsPlayerInitialized(playerInternalDataResult.Data))
                     {
                         var initPlayerT = InitializePlayer(playerDataResult );
@@ -161,6 +161,21 @@ namespace SocialEdge.Server.Requests
         private string CreateDisplayName(string playFabId)
         {
             return "Guest" + playFabId.GetHashCode().ToString();
+        }
+
+        private async void GetStore(string storeId = null)
+        {
+            PlayFabResult<GetStoreItemsResult> storeItems = null;
+            PlayFabResult<GetCatalogItemsResult> catalogItems = null;
+            if(!string.IsNullOrEmpty(storeId))
+            {
+                var storeRequest = new PlayFab.ServerModels.GetStoreItemsServerRequest();
+                storeItems = await PlayFabServerAPI.GetStoreItemsAsync(storeRequest);              
+            }
+
+            var catalogRequest = new PlayFab.ServerModels.GetCatalogItemsRequest();
+            catalogItems = await PlayFabServerAPI.GetCatalogItemsAsync(catalogRequest);
+
         }
 
         private Dictionary<string, object> CreatePlayerResult(Task<PlayFabResult<GetPlayerCombinedInfoResult>> playerDataTask)
