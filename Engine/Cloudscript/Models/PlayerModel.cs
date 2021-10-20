@@ -1,6 +1,6 @@
 using PlayFab.ServerModels;
 using System.Collections.Generic;
-namespace SocialEdge.Server.Requests.Models
+namespace SocialEdge.Server.Models
 {
     public class PlayerModel
     {
