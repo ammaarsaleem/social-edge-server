@@ -255,14 +255,114 @@ namespace SocialEdge.Server.DataService{
         {
             throw new NotImplementedException();
         }
-        public async Task<bool> EnsureIndex(List<string> key)
+        public async Task<string> CreateIndex(string key, int direction,  bool unique,
+                                             string name, TimeSpan? TTL)
         {
-             var indexKeysDefine= Builders<BsonDocument>.IndexKeys.Ascending(indexKey => key);
-            CreateIndexModel<BsonDocument> model;
-            model = new CreateIndexModel<BsonDocument>(key);
-            // Create the unique index on the field 'title'
-            var options = new CreateIndexOptions { Unique = true };
-            await _collection.Indexes.CreateOneAsync(model);
+
+            CreateIndexModel<BsonDocument> indexModel;
+            var indexKey = CreateIndexKey(key,direction);
+            var options = CreateIndexOptions(name,TTL,unique);
+
+            if(options==null)
+            {
+                indexModel = new CreateIndexModel<BsonDocument>(indexKey);    
+            }
+            else
+            {
+                indexModel = new CreateIndexModel<BsonDocument>(indexKey,options);
+            }
+            var result = await _collection.Indexes.CreateOneAsync(indexModel);
+            return result;            
+        }
+
+        public async Task<string> CreateIndex(string key1,string key2, 
+                                            int direction1=1, int direction2=1,
+                                            bool unique=false,string name=null, 
+                                            TimeSpan? TTL=null)
+        {
+            CreateIndexModel<BsonDocument> indexModel;
+            var indexKey1 = CreateIndexKey(key1,direction1);
+            var indexKey2 = CreateIndexKey(key2,direction2);
+
+            var indexDefinition = Builders<BsonDocument>.IndexKeys.Combine(indexKey1,indexKey2);
+
+
+            var options = CreateIndexOptions(name,TTL,unique);
+
+            if(options==null)
+            {
+                indexModel = new CreateIndexModel<BsonDocument>(indexDefinition);    
+            }
+            else
+            {
+                indexModel = new CreateIndexModel<BsonDocument>(indexDefinition,options);
+            }
+            var result = await _collection.Indexes.CreateOneAsync(indexModel);
+            return result;            
+        }
+
+
+        private IndexKeysDefinition<BsonDocument> CreateIndexKey(string key, int direction)
+        {
+            var indexBuilder = Builders<BsonDocument>.IndexKeys;
+            IndexKeysDefinition<BsonDocument> indexKey;
+            if(direction<0)
+            {
+                indexKey= indexBuilder.Descending(key);
+            }
+            else
+            {
+                indexKey = indexBuilder.Ascending(key);
+            }
+
+            return indexKey;
+        }
+
+
+        private CreateIndexOptions CreateIndexOptions(string name, TimeSpan? TTL, bool unique=false)
+        {
+            CreateIndexOptions options = null;
+            if(string.IsNullOrEmpty(name) && TTL==null && unique==false)
+            {
+                options = null;
+            }
+
+            else if(!string.IsNullOrEmpty(name) && TTL!=null)
+            {
+                options = new CreateIndexOptions
+                {
+                    Name = name,
+                    ExpireAfter = TTL,
+                    Unique = unique
+                };
+            }
+
+            else if (!string.IsNullOrEmpty(name))
+            {
+                options = new CreateIndexOptions
+                {
+                    Name = name,
+                    Unique = unique
+                };
+            }
+
+            else if(TTL!=null)
+            {
+                options = new CreateIndexOptions
+                {
+                    ExpireAfter = TTL,
+                    Unique = unique
+                };
+            }
+            else if(unique==true)
+            {
+                options = new CreateIndexOptions
+                {
+                    Unique = unique
+                };
+            }
+
+            return options;
         }
 
    }

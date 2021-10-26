@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -26,8 +27,12 @@ namespace SocialEdge.Server.DataService
         Task<long> RemoveMany(FilterDefinition<BsonDocument> Filter);
         Task<bool> InsertOne(BsonDocument document);
         Task<bool> InsertMany(List<BsonDocument> document);
-        Task<bool> Save(BsonDocument document);
-        Task<bool> EnsureIndex();
+        // Task<bool> Save(BsonDocument document);
+        Task<string> CreateIndex(string key, int direction,  bool unique, 
+                                string name, TimeSpan? TTL);
+
+        Task<string> CreateIndex(string key1,string key2,  int direction1=1, int direction2=1,
+                                bool unique=false,string name=null, TimeSpan? TTL=null);
 
 
 
