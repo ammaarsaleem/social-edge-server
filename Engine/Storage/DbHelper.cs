@@ -30,7 +30,8 @@ namespace SocialEdge.Server.Db
 
         public async Task<bool> RegisterPlayer(string playFabId, string name, DateTime loginTime)
         {   
-
+            
+            
             var filter = Builders<BsonDocument>.Filter.Eq("playerId",playFabId);
             var update = Builders<BsonDocument>.Update.Set("playerId",playFabId)
                                                         .Set("displayName", name)

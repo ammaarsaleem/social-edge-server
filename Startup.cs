@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Linq;
 using StackExchange.Redis;
-using SocialEdge.Server.Cache;
 using SocialEdge.Server.Db;
+using SocialEdge.Server.DataService;
 using System;
 using SocialEdge.Server.Common.Utils;
 [assembly: FunctionsStartup(typeof(SocialEdge.Playfab.Startup))]
@@ -44,8 +44,18 @@ namespace SocialEdge.Playfab
                 return redis;
             });
 
+            // builder.Services.AddSingleton((s) =>
+            // {
+            //     MongoClient client = new MongoClient("mongodb+srv://MyMongoDBUser:MyMongoDBUserPassword@socialedgecluster.hsxfp.mongodb.net/Development?retryWrites=true&w=majority");
+            //     string connString = Environment.GetEnvironmentVariable(ConfigConstants.REDIS_CONNECTION_STRING, EnvironmentVariableTarget.Process);
+            //     ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connString);
+            //     IDataService dataService = new DataService(client, redis);
+            //     return dataService;
+            // });
+
             builder.Services.AddSingleton<ICache,Cache>();
             builder.Services.AddSingleton<IDbHelper,DbHelper>();
+            builder.Services.AddSingleton<IDataService,DataService>();
         }
     }
 }

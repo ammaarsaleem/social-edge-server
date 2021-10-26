@@ -4,17 +4,15 @@ using MongoDB.Bson;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace SocialEdge.Server.Cache 
+namespace SocialEdge.Server.DataService 
 {
     public class Cache : ICache
     {
-        private readonly ConnectionMultiplexer _redis;
         private readonly IDatabase _cacheDb;
 
-        public Cache(ConnectionMultiplexer redis)
+        public Cache(IDatabase cacheDb)
         {
-            _redis = redis;
-            _cacheDb = _redis.GetDatabase();
+            _cacheDb = cacheDb;
         }
 
         public async Task<bool> Set(RedisKey key, RedisValue value)

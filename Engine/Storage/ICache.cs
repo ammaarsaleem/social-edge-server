@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace SocialEdge.Server.Cache
+namespace SocialEdge.Server.DataService
 {
     public interface ICache
     {

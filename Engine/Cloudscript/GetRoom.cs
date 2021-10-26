@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using SocialEdge.Server.Common.Utils;
 using PlayFab.Samples;
-using SocialEdge.Server.Cache;
+using SocialEdge.Server.DataService;
 using StackExchange.Redis;
 namespace SocialEdge.Server.Requests
 {

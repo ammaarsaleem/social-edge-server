@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using SocialEdge.Server.Common.Utils;
 using SocialEdge.Server.Common.Models;
 using SocialEdge.Server.Constants;
-using SocialEdge.Server.Cache;
+using SocialEdge.Server.DataService;
 namespace SocialEdge.Playfab.Photon.Events
 {
     public partial class GameJoin
