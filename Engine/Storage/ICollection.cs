@@ -14,11 +14,13 @@ namespace SocialEdge.Server.DataService
         Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> Filter);
         Task<List<BsonDocument>> Find<T>(string prop,T val);
         Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter);
+        Task<UpdateResult> UpdateOneById<T>(string id, string prop, T val, bool upsert=false);
         Task<UpdateResult> UpdateOneById(string id, UpdateDefinition<BsonDocument> UpdateDefinition, bool upsert=false);
-        Task<UpdateResult> UpdateOne<T>(string prop, T val, UpdateDefinition<BsonDocument> UpdateDefinition, bool upsert=false);
+        Task<UpdateResult> UpdateOne<T,V>(string filterProp, T filterVal, string updateProp, V updateVal, bool upsert=false);
+        Task<UpdateResult> UpdateOne<T>(string filterProp, T filterVal, UpdateDefinition<BsonDocument> updateDefinition, bool upsert=false);
         Task<UpdateResult> UpdateOne(FilterDefinition<BsonDocument> Filter,UpdateDefinition<BsonDocument> UpdateDefinition, bool upsert=false);
-        Task<UpdateResult> UpdateManyById(string id, UpdateDefinition<BsonDocument> UpdateDefinition, bool upsert=false);
-        Task<UpdateResult> UpdateMany<T>(string id,T val, UpdateDefinition<BsonDocument> UpdateDefinition, bool upsert=false);
+        Task<UpdateResult> UpdateMany<T>(string prop,T val, UpdateDefinition<BsonDocument> UpdateDefinition, bool upsert=false);
+        Task<UpdateResult> UpdateMany<T,V>(string filterProp, T filterVal, string updateProp, V updateVal, bool upsert=false);
         Task<UpdateResult> UpdateMany(FilterDefinition<BsonDocument> Filter,UpdateDefinition<BsonDocument> UpdateDefinition, bool upsert=false);
         Task<bool> RemoveOneById(string id);
         Task<bool> RemoveOne<T>(string prop, T val);
@@ -28,10 +30,10 @@ namespace SocialEdge.Server.DataService
         Task<bool> InsertOne(BsonDocument document);
         Task<bool> InsertMany(List<BsonDocument> document);
         // Task<bool> Save(BsonDocument document);
-        Task<string> CreateIndex(string key, int direction,  bool unique, 
-                                string name, TimeSpan? TTL);
+        Task<string> CreateIndex(string key, int direction=1,  bool unique=false, 
+                                string name=null, TimeSpan? TTL=null);
 
-        Task<string> CreateIndex(string key1,string key2,  int direction1=1, int direction2=1,
+        Task<string> CreateIndex(string key1, string key2,  int direction1=1, int direction2=1,
                                 bool unique=false,string name=null, TimeSpan? TTL=null);
 
 

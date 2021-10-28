@@ -16,9 +16,10 @@ namespace SocialEdge.Server.Requests
     {
         IDbHelper _dbHelper;
         IDataService _dataService;
-        public Test(IDbHelper dbHelper)
+        public Test(IDataService dataService)
         {
-            _dbHelper = dbHelper;
+            _dataService = dataService;
+            // _dbHelper = dbHelper;
         }
         /// <summary>
         /// Wild search for a player by namee
