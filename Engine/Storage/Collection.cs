@@ -20,7 +20,19 @@ namespace SocialEdge.Server.DataService{
             _collection = database.GetCollection<BsonDocument>(collectionName);  
         }
 
-        public int Count{ get;}
+        public long EstimatedDocumentCount{ get => GetEstimatedDocs();}
+        public long DocumentCount{ get => GetCount();}
+        private long GetCount()
+        {
+            var filter = Builders<BsonDocument>.Filter;
+            return _collection.CountDocuments(new BsonDocument());
+        }
+
+        private long GetEstimatedDocs()
+        {
+            var filter = Builders<BsonDocument>.Filter;
+            return _collection.EstimatedDocumentCount();
+        }
         public async Task<BsonDocument> FindOneById(string id)
         {
             
