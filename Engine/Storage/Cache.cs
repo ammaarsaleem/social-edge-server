@@ -14,8 +14,7 @@ namespace SocialEdge.Server.DataService
         {
             _cacheDb = cacheDb;
         }
-
-        public async Task<bool> Set(RedisKey key, RedisValue value)
+        public async Task<bool> Set(string key, string value)
         {
             try
             {
@@ -26,12 +25,12 @@ namespace SocialEdge.Server.DataService
                 throw e;
             }
         }
-
-        public async Task<RedisValue> Get(RedisKey key)
+        public async Task<string> Get(string key)
         {
             try
             {
-                return await _cacheDb.StringGetAsync(key);
+                var result = await _cacheDb.StringGetAsync(key);
+                return result;
             }   
             catch(Exception e)
             {
