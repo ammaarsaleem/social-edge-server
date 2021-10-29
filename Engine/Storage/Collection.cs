@@ -33,9 +33,16 @@ namespace SocialEdge.Server.DataService{
             var filter = Builders<BsonDocument>.Filter;
             return _collection.EstimatedDocumentCount();
         }
+        public async Task<BsonDocument> FindOneById(string id, ProjectionDefinition<BsonDocument> projection)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("_id",ObjectId.Parse(id));
+            var result = await _collection.Find(filter).Project(projection).FirstOrDefaultAsync();
+            
+            return result;
+        }
+
         public async Task<BsonDocument> FindOneById(string id)
         {
-            
             var filter = Builders<BsonDocument>.Filter.Eq("_id",ObjectId.Parse(id));
             var result = await _collection.Find(filter).FirstOrDefaultAsync();
             
@@ -48,22 +55,47 @@ namespace SocialEdge.Server.DataService{
             var result = await _collection.Find(filter).FirstOrDefaultAsync();
             return result;
         }
+        public async Task<BsonDocument> FindOne<T>(string prop, T val, ProjectionDefinition<BsonDocument> projection)        
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
+            var result = await _collection.Find(filter).Project(projection).FirstOrDefaultAsync();
+            return result;            
+        }
         public async Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> Filter)
         {
             var result = await _collection.Find(Filter).FirstOrDefaultAsync();
             return result;
         }
+        public async Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> Filter, 
+                                                ProjectionDefinition<BsonDocument> projection)
+        {
+            var result = await _collection.Find(Filter).Project(projection).FirstOrDefaultAsync();
+            return result;
+        }        
         public async Task<List<BsonDocument>> Find<T>(string prop,T val)
         {
             var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
             var result = await _collection.Find(filter).ToListAsync();
             return result;
         }
+        public async Task<List<BsonDocument>> Find<T>(string prop,T val, 
+                                                    ProjectionDefinition<BsonDocument> projection)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
+            var result = await _collection.Find(filter).Project(projection).ToListAsync();
+            return result;
+        }        
         public async Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter)
         {
             var result = await _collection.Find(Filter).ToListAsync();
             return result;
         }
+        public async Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter,
+                                                    ProjectionDefinition<BsonDocument> projection)
+        {
+            var result = await _collection.Find(Filter).Project(projection).ToListAsync();
+            return result;
+        }        
 
         public async Task<UpdateResult> UpdateOneById<T>(string id, string prop, T val, bool upsert=false)
         {

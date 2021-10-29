@@ -15,30 +15,58 @@ namespace SocialEdge.Server.DataService
         //     total documents in a collection use EstimatedDocumentCount</summary>      
         ///<returns>The number of documents in the collection.</returns>
         long DocumentCount{ get;}
-             
+        
         ///<summary>Finds the document matching the id.</summary>      
         ///<param name="id">id of the document to match. </param>
         ///<returns>Bson document.</returns>
         Task<BsonDocument> FindOneById(string id);
-
-        ///<summary>Finds a document matching the the value of the property. Incase of multiple matches, fetches the first match</summary>      
+        ///<summary>Finds the document matching the id.</summary>      
+        ///<param name="id">id of the document to match. </param>
+        ///<param name="projection">Projection definition </param>
+        ///<returns>Projected bson document.</returns>        
+        Task<BsonDocument> FindOneById(string id, ProjectionDefinition<BsonDocument> projection);
+        ///<summary>Finds a document matching the the value of the property. Incase of multiple matches, 
+        ///fetches the first match</summary>      
         ///<param name="prop">The property to match</param>
         ///<param name="val">The value of the property to match</param>
         ///<returns>Bson document.</returns>          
         Task<BsonDocument> FindOne<T>(string prop, T val);
+        ///<summary>Finds a document matching the the value of the property. Incase of multiple matches,
+        ///fetches the first match</summary>      
+        ///<param name="prop">The property to match</param>
+        ///<param name="val">The value of the property to match</param>
+        ///<param name="projection">Projection definition</param>
+        ///<returns>Projected bson document.</returns>            
+        Task<BsonDocument> FindOne<T>(string prop, T val, ProjectionDefinition<BsonDocument> projection);
         ///<summary>Finds document matching the filter.</summary>      
         ///<param name="filter">FilterDefinition</param>
         ///<returns>Bson document.</returns>   
         Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> filter);
+        ///<summary>Finds document matching the filter.</summary>      
+        ///<param name="filter">Filter definition</param>
+        ///<param name="projection">Projection definition</param>
+        ///<returns>Projected bson document.</returns>           
+        Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> filter, ProjectionDefinition<BsonDocument> projection);
         ///<summary>Finds documents matching the the value of the property.</summary>      
         ///<param name="prop">The property to match</param>
         ///<param name="val">The value of the property to match</param>
         ///<returns>List of Bson documents</returns>  
         Task<List<BsonDocument>> Find<T>(string prop,T val);
+        ///<summary>Finds documents matching the the value of the property.</summary>      
+        ///<param name="prop">The property to match</param>
+        ///<param name="val">The value of the property to match</param>
+        ///<param name="projection">Projection definition</param>
+        ///<returns>List of projected bson documents</returns>          
+        Task<List<BsonDocument>> Find<T>(string prop,T val, ProjectionDefinition<BsonDocument> projection);
         ///<summary>Finds documents matching the filter.</summary>      
         ///<param name="filter">FilterDefinition</param>
         ///<returns>List of Bson documents</returns>   
         Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter);
+        ///<summary>Finds documents matching the filter.</summary>      
+        ///<param name="filter">FilterDefinition</param>
+        ///<param name="projection">Projection definition</param>
+        ///<returns>List of projected bson documents</returns>          
+        Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter, ProjectionDefinition<BsonDocument> projection);
         ///<summary>Updates the matching document</summary>      
         ///<param name="id">Id of the document to update</param>
         ///<param name="prop">The property to update</param>

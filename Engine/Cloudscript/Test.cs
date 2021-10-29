@@ -34,7 +34,8 @@ namespace SocialEdge.Server.Requests
             SocialEdgeEnvironment.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
-           
+            var collection = _dataService.GetCollection("BooksTest");
+            var res = await collection.FindOneById("1",null);
             try
             {
                
