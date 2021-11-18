@@ -5,7 +5,7 @@ using PlayFab.ServerModels;
 namespace SocialEdge.Server.Models{
     public class GetMetaDataResult
     {
-        public GetShopResult shopResult;
-        public GetFriendsListResult friendsListResult;
+        public GetShopResult shop;
+        public GetFriendsListResult friends;
     }
 }

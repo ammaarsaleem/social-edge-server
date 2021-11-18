@@ -38,21 +38,24 @@ namespace SocialEdge.Server.Requests
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
 
-            string playerTitleId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             GetMetaDataResult result = null;
-            GetShopResult shopResultModel = null;
-            string playerSettings = string.Empty;
             List<Task> tasks = null;
-            string playerId = string.Empty;
+            string storeId = string.Empty; 
+            string catalogId = string.Empty;
+            string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
 
             try
             {
-                playerId = context.PlayerProfile.PlayerId;
-                playerId = args["playerId"];
+                // playerId = context.PlayerProfile.PlayerId;
+                // if(!string.IsNullOrEmpty(args["player"]))
+                //     playerId = args["playerId"];
 
                 var getFriendsT = Player.GetFriendsList(playerId);
+                tasks = new List<Task>();
+                tasks.Add(getFriendsT);
+                // tasks.Add(getFriendsT);
+
                 var titleDataT = await Title.GetTitleData();
-                
 
                 if (titleDataT.Error == null)
                 {
@@ -60,16 +63,22 @@ namespace SocialEdge.Server.Requests
                     var titleDataResult = titleDataT.Result;
 
                     if(titleDataResult.Data.ContainsKey("StoreId"))
-                    {
-                        string storeId = titleDataResult.Data["StoreId"];
-                        var getShopT = Shop.GetShop(storeId);
-                        tasks.Add(getShopT);
-                    }
-                }
+                        storeId = titleDataResult.Data["StoreId"];
 
-                tasks.Add(getFriendsT);
-                await Task.WhenAll(tasks);
-                result = PrepareResult(getFriendsT.Result.Result,shopResultModel);
+                    if(titleDataResult.Data.ContainsKey("CatalogId"))    
+                        catalogId = titleDataResult.Data["CatalogId"];
+                    
+                    var getShopT = Shop.GetShop(storeId,catalogId);
+                    tasks.Add(getShopT);
+
+                    await Task.WhenAll(tasks);
+                    result = PrepareResult(getFriendsT.Result.Result,getShopT.Result);
+                }
+                else
+                {
+                    await Task.WhenAll(tasks);
+                    result = PrepareResult(getFriendsT.Result.Result,null);
+                }
 
                 return result;
             }
@@ -80,12 +89,12 @@ namespace SocialEdge.Server.Requests
         }
 
      
-        private GetMetaDataResult PrepareResult(GetFriendsListResult friendsList, GetShopResult shop)
+        private GetMetaDataResult PrepareResult(GetFriendsListResult getFriendsResult, GetShopResult getShopResult)
         {
             var result = new GetMetaDataResult
             {
-                shopResult = shop,
-                friendsListResult = friendsList
+                shop = getShopResult,
+                friends = getFriendsResult
             };
 
             return result;

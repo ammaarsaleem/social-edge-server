@@ -7,30 +7,37 @@ namespace SocialEdge.Server.Api
 {
     public static class Shop
     {
-        public static async Task<GetShopResult> GetShop(string shopId, string playerId=null)
+        public static async Task<GetShopResult> GetShop(string shopId, string catalogId, string playerId=null)
         {
             var storeRequest = new GetStoreItemsServerRequest
             {
                 StoreId = shopId,
-                PlayFabId = playerId
+                PlayFabId = playerId,
+                CatalogVersion = catalogId
             };
 
-            var storeResult = await PlayFabServerAPI.GetStoreItemsAsync(storeRequest);
+            var storeT =  PlayFabServerAPI.GetStoreItemsAsync(storeRequest);
 
             var catalogRequest = new GetCatalogItemsRequest
             {
-                CatalogVersion = storeResult.Result.CatalogVersion
+                CatalogVersion = catalogId
             };
 
-            var catalogResult = await PlayFabServerAPI.GetCatalogItemsAsync(catalogRequest);
+
+            var catalogT =  PlayFabServerAPI.GetCatalogItemsAsync(catalogRequest);
+
+            await Task.WhenAll(storeT,catalogT);
 
             var result = new GetShopResult
             {
-                storeItems = storeResult.Result.Store,
-                storeId = storeResult.Result.StoreId,
-                marketingModel = storeResult.Result.MarketingData,
-                catalogVersion = storeResult.Result.CatalogVersion,
-                catalogItems = catalogResult.Result.Catalog
+                // storeItems = storeT.Result?.Result?.Store,
+                // storeId = storeT.Result?.Result?.StoreId,
+                // marketingModel = storeT.Result?.Result?.MarketingData,
+                // catalogVersion = storeT.Result?.Result?.CatalogVersion,
+                // catalogItems = catalogT.Result?.Result?.Catalog
+
+                storeResult = storeT.Result.Result,
+                catalogResult = catalogT.Result.Result
             };
 
             return result;

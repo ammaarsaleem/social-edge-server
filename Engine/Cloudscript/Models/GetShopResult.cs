@@ -5,11 +5,13 @@ using PlayFab.ServerModels;
 namespace SocialEdge.Server.Models{
     public class GetShopResult
     {
-        public string catalogVersion;
-        public string storeId;
-        public StoreMarketingModel marketingModel;
+        public GetCatalogItemsResult catalogResult;
+        public GetStoreItemsResult storeResult;
+        // public string catalogVersion;
+        // public string storeId;
+        // public StoreMarketingModel marketingModel;
 
-        public List<StoreItem> storeItems;
-        public List<CatalogItem> catalogItems;
+        // public List<StoreItem> storeItems;
+        // public List<CatalogItem> catalogItems;
     }
 }
