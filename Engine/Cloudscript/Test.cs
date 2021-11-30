@@ -10,6 +10,7 @@ using PlayFab.Samples;
 using System.Collections.Generic;
 using SocialEdge.Server.Db;
 using SocialEdge.Server.DataService;
+// using SocialEdge.Server.Realtime;
 namespace SocialEdge.Server.Requests
 {
     public class Test
@@ -34,11 +35,14 @@ namespace SocialEdge.Server.Requests
             SocialEdgeEnvironment.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
+            string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             var collection = _dataService.GetCollection("BooksTest");
             var res = await collection.FindOneById("1",null);
             try
             {
-               
+            //     Realtime.PubSub.AddToGroup()
+            //     string message = "abc";
+            //    Realtime.PubSub.SendToUser("FromTest",playerId,message );
             }
             catch (Exception e)
             {
