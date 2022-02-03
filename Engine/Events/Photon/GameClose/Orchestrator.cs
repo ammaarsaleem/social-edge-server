@@ -45,7 +45,6 @@ namespace SocialEdge.Playfab.Photon.Events
             log.LogInformation("Game close start");
 
             string instanceId = await starter.StartNewAsync(Constant.GAME_CLOSE_ORCHESTRATOR, body);
-
             log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
             HttpResponseMessage result =  starter.CreateCheckStatusResponse(req, instanceId,true);
             if(result.IsSuccessStatusCode)

@@ -8,6 +8,7 @@ namespace SocialEdge.Server.Common.Utils
         public const string PLAYFAB_CLOUD_NAME = "PLAYFAB_CLOUD_NAME";
         public const string REDIS_CONNECTION_STRING = "REDIS_CONNECTION_STRING";
         public const string MONGO_CONNECTION_STRING = "MONGO_CONNECTION_STRING";
+        public const string AZURE_STORAGE = "AzureWebJobsStorage";
         public const string DATABASE = "default";
     }
 }
