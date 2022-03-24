@@ -42,7 +42,21 @@ namespace SocialEdge.Playfab
 
             log.LogInformation("Noor sent a log");
             var result = await PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
-            log.LogDebug(result.ToString());
+            log.LogDebug(JsonConvert.SerializeObject(result));
+
+            PlayFabResult<UpdateUserDataResult> updatePlayerDataResult = null;
+            var updateReadOnlyDataReq = new UpdateUserDataRequest()
+            {
+                 Data = new Dictionary<string, string>
+                 {
+                     {"eloScore", "750"}
+                 },
+                 PlayFabId = context.PlayerProfile.PlayerId,
+             };
+             updatePlayerDataResult = await PlayFabServerAPI.UpdateUserReadOnlyDataAsync(updateReadOnlyDataReq);
+
+              log.LogDebug(JsonConvert.SerializeObject(updatePlayerDataResult));
+            
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
