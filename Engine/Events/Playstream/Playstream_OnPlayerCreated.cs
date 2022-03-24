@@ -33,14 +33,16 @@ namespace SocialEdge.Playfab
             dynamic args = context.FunctionArgument;
 
             string hashCode = context.PlayerProfile.PlayerId.GetHashCode().ToString();
-            string newDisplayName = "Guest" + hashCode;
+            string newDisplayName = "NewGuest" + hashCode;
             var request = new PlayFab.AdminModels.UpdateUserTitleDisplayNameRequest
             {
                 PlayFabId = context.PlayerProfile.PlayerId,
                 DisplayName = newDisplayName
             };
 
+            log.LogInformation("Noor sent a log");
             var result = await PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
+            log.LogDebug(result.ToString());
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
