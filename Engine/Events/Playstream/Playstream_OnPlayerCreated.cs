@@ -61,6 +61,8 @@ namespace SocialEdge.Playfab
             PlayerModel_PublicPlayerProfileData pub = new PlayerModel_PublicPlayerProfileData();
             string pubJson = JsonConvert.SerializeObject(pub);
 
+            log.LogInformation("Serialized Json : " + pubJson);
+
             PlayFabResult<UpdateUserDataResult> updatePlayerDataResult = null;
             var updateReadOnlyDataReq = new UpdateUserDataRequest()
             {
