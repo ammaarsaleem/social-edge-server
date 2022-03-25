@@ -23,9 +23,9 @@ namespace SocialEdge.Playfab
 {
     public class PlayerModel_PublicPlayerProfileData
     {
-        string tag;
-        int eloCompletedPlacementGames;
-        int eloScore;
+        public string tag;
+        public int eloCompletedPlacementGames;
+        public int eloScore;
 
         public PlayerModel_PublicPlayerProfileData()
         {
@@ -69,7 +69,7 @@ namespace SocialEdge.Playfab
                  Data = new Dictionary<string, string>
                  {
                     // Public Profile
-                    {"tag", pubJson},
+                    {"pub", pubJson},
                     /*
                     {"eloCompletedPlacementGames", "0"},
                     {"eloScore", "0"},
