@@ -95,7 +95,6 @@ namespace SocialEdge.Playfab
                     {"careerLeagueSet", "false"},
                     {"isReportingInChampionship", "false"},
                     {"reportingChampionshipCollectionIndex", "-1"},
-                    {"careerLeagueSet", "false"},
                     {"chestUnlockTimestamp", "0"},
                     {"rvUnlockTimestamp", "0"},
                     {"dynamicBundlePurchaseTier", ""},
@@ -115,7 +114,7 @@ namespace SocialEdge.Playfab
                     {"dailyEventProgress", "0"},
                     {"dailyEventState", ""}
                  },
-                 
+
                  PlayFabId = context.PlayerProfile.PlayerId,
              };
              updatePlayerDataResult = await PlayFabServerAPI.UpdateUserReadOnlyDataAsync(updateReadOnlyDataReq);
