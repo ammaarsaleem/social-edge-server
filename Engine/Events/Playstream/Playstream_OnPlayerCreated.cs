@@ -21,20 +21,148 @@ using System.Net;
 using SocialEdge.Server.Common.Utils;
 namespace SocialEdge.Playfab
 {
-    public class PlayerModel_PublicPlayerProfileData
+    public class PlayerHotDataSegment
     {
         public string tag;
         public int eloCompletedPlacementGames;
         public int eloScore;
+        public int gamesWon;
+        public int gamesLost;
+        public int gamesDrawn;
+        public string countryFlag;
+        public int league;
+        public int trophies;
+        public int trophies2;
+        public string editedName;
+        public int totalGamesCount;
 
-        public PlayerModel_PublicPlayerProfileData()
+        public int shopRvRewardClaimedCount;
+        public int balloonRewardsClaimedCount;
+        public int outOfGemsSessionCount;
+        public int cpuPowerupUsedCount;
+        public int totalPowerupUsageCount;
+        public int chestUnlockTimestamp;
+        public int rvUnlockTimestamp;
+        public int piggyBankExpiryTimestamp;
+        public int piggyBankDoublerExipryTimestamp;
+        public int freePowerPlayExipryTimestamp;
+        public int shopRvRewardCooldownTimestamp;
+        public int lastBundleUpdatePlayDay;
+
+        public string adsRewardData;
+        public int eventTimeStamp;
+        public string lastWatchedVideoId;
+
+        public int dailyEventExpiryTimestamp;
+        public string dailyEventRewards;
+        public int dailyEventProgress;
+        public int dailyEventState;
+
+        public bool isReportingInChampionship;
+        public int reportingChampionshipCollectionIndex;
+        public string activeTournaments;
+        public string currentChallengeId;
+        public string activeChallenges;
+        public string pendingChallenges;
+
+/*
+        // Private Data
+        X {"playerActiveInventory", null},
+        X {"isBot", "false"},
+        X {"botDifficulty", "0"},
+        X {"friends", null},
+        X {"community", null},
+        X {"blocked", null},
+        X {"removed", null},
+*/
+        public PlayerHotDataSegment()
         {
-            tag = "ABCDE";
+            tag = null;
             eloCompletedPlacementGames = 0;
-            eloScore = 799;
-        }
+            eloScore = 0;
+            gamesWon = 0;
+            gamesLost = 0;
+            gamesDrawn = 0;
+            countryFlag = null;
+            league = 0;
+            trophies = 0 ;
+            trophies2 = 0;
+            editedName = null;
+            totalGamesCount = 0;;
 
+            shopRvRewardClaimedCount = 0;
+            balloonRewardsClaimedCount = 0;
+            outOfGemsSessionCount = 0;
+            cpuPowerupUsedCount = 0;
+            totalPowerupUsageCount = 0;
+            chestUnlockTimestamp = 0;
+            rvUnlockTimestamp = 0;
+            piggyBankExpiryTimestamp = 0;
+            piggyBankDoublerExipryTimestamp = 0;
+            freePowerPlayExipryTimestamp = 0;
+            shopRvRewardCooldownTimestamp = 0;
+            lastBundleUpdatePlayDay = 0;
+
+            adsRewardData = null;
+            eventTimeStamp = 0;
+            lastWatchedVideoId = null;
+
+            dailyEventExpiryTimestamp = 0;
+            dailyEventRewards = null;
+            dailyEventProgress = 0;
+            dailyEventState = 0;
+
+            isReportingInChampionship = false;
+            reportingChampionshipCollectionIndex = -1;
+            activeTournaments = null;
+            currentChallengeId = null;
+            activeChallenges = null;
+            pendingChallenges = null;
+        }
     }
+
+    public class PlayerColdDataSegment
+    {
+        public bool isInitialized;
+        public string clientVersion;
+        public bool firstLongMatchCompleted;
+        public bool isSearchRegistered;
+        public bool isFBConnectRewardClaimed;
+        public int playerTimeZoneSlot;
+        public int removeAdsTimeStamp;
+        public int removeAdsTimePeriod;
+        public bool isPremium;
+        public int subscriptionExpiryTime;
+        public string subscriptionType;
+        public string dynamicBundlePurchaseTier;
+        public string dynamicBundleDisplayTier;
+        public string dynamicBundlePurchaseTierNew;
+        public int eloCompletedPlacementGames;
+        public bool careerLeagueSet;
+        public string uploadedPicId;
+
+        public PlayerColdDataSegment()
+        {
+            isInitialized = false;
+            clientVersion = "0.0.0";
+            firstLongMatchCompleted = false;
+            isSearchRegistered = false;
+            isFBConnectRewardClaimed = false;
+            playerTimeZoneSlot = 0;
+            removeAdsTimeStamp = 0;
+            removeAdsTimePeriod = 0;
+            isPremium = false;
+            subscriptionExpiryTime = 0;
+            subscriptionType = null;
+            dynamicBundlePurchaseTier = null;
+            dynamicBundleDisplayTier = null;
+            dynamicBundlePurchaseTierNew = null;
+            eloCompletedPlacementGames = 0;
+            careerLeagueSet = false;
+            uploadedPicId = null;         
+        }
+    }
+
     public class Playstream_OnPlayerCreated
     {
         [FunctionName("Playstream_OnPlayerCreated")]
@@ -58,84 +186,21 @@ namespace SocialEdge.Playfab
             var result = await PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
             log.LogDebug(JsonConvert.SerializeObject(result));
 
-            PlayerModel_PublicPlayerProfileData pub = new PlayerModel_PublicPlayerProfileData();
-            string pubJson = JsonConvert.SerializeObject(pub);
+            PlayerHotDataSegment playerHotDataSegment = new PlayerHotDataSegment();
+            string playerHotDataSegmentJSon = JsonConvert.SerializeObject(playerHotDataSegment);
+            log.LogInformation("Serialized playerHotDataSegmentJSon : " + playerHotDataSegmentJSon);
 
-            log.LogInformation("Serialized Json : " + pubJson);
+            PlayerColdDataSegment playerColdDataSegment = new PlayerColdDataSegment();
+            string playerColdDataSegmentJSon = JsonConvert.SerializeObject(playerColdDataSegment);
+            log.LogInformation("Serialized playerColdDataSegmentJSon : " + playerColdDataSegmentJSon);
 
             PlayFabResult<UpdateUserDataResult> updatePlayerDataResult = null;
             var updateReadOnlyDataReq = new UpdateUserDataRequest()
             {
                  Data = new Dictionary<string, string>
                  {
-                    // Public Profile
-                    {"pub", pubJson},
-                    /*
-                    {"eloCompletedPlacementGames", "0"},
-                    {"eloScore", "0"},
-                    {"gamesWon", "0"},
-                    {"gamesLost", "0"},
-                    {"gamesDrawn", "0"},
-                    {"countryFlag", null},
-                    {"league", "0"},
-                    {"trophies", "0"},
-                    {"trophies2", "0"},
-
-                    // Private Data
-                    {"adLifetimeImpressions", "0"},
-                    {"playerActiveInventory", null},
-                    {"isInitialized", "false"},
-                    {"isBot", "false"},
-                    {"botDifficulty", "0"},
-                    {"currentChallengeId", null},
-                    {"friends", null},
-                    {"community", null},
-                    {"blocked", null},
-				    {"removed", null},
-                    {"activeChallenges", null},
-                    {"pendingChallenges", null},
-                    {"firstLongMatchCompleted", "false"},
-                    {"removeAdsTimeStamp", "0"},
-                    {"removeAdsTimePeriod", "0"},
-                    {"isPremium", "false"},
-                    {"isSearchRegistered", "false"},
-                    {"clientVersion", "0.0.0"},
-                    {"editedName", ""},
-                    {"isFBConnectRewardClaimed", "false"},
-                    {"cpuPowerupUsedCount", "0"},
-                    {"totalGamesCount", "0"},
-                    {"totalPowerupUsageCount", "0"},
-                    {"eventTimeStamp", "0"},
-                    {"subscriptionExpiryTime", "0"},
-                    {"subscriptionType", ""},
-                    {"adsRewardData", null},
-                    {"lastWatchedVideoId", ""},
-                    {"uploadedPicId", ""},
-                    {"activeTournaments", null},
-                    {"careerLeagueSet", "false"},
-                    {"isReportingInChampionship", "false"},
-                    {"reportingChampionshipCollectionIndex", "-1"},
-                    {"careerLeagueSet", "false"},
-                    {"chestUnlockTimestamp", "0"},
-                    {"rvUnlockTimestamp", "0"},
-                    {"dynamicBundlePurchaseTier", ""},
-                    {"dynamicBundleDisplayTier", ""},
-                    {"outOfGemsSessionCount", "0"},
-                    {"dynamicBundlePurchaseTierNew", ""},
-                    {"lastBundleUpdatePlayDay", "0"},
-                    {"playerTimeZoneSlot", "0"},
-                    {"piggyBankExpiryTimestamp", "0"},
-                    {"balloonRewardsClaimedCount", "0"},
-                    {"freePowerPlayExipryTimestamp", "0"},
-                    {"piggyBankDoublerExipryTimestamp", "0"},
-                    {"shopRvRewardClaimedCount", "0"},
-                    {"shopRvRewardCooldownTimestamp", "0"},
-                    {"dailyEventExpiryTimestamp", "0"},
-                    {"dailyEventRewards", null},
-                    {"dailyEventProgress", "0"},
-                    {"dailyEventState", ""}
-                    */
-                 
+                    {"hotData", playerHotDataSegmentJSon},
+                    {"coldData", playerColdDataSegmentJSon}
                  },
 
                  PlayFabId = context.PlayerProfile.PlayerId,
