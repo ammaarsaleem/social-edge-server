@@ -21,6 +21,20 @@ using System.Net;
 using SocialEdge.Server.Common.Utils;
 namespace SocialEdge.Playfab
 {
+    public class PlayerModel_PublicPlayerProfileData
+    {
+        string tag;
+        int eloCompletedPlacementGames;
+        int eloScore;
+
+        public PlayerModel_PublicPlayerProfileData()
+        {
+            tag = "ABCDE";
+            eloCompletedPlacementGames = 0;
+            eloScore = 799;
+        }
+
+    }
     public class Playstream_OnPlayerCreated
     {
         [FunctionName("Playstream_OnPlayerCreated")]
@@ -44,13 +58,17 @@ namespace SocialEdge.Playfab
             var result = await PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
             log.LogDebug(JsonConvert.SerializeObject(result));
 
+            PlayerModel_PublicPlayerProfileData pub = new PlayerModel_PublicPlayerProfileData();
+            string pubJson = JsonConvert.SerializeObject(pub);
+
             PlayFabResult<UpdateUserDataResult> updatePlayerDataResult = null;
             var updateReadOnlyDataReq = new UpdateUserDataRequest()
             {
                  Data = new Dictionary<string, string>
                  {
                     // Public Profile
-                    {"tag", null},
+                    {"tag", pubJson},
+                    /*
                     {"eloCompletedPlacementGames", "0"},
                     {"eloScore", "0"},
                     {"gamesWon", "0"},
@@ -95,6 +113,7 @@ namespace SocialEdge.Playfab
                     {"careerLeagueSet", "false"},
                     {"isReportingInChampionship", "false"},
                     {"reportingChampionshipCollectionIndex", "-1"},
+                    {"careerLeagueSet", "false"},
                     {"chestUnlockTimestamp", "0"},
                     {"rvUnlockTimestamp", "0"},
                     {"dynamicBundlePurchaseTier", ""},
@@ -113,6 +132,8 @@ namespace SocialEdge.Playfab
                     {"dailyEventRewards", null},
                     {"dailyEventProgress", "0"},
                     {"dailyEventState", ""}
+                    */
+                 
                  },
 
                  PlayFabId = context.PlayerProfile.PlayerId,
