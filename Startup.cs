@@ -10,7 +10,9 @@ using SocialEdge.Server.Db;
 using SocialEdge.Server.DataService;
 using System;
 using SocialEdge.Server.Common.Utils;
+
 [assembly: FunctionsStartup(typeof(SocialEdge.Playfab.Startup))]
+
 namespace SocialEdge.Playfab
 {
     public class Startup : FunctionsStartup
@@ -20,7 +22,7 @@ namespace SocialEdge.Playfab
         /// </summary>
         public override void Configure(IFunctionsHostBuilder builder)
         {
-              builder.Services.AddLogging(loggingBuilder =>
+            builder.Services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddFilter(level => true);
             });
@@ -56,6 +58,7 @@ namespace SocialEdge.Playfab
             builder.Services.AddSingleton<ICache,Cache>();
             builder.Services.AddSingleton<IDbHelper,DbHelper>();
             builder.Services.AddSingleton<IDataService,DataService>();
+            builder.Services.AddSingleton<ITitleContext, TitleContext>();
         }
     }
 }
