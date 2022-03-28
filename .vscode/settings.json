@@ -4,5 +4,5 @@
   "azureFunctions.projectRuntime": "~3",
   "debug.internalConsoleOptions": "neverOpen",
   "azureFunctions.preDeployTask": "publish",
-  "playfab.loginId": "omer.khalid@turbolabz.com"
+  "playfab.loginId": "noor.khawaja@turbolabz.com"
 }
