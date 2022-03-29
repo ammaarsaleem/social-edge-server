@@ -35,17 +35,15 @@ namespace SocialEdge.Server.DataService
             var titleDataTask = Title.GetTitleData();
             _titleData = titleDataTask.Result.Result;
 
-            /*
             if(_titleData.Data.ContainsKey("StoreId"))
                 storeId = _titleData.Data["StoreId"];
 
             if(_titleData.Data.ContainsKey("CatalogId"))    
                 catalogId = _titleData.Data["CatalogId"];
 
-            var getShopTask = await Shop.GetShop(storeId, catalogId);
-            _catalogItems = getShopTask.catalogResult;
-            _storeItems = getShopTask.storeResult;
-            */
+            var getShopTask = Shop.GetShop(storeId, catalogId);
+            _catalogItems = getShopTask.Result.catalogResult;
+            _storeItems = getShopTask.Result.storeResult;
         }
     }
 }
