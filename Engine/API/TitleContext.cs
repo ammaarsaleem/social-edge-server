@@ -26,15 +26,16 @@ namespace SocialEdge.Server.DataService
             FetchTitleContext();
         }
 
-        private async void FetchTitleContext()
+        private void FetchTitleContext()
         {
             version = "0.0.0";
             string storeId = string.Empty; 
             string catalogId = string.Empty;
 
-            var titleDataTask = await Title.GetTitleData();
-            _titleData = titleDataTask.Result;
+            var titleDataTask = Title.GetTitleData();
+            _titleData = titleDataTask.Result.Result;
 
+            /*
             if(_titleData.Data.ContainsKey("StoreId"))
                 storeId = _titleData.Data["StoreId"];
 
@@ -44,6 +45,7 @@ namespace SocialEdge.Server.DataService
             var getShopTask = await Shop.GetShop(storeId, catalogId);
             _catalogItems = getShopTask.catalogResult;
             _storeItems = getShopTask.storeResult;
+            */
         }
     }
 }
