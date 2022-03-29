@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using PlayFab;
 using PlayFab.ServerModels;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace SocialEdge.Server.DataService
 {
@@ -23,6 +24,11 @@ namespace SocialEdge.Server.DataService
         public TitleContext()
         {
             version = "0.0.0";
+
+            //_titleData = 
+            var t = SocialEdge.Server.Api.Title.GetTitleData();
+            var serialized = JsonConvert.SerializeObject(t.Result);
+            _titleData = JsonConvert.DeserializeObject<GetTitleDataResult>(serialized);
         }
 
     }
