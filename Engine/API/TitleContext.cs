@@ -3,37 +3,47 @@ using PlayFab;
 using PlayFab.ServerModels;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using SocialEdge.Server.Api;
 
 namespace SocialEdge.Server.DataService
 {
     public interface ITitleContext
     {
         string version { get; set; }
-        PlayFabResult<GetTitleDataResult> _titleData { get; set; }
-
-        string _titleDataStr { get; set; }
+        GetTitleDataResult _titleData { get; set; }
         GetCatalogItemsResult _catalogItems  { get; set; }
         GetStoreItemsResult _storeItems   { get; set; }
-        
     }
     public class TitleContext : ITitleContext
     {
         public string version { get; set; }
-        public PlayFabResult<GetTitleDataResult> _titleData  { get; set; }
-
-        public string _titleDataStr { get; set; }
+        public GetTitleDataResult _titleData  { get; set; }
         public GetCatalogItemsResult _catalogItems  { get; set; }
         public GetStoreItemsResult _storeItems   { get; set; }
 
         public TitleContext()
         {
-            version = "0.0.0";
-
-            var titleDataTask = SocialEdge.Server.Api.Title.GetTitleData();
-            _titleData = titleDataTask.Result;
-            _titleDataStr = JsonConvert.SerializeObject(_titleData);
-            //_titleDataStr = JsonConvert.DeserializeObject<GetTitleDataResult>(serialized).ToString();
+            FetchTitleContext();
         }
 
+        private async void FetchTitleContext()
+        {
+            version = "0.0.0";
+            string storeId = string.Empty; 
+            string catalogId = string.Empty;
+
+            var titleDataTask = await Title.GetTitleData();
+            _titleData = titleDataTask.Result;
+
+            if(_titleData.Data.ContainsKey("StoreId"))
+                storeId = _titleData.Data["StoreId"];
+
+            if(_titleData.Data.ContainsKey("CatalogId"))    
+                catalogId = _titleData.Data["CatalogId"];
+
+            var getShopTask = await Shop.GetShop(storeId, catalogId);
+            _catalogItems = getShopTask.catalogResult;
+            _storeItems = getShopTask.storeResult;
+        }
     }
 }
