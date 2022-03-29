@@ -9,7 +9,7 @@ namespace SocialEdge.Server.DataService
     public interface ITitleContext
     {
         string version { get; set; }
-        GetTitleDataResult _titleData { get; set; }
+        PlayFabResult<GetTitleDataResult> _titleData { get; set; }
 
         string _titleDataStr { get; set; }
         GetCatalogItemsResult _catalogItems  { get; set; }
@@ -19,7 +19,7 @@ namespace SocialEdge.Server.DataService
     public class TitleContext : ITitleContext
     {
         public string version { get; set; }
-        public GetTitleDataResult _titleData  { get; set; }
+        public PlayFabResult<GetTitleDataResult> _titleData  { get; set; }
 
         public string _titleDataStr { get; set; }
         public GetCatalogItemsResult _catalogItems  { get; set; }
@@ -29,9 +29,9 @@ namespace SocialEdge.Server.DataService
         {
             version = "0.0.0";
 
-            //_titleData = 
-            var t = SocialEdge.Server.Api.Title.GetTitleData();
-            _titleDataStr = JsonConvert.SerializeObject(t.Result);
+            var titleDataTask = SocialEdge.Server.Api.Title.GetTitleData();
+            _titleData = titleDataTask.Result;
+            _titleDataStr = JsonConvert.SerializeObject(_titleData);
             //_titleDataStr = JsonConvert.DeserializeObject<GetTitleDataResult>(serialized).ToString();
         }
 
