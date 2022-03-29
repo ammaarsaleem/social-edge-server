@@ -10,6 +10,8 @@ namespace SocialEdge.Server.DataService
     {
         string version { get; set; }
         GetTitleDataResult _titleData { get; set; }
+
+        string _titleDataStr { get; set; }
         GetCatalogItemsResult _catalogItems  { get; set; }
         GetStoreItemsResult _storeItems   { get; set; }
         
@@ -18,6 +20,8 @@ namespace SocialEdge.Server.DataService
     {
         public string version { get; set; }
         public GetTitleDataResult _titleData  { get; set; }
+
+        public string _titleDataStr { get; set; }
         public GetCatalogItemsResult _catalogItems  { get; set; }
         public GetStoreItemsResult _storeItems   { get; set; }
 
@@ -27,8 +31,8 @@ namespace SocialEdge.Server.DataService
 
             //_titleData = 
             var t = SocialEdge.Server.Api.Title.GetTitleData();
-            var serialized = JsonConvert.SerializeObject(t.Result);
-            _titleData = JsonConvert.DeserializeObject<GetTitleDataResult>(serialized);
+            _titleDataStr = JsonConvert.SerializeObject(t.Result);
+            //_titleDataStr = JsonConvert.DeserializeObject<GetTitleDataResult>(serialized).ToString();
         }
 
     }
