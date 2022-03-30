@@ -54,6 +54,8 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.shop.catalogResult = _titleContext._catalogItems;
                 metaDataResponse.shop.storeResult = _titleContext._storeItems;
 
+                _titleContext.version = "0.0.1";
+
                 return metaDataResponse;
             }
             catch (Exception e)
