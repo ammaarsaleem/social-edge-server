@@ -7,5 +7,6 @@ namespace SocialEdge.Server.Models{
     {
         public GetShopResult shop;
         public GetFriendsListResult friends;
+        public GetTitleDataResult titleData;
     }
 }
