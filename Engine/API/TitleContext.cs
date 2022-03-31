@@ -59,21 +59,30 @@ namespace SocialEdge.Server.DataService
             _storeItems = getShopTask.Result.storeResult;
 
             _titleDataDict = new Dictionary<string, dynamic> ();
-            foreach (var obj in _titleData.Data)
+            if (_titleData != null)
             {
-                _titleDataDict.Add(obj.Key, JsonConvert.DeserializeObject<dynamic>(obj.Value));
+                foreach (var obj in _titleData.Data)
+                {
+                    _titleDataDict.Add(obj.Key, JsonConvert.DeserializeObject<dynamic>(obj.Value));
+                }
             }
 
             _catalogItemsDict = new Dictionary<string, CatalogItem>();
-            foreach(var item in _catalogItems.Catalog)
+            if (_catalogItems != null)
             {
-                _catalogItemsDict.Add(item.ItemId, item);
+                foreach(var item in _catalogItems.Catalog)
+                {
+                    _catalogItemsDict.Add(item.ItemId, item);
+                }
             }
 
             _storeItemsDict = new Dictionary<string, StoreItem>();
-            foreach(var item in _storeItems.Store)
+            if (_storeItems != null)
             {
-                _storeItemsDict.Add(item.ItemId, item);
+                foreach(var item in _storeItems.Store)
+                {
+                    _storeItemsDict.Add(item.ItemId, item);
+                }
             }
         }
 
