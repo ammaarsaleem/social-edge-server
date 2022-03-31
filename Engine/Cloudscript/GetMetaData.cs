@@ -22,7 +22,7 @@ namespace SocialEdge.Server.Requests
     {
         IDbHelper _dbHelper;
         ITitleContext _titleContext;
-        
+
         public GetMetaData(IDbHelper dbHelper, ITitleContext titleContext)
         {
             _dbHelper = dbHelper;
@@ -53,9 +53,15 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.shop = new GetShopResult();
                 metaDataResponse.titleData = new GetTitleDataResult();
                 metaDataResponse.friends = getFriendsT.Result.Result;
-                metaDataResponse.shop.catalogResult = _titleContext._catalogItems;
-                metaDataResponse.shop.storeResult = _titleContext._storeItems;
-                metaDataResponse.titleData = _titleContext._titleData;
+                metaDataResponse.shop.catalogResult = _titleContext.CatalogItems;
+                metaDataResponse.shop.storeResult = _titleContext.StoreItems;
+                metaDataResponse.titleData = _titleContext.TitleData;
+
+                var gameSettings = _titleContext.GetTitleDataProperty("GameSettings");
+                var metaSettings = _titleContext.GetTitleDataProperty("Meta", gameSettings);
+                int c = _titleContext.GetTitleDataProperty("backendAppVersion", metaSettings);
+
+                log.LogInformation("backendAppVersion:" + c);
 
                 return metaDataResponse;
             }
