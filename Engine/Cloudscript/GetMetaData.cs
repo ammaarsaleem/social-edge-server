@@ -15,6 +15,7 @@ using SocialEdge.Server.Constants;
 using SocialEdge.Server.Db;
 using SocialEdge.Server.Api;
 using SocialEdge.Server.DataService;
+using PlayFab.ProfilesModels;
 
 namespace SocialEdge.Server.Requests
 {
@@ -45,23 +46,25 @@ namespace SocialEdge.Server.Requests
             try
             {
                 // Fetch friends
-                var getFriendsT = Player.GetFriendsList(playerId);
+                var getTitleTokenT = await Player.GetTitleEntityToken();
+                var getFriendsT = await Player.GetFriendsList(playerId);
+                var friends = getFriendsT.Result.Friends;
+                var getFriendProfilesT = await Player.GetFriendProfiles(friends, getTitleTokenT.Result.EntityToken);
 
                 // Prepare client response
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
                 metaDataResponse.friends = new GetFriendsListResult();
                 metaDataResponse.shop = new GetShopResult();
                 metaDataResponse.titleData = new GetTitleDataResult();
-                metaDataResponse.friends = getFriendsT.Result.Result;
+                metaDataResponse.friends = getFriendsT.Result;
                 metaDataResponse.shop.catalogResult = _titleContext.CatalogItems;
                 metaDataResponse.shop.storeResult = _titleContext.StoreItems;
                 metaDataResponse.titleData = _titleContext.TitleData;
+                metaDataResponse.friendsProfiles = getFriendProfilesT.Result;
 
                 var gameSettings = _titleContext.GetTitleDataProperty("GameSettings");
                 var metaSettings = _titleContext.GetTitleDataProperty("Meta", gameSettings);
                 int c = _titleContext.GetTitleDataProperty("backendAppVersion", metaSettings);
-
-                log.LogInformation("backendAppVersion:" + c);
 
                 return metaDataResponse;
             }
