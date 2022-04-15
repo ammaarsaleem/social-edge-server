@@ -12,5 +12,8 @@ namespace SocialEdge.Server.Models{
         public GetTitleDataResult titleData;
 
         public  GetEntityProfilesResponse friendsProfiles;
+
+        public bool appVersionValid;
+        
     }
 }

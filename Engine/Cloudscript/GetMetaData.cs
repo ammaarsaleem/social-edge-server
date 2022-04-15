@@ -62,6 +62,9 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.titleData = _titleContext.TitleData;
                 metaDataResponse.friendsProfiles = getFriendProfilesT.Result;
 
+                metaDataResponse.appVersionValid = true; // TODO
+
+
                 var gameSettings = _titleContext.GetTitleDataProperty("GameSettings");
                 var metaSettings = _titleContext.GetTitleDataProperty("Meta", gameSettings);
                 int c = _titleContext.GetTitleDataProperty("backendAppVersion", metaSettings);
