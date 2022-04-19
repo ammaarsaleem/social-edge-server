@@ -49,10 +49,14 @@ namespace SocialEdge.Server.DataService
             _titleData = titleDataTask.Result.Result;
 
             if(_titleData.Data.ContainsKey("StoreId"))
+            {
                 storeId = _titleData.Data["StoreId"];
+            }
 
-            if(_titleData.Data.ContainsKey("CatalogId"))    
+            if(_titleData.Data.ContainsKey("CatalogId"))  
+            {  
                 catalogId = _titleData.Data["CatalogId"];
+            }
 
             var getShopTask = Shop.GetShop(storeId, catalogId);
             _catalogItems = getShopTask.Result.catalogResult;

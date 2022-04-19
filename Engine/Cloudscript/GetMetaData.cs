@@ -16,6 +16,8 @@ using SocialEdge.Server.Db;
 using SocialEdge.Server.Api;
 using SocialEdge.Server.DataService;
 using PlayFab.ProfilesModels;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace SocialEdge.Server.Requests
 {
@@ -24,10 +26,13 @@ namespace SocialEdge.Server.Requests
         IDbHelper _dbHelper;
         ITitleContext _titleContext;
 
-        public GetMetaData(IDbHelper dbHelper, ITitleContext titleContext)
+        IDataService _dataService;
+
+        public GetMetaData(IDbHelper dbHelper, ITitleContext titleContext, IDataService dataService)
         {
             _dbHelper = dbHelper;
             _titleContext = titleContext;
+            _dataService = dataService;
         }
 
         /// </summary>
@@ -43,8 +48,19 @@ namespace SocialEdge.Server.Requests
             dynamic args = context.FunctionArgument;
             string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
 
+            var objs = context.CallerEntityProfile.Objects;
+
             try
             {
+                // Fetch Inbox
+                var DBIds = objs["DBIds"];
+                var dbIdsDict = JsonConvert.DeserializeObject<dynamic>(DBIds.EscapedDataObject);
+                var inboxDBId = dbIdsDict["inbox"];
+                BsonDocument inboxT = await GetInbox(inboxDBId.Value.ToString());
+                //var inboxDict = inboxT.ToDictionary();
+                var inboxJson1 = inboxT["inboxData"];//inboxDict["inboxData"].ToJson();
+                var inboxJson = inboxJson1.ToJson();
+
                 // Fetch friends
                 var getTitleTokenT = await Player.GetTitleEntityToken();
                 var getFriendsT = await Player.GetFriendsList(playerId);
@@ -64,6 +80,8 @@ namespace SocialEdge.Server.Requests
 
                 metaDataResponse.appVersionValid = true; // TODO
 
+                metaDataResponse.inbox = inboxJson;
+
 
                 var gameSettings = _titleContext.GetTitleDataProperty("GameSettings");
                 var metaSettings = _titleContext.GetTitleDataProperty("Meta", gameSettings);
@@ -75,6 +93,13 @@ namespace SocialEdge.Server.Requests
             {
                 throw e;
             }
+        }
+
+        public async Task<object> GetInbox(string inboxId)
+        {
+            ICollection inboxDb = _dataService.GetCollection("inbox");
+            var result = await inboxDb.FindOneById(inboxId);
+            return result;
         }
     }  
 }
