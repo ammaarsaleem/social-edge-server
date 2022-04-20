@@ -8,6 +8,7 @@ namespace SocialEdge.Server.Models{
     public class GetMetaDataResult
     {
         public object chat;
+        public int inboxCount;
         public object inbox;
         public GetShopResult shop;
         public GetFriendsListResult friends;

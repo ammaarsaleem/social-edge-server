@@ -80,6 +80,7 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.friendsProfiles = getFriendProfilesT.Result;
 
                 metaDataResponse.appVersionValid = true; // TODO
+                metaDataResponse.inboxCount = 2; // TODO
                 metaDataResponse.inbox = inboxJson;
                 metaDataResponse.chat = chatJson;
 
