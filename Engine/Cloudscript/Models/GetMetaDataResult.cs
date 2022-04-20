@@ -7,6 +7,7 @@ using PlayFab.ProfilesModels;
 namespace SocialEdge.Server.Models{
     public class GetMetaDataResult
     {
+        public object chat;
         public object inbox;
         public GetShopResult shop;
         public GetFriendsListResult friends;

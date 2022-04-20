@@ -49,17 +49,18 @@ namespace SocialEdge.Server.Requests
             string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
 
             var objs = context.CallerEntityProfile.Objects;
+            var DBIds = objs["DBIds"];
+            var dbIdsDict = JsonConvert.DeserializeObject<dynamic>(DBIds.EscapedDataObject);
 
             try
             {
                 // Fetch Inbox
-                var DBIds = objs["DBIds"];
-                var dbIdsDict = JsonConvert.DeserializeObject<dynamic>(DBIds.EscapedDataObject);
-                var inboxDBId = dbIdsDict["inbox"];
-                BsonDocument inboxT = await GetInbox(inboxDBId.Value.ToString());
-                //var inboxDict = inboxT.ToDictionary();
-                var inboxJson1 = inboxT["inboxData"];//inboxDict["inboxData"].ToJson();
-                var inboxJson = inboxJson1.ToJson();
+                BsonDocument inboxT = await GetCollectionDoc(dbIdsDict["inbox"].Value.ToString(), "inbox");
+                var inboxJson = inboxT["inboxData"].ToJson();
+
+                // Fetch Chat
+                BsonDocument chatT = await GetCollectionDoc(dbIdsDict["chat"].Value.ToString(), "chat");
+                var chatJson = chatT["ChatData"].ToJson();
 
                 // Fetch friends
                 var getTitleTokenT = await Player.GetTitleEntityToken();
@@ -79,9 +80,8 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.friendsProfiles = getFriendProfilesT.Result;
 
                 metaDataResponse.appVersionValid = true; // TODO
-
                 metaDataResponse.inbox = inboxJson;
-
+                metaDataResponse.chat = chatJson;
 
                 var gameSettings = _titleContext.GetTitleDataProperty("GameSettings");
                 var metaSettings = _titleContext.GetTitleDataProperty("Meta", gameSettings);
@@ -95,10 +95,10 @@ namespace SocialEdge.Server.Requests
             }
         }
 
-        public async Task<object> GetInbox(string inboxId)
+        public async Task<object> GetCollectionDoc(string docId, string collectionName)
         {
-            ICollection inboxDb = _dataService.GetCollection("inbox");
-            var result = await inboxDb.FindOneById(inboxId);
+            ICollection collection = _dataService.GetCollection(collectionName);
+            var result = await collection.FindOneById(docId);
             return result;
         }
     }  
