@@ -56,11 +56,10 @@ namespace SocialEdge.Server.Requests
             {
                 // Fetch Inbox
                 BsonDocument inboxT = await GetCollectionDoc(dbIdsDict["inbox"].Value.ToString(), "inbox");
-                var inboxJson = inboxT["inboxData"].ToJson();
-
                 // Fetch Chat
                 BsonDocument chatT = await GetCollectionDoc(dbIdsDict["chat"].Value.ToString(), "chat");
-                var chatJson = chatT["ChatData"].ToJson();
+                // Fetch Live Tournaments
+                BsonDocument liveTournamentsT = await GetCollectionDoc("625feb0f0cf3edd2a788b4be", "liveTournaments");
 
                 // Fetch friends
                 var getTitleTokenT = await Player.GetTitleEntityToken();
@@ -79,10 +78,18 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.titleData = _titleContext.TitleData;
                 metaDataResponse.friendsProfiles = getFriendProfilesT.Result;
 
+                var inboxJson = inboxT["inboxData"].ToJson();
+                var chatJson = chatT["ChatData"].ToJson();
+                List<string> liveTournamentsList = new List<string>();
+                var liveTournamentsJson = liveTournamentsT["tournament"].ToJson();
+                liveTournamentsList.Add(liveTournamentsJson);
+                var liveTournamentsListJson = liveTournamentsList.ToJson();
+
                 metaDataResponse.appVersionValid = true; // TODO
                 metaDataResponse.inboxCount = 2; // TODO
                 metaDataResponse.inbox = inboxJson;
                 metaDataResponse.chat = chatJson;
+                metaDataResponse.liveTournaments = liveTournamentsListJson;
 
                 var gameSettings = _titleContext.GetTitleDataProperty("GameSettings");
                 var metaSettings = _titleContext.GetTitleDataProperty("Meta", gameSettings);
@@ -96,7 +103,7 @@ namespace SocialEdge.Server.Requests
             }
         }
 
-        public async Task<object> GetCollectionDoc(string docId, string collectionName)
+        public async Task<BsonDocument> GetCollectionDoc(string docId, string collectionName)
         {
             ICollection collection = _dataService.GetCollection(collectionName);
             var result = await collection.FindOneById(docId);

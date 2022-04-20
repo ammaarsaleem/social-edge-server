@@ -7,6 +7,7 @@ using PlayFab.ProfilesModels;
 namespace SocialEdge.Server.Models{
     public class GetMetaDataResult
     {
+        public object liveTournaments;
         public object chat;
         public int inboxCount;
         public object inbox;
