@@ -9,7 +9,7 @@ using PlayFab.Samples;
 using System.Net;
 using SocialEdge.Server.Common.Utils;
 
-namespace SocialEdge.Playfab
+namespace SocialEdge.Server.Requests
 {
     public static class UpdatePlayerData
     {
