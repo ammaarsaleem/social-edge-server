@@ -25,8 +25,8 @@ namespace SocialEdge.Server.DataService
             string dbName = ConfigConstants.DATABASE;
             _database = _dbClient.GetDatabase(dbName);
 
-            _redis = redisConn;
-            _cacheDb = _redis.GetDatabase();
+            //_redis = redisConn;
+            //_cacheDb = _redis.GetDatabase();
         }
 
         public ICollection GetCollection(string name)
