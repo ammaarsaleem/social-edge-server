@@ -13,13 +13,13 @@ namespace SocialEdge.Server.DataService
         #endregion
 
         #region Redis members
-        private readonly ConnectionMultiplexer _redis;
-        private readonly IDatabase _cacheDb;
+        //private readonly ConnectionMultiplexer _redis;
+        //private readonly IDatabase _cacheDb;
         #endregion
         ICollection _collection;
-        ICache _cache;
+        //ICache _cache;
 
-        public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn)
+        public DataService(MongoClient mongoClient)//, ConnectionMultiplexer redisConn)
         {
             _dbClient = mongoClient;
             string dbName = ConfigConstants.DATABASE;
@@ -39,10 +39,10 @@ namespace SocialEdge.Server.DataService
             return null;
         }
 
-        public ICache GetCache()
-        {
-            _cache = new Cache(_cacheDb);
-            return _cache;
-        }
+        //public ICache GetCache()
+        //{
+        //    _cache = new Cache(_cacheDb);
+        //    return _cache;
+        //}
     }
 }

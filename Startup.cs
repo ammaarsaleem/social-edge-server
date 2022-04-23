@@ -38,13 +38,13 @@ namespace SocialEdge.Playfab
                 return client;
             });
 
-            builder.Services.AddSingleton((r) =>
-            {
-                // string connString = "socialedgeserver.redis.cache.windows.net:6380,password=Gf7aTTxpvRfk+IKGqCbQwW7j+bWIKcr5B6bXAqj+ZSQ=,ssl=True,abortConnect=False";
-                string connString = Environment.GetEnvironmentVariable(ConfigConstants.REDIS_CONNECTION_STRING, EnvironmentVariableTarget.Process);
-                ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connString);
-                return redis;
-            });
+            //builder.Services.AddSingleton((r) =>
+            //{
+            //    // string connString = "socialedgeserver.redis.cache.windows.net:6380,password=Gf7aTTxpvRfk+IKGqCbQwW7j+bWIKcr5B6bXAqj+ZSQ=,ssl=True,abortConnect=False";
+            //    string connString = Environment.GetEnvironmentVariable(ConfigConstants.REDIS_CONNECTION_STRING, EnvironmentVariableTarget.Process);
+            //    ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connString);
+            //    return redis;
+            //});
 
             // builder.Services.AddSingleton((s) =>
             // {
