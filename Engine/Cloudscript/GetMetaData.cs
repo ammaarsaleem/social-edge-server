@@ -67,16 +67,27 @@ namespace SocialEdge.Server.Requests
                 var friends = getFriendsT.Result.Friends;
                 var getFriendProfilesT = await Player.GetFriendProfiles(friends, getTitleTokenT.Result.EntityToken);
 
+                PlayFab.DataModels.GetObjectsRequest getObjectsReq = new PlayFab.DataModels.GetObjectsRequest();
+                getObjectsReq.Entity = new PlayFab.DataModels.EntityKey();
+                getObjectsReq.AuthenticationContext = new PlayFabAuthenticationContext();
+                getObjectsReq.AuthenticationContext.EntityToken = getTitleTokenT.Result.EntityToken;
+                getObjectsReq.Entity.Id = context.CallerEntityProfile.Entity.Id;
+                getObjectsReq.Entity.Type = "title_player_account";
+                var getObjectsResT = await PlayFabDataAPI.GetObjectsAsync(getObjectsReq);
+
+
                 // Prepare client response
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
                 metaDataResponse.friends = new GetFriendsListResult();
                 metaDataResponse.shop = new GetShopResult();
                 metaDataResponse.titleData = new GetTitleDataResult();
+                metaDataResponse.dataObjects = new PlayFab.DataModels.GetObjectsResponse();
                 metaDataResponse.friends = getFriendsT.Result;
                 metaDataResponse.shop.catalogResult = _titleContext.CatalogItems;
                 metaDataResponse.shop.storeResult = _titleContext.StoreItems;
                 metaDataResponse.titleData = _titleContext.TitleData;
                 metaDataResponse.friendsProfiles = getFriendProfilesT.Result;
+                metaDataResponse.dataObjects = getObjectsResT.Result;
 
                 var inboxJson = inboxT["inboxData"].ToJson();
                 var chatJson = chatT["ChatData"].ToJson();
