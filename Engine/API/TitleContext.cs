@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using SocialEdge.Server.Api;
+using SocialEdge.Server.Common.Utils;
 
 namespace SocialEdge.Server.DataService
 {
@@ -44,6 +45,8 @@ namespace SocialEdge.Server.DataService
             version = "0.0.0";
             string storeId = string.Empty; 
             string catalogId = string.Empty;
+
+            SocialEdgeEnvironment.Init();
 
             var titleDataTask = Title.GetTitleData();
             _titleData = titleDataTask.Result.Result;

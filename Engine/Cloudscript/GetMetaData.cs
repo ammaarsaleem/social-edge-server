@@ -23,14 +23,11 @@ namespace SocialEdge.Server.Requests
 {
     public class GetMetaData
     {
-        IDbHelper _dbHelper;
         ITitleContext _titleContext;
-
         IDataService _dataService;
 
-        public GetMetaData(IDbHelper dbHelper, ITitleContext titleContext, IDataService dataService)
+        public GetMetaData(ITitleContext titleContext, IDataService dataService)
         {
-            _dbHelper = dbHelper;
             _titleContext = titleContext;
             _dataService = dataService;
         }
@@ -55,26 +52,18 @@ namespace SocialEdge.Server.Requests
             try
             {
                 // Fetch Inbox
-                BsonDocument inboxT = await GetCollectionDoc(dbIdsDict["inbox"].Value.ToString(), "inbox");
+                BsonDocument inboxT = await _dataService.GetCollection("inbox").FindOneById(dbIdsDict["inbox"].Value.ToString());
                 // Fetch Chat
-                BsonDocument chatT = await GetCollectionDoc(dbIdsDict["chat"].Value.ToString(), "chat");
+                BsonDocument chatT = await _dataService.GetCollection("chat").FindOneById(dbIdsDict["chat"].Value.ToString());
                 // Fetch Live Tournaments
-                BsonDocument liveTournamentsT = await GetCollectionDoc("625feb0f0cf3edd2a788b4be", "liveTournaments");
+                BsonDocument liveTournamentsT = await _dataService.GetCollection("liveTournaments").FindOneById("625feb0f0cf3edd2a788b4be");
 
                 // Fetch friends
                 var getTitleTokenT = await Player.GetTitleEntityToken();
                 var getFriendsT = await Player.GetFriendsList(playerId);
                 var friends = getFriendsT.Result.Friends;
                 var getFriendProfilesT = await Player.GetFriendProfiles(friends, getTitleTokenT.Result.EntityToken);
-
-                PlayFab.DataModels.GetObjectsRequest getObjectsReq = new PlayFab.DataModels.GetObjectsRequest();
-                getObjectsReq.Entity = new PlayFab.DataModels.EntityKey();
-                getObjectsReq.AuthenticationContext = new PlayFabAuthenticationContext();
-                getObjectsReq.AuthenticationContext.EntityToken = getTitleTokenT.Result.EntityToken;
-                getObjectsReq.Entity.Id = context.CallerEntityProfile.Entity.Id;
-                getObjectsReq.Entity.Type = "title_player_account";
-                var getObjectsResT = await PlayFabDataAPI.GetObjectsAsync(getObjectsReq);
-
+                var getObjectsResT = await Player.GetPublicData(getTitleTokenT.Result.EntityToken, context.CallerEntityProfile.Entity.Id);
 
                 // Prepare client response
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
@@ -102,23 +91,12 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.chat = chatJson;
                 metaDataResponse.liveTournaments = liveTournamentsListJson;
 
-                var gameSettings = _titleContext.GetTitleDataProperty("GameSettings");
-                var metaSettings = _titleContext.GetTitleDataProperty("Meta", gameSettings);
-                int c = _titleContext.GetTitleDataProperty("backendAppVersion", metaSettings);
-
                 return metaDataResponse;
             }
             catch (Exception e)
             {
                 throw e;
             }
-        }
-
-        public async Task<BsonDocument> GetCollectionDoc(string docId, string collectionName)
-        {
-            ICollection collection = _dataService.GetCollection(collectionName);
-            var result = await collection.FindOneById(docId);
-            return result;
         }
     }  
 }
