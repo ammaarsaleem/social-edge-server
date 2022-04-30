@@ -17,6 +17,7 @@ using PlayFab.ServerModels;
 using SocialEdge.Server.Api;
 using PlayFab;
 using SocialEdge.Server.DataService;
+using Newtonsoft.Json.Linq;
 
 namespace SocialEdge.Server.Requests
 {
@@ -31,14 +32,14 @@ namespace SocialEdge.Server.Requests
         }
 
         [FunctionName("ClaimReward")]
-        public async Task<HttpResponseMessage> Run(
+        public async Task<object> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
             SocialEdgeEnvironment.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
-            string _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
+            _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             var data = args["data"];
             var rewardType = data["rewardType"].Value;
             var economyData = _titleContext.GetTitleDataProperty("Economy");
@@ -65,17 +66,19 @@ namespace SocialEdge.Server.Requests
                 rewardPoints = rand.Next((int)rewardPoints["min"].Value, (int)rewardPoints["max"].Value + 1);
 
                 var rewardChestT = await RewardChest(rewardType, rewardPoints, data);
-                var resultChest = rewardChestT.Result;
+                return rewardChestT;
             }
 
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return null;
         }
         private async Task<object> RewardChest(string rewardType, int amount, dynamic data)
         {
-            var hotData = data["hotData"];
+            var userData = data["userData"];
+            var hotData = userData["hotData"];
             var economy = _titleContext.GetTitleDataProperty("Economy");
+            var ads = economy["Ads"];
             long chestUnlockTimestamp = hotData["chestUnlockTimestamp"];
-            long chestCooldownTimeInMin = economy["chestCooldownTimeInMin"];
+            long chestCooldownTimeInMin = ads["chestCooldownTimeInMin"];
 
             Dictionary<string, object> result = new Dictionary<string, object>();
 
@@ -93,11 +96,8 @@ namespace SocialEdge.Server.Requests
                 var chestUnlockTimestampUpdated = currentTime + chestCooldownTimeSec;
                 hotData["chestUnlockTimestamp"] = chestUnlockTimestampUpdated;
 
-                UpdateUserDataRequest updateUserDataRequest = new UpdateUserDataRequest();
-                updateUserDataRequest.PlayFabId = _playerId;
-                updateUserDataRequest.Data = hotData;
-                var resultUpdateT = await PlayFab.PlayFabServerAPI.UpdateUserReadOnlyDataAsync(updateUserDataRequest);
-                var resultUpdate = resultUpdateT.Result;
+                JObject jObj = new JObject() {["hotData"] = hotData };
+                var resultUpdateT = await Player.UpdatePlayerData(_playerId, jObj);
 
                 result.Add("claimRewardType", rewardType);
                 result.Add("reward", amount);

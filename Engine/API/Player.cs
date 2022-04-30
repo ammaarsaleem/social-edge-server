@@ -103,7 +103,7 @@ namespace SocialEdge.Server.Api
             
             PlayFab.ServerModels.UpdateUserDataRequest request = new PlayFab.ServerModels.UpdateUserDataRequest();
             request.PlayFabId = playerId;
-            request.Data = dataDict;
+            request.Data = data;
 
             return await PlayFab.PlayFabServerAPI.UpdateUserReadOnlyDataAsync(request);
         }
