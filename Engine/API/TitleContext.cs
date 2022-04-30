@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using SocialEdge.Server.Api;
 using SocialEdge.Server.Common.Utils;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace SocialEdge.Server.DataService
 {
@@ -27,7 +29,7 @@ namespace SocialEdge.Server.DataService
         private GetTitleDataResult _titleData;
         private GetCatalogItemsResult _catalogItems;
         private GetStoreItemsResult _storeItems;
-        private Dictionary<string, dynamic> _titleDataDict;
+        private Dictionary<string, JObject> _titleDataDict;
         private Dictionary<string, CatalogItem> _catalogItemsDict;
         private Dictionary<string, StoreItem> _storeItemsDict;
 
@@ -43,54 +45,17 @@ namespace SocialEdge.Server.DataService
         private void FetchTitleContext()
         {
             version = "0.0.0";
-            string storeId = string.Empty; 
-            string catalogId = string.Empty;
-
             SocialEdgeEnvironment.Init();
-
             var titleDataTask = Title.GetTitleData();
             _titleData = titleDataTask.Result.Result;
-
-            if(_titleData.Data.ContainsKey("StoreId"))
-            {
-                storeId = _titleData.Data["StoreId"];
-            }
-
-            if(_titleData.Data.ContainsKey("CatalogId"))  
-            {  
-                catalogId = _titleData.Data["CatalogId"];
-            }
-
+            _titleDataDict = _titleData.Data.ToDictionary(m => m.Key, m => JObject.Parse(m.Value.ToString()));
+            string storeId = _titleDataDict["Economy"]["StoreId"].Value<string>();
+            string catalogId = _titleDataDict["Economy"]["CatalogId"].Value<string>();
             var getShopTask = Shop.GetShop(storeId, catalogId);
             _catalogItems = getShopTask.Result.catalogResult;
             _storeItems = getShopTask.Result.storeResult;
-
-            _titleDataDict = new Dictionary<string, dynamic> ();
-            if (_titleData != null)
-            {
-                foreach (var obj in _titleData.Data)
-                {
-                    _titleDataDict.Add(obj.Key, JsonConvert.DeserializeObject<dynamic>(obj.Value));
-                }
-            }
-
-            _catalogItemsDict = new Dictionary<string, CatalogItem>();
-            if (_catalogItems != null)
-            {
-                foreach(var item in _catalogItems.Catalog)
-                {
-                    _catalogItemsDict.Add(item.ItemId, item);
-                }
-            }
-
-            _storeItemsDict = new Dictionary<string, StoreItem>();
-            if (_storeItems != null)
-            {
-                foreach(var item in _storeItems.Store)
-                {
-                    _storeItemsDict.Add(item.ItemId, item);
-                }
-            }
+            _catalogItemsDict = _catalogItems.Catalog.ToDictionary(m => m.ItemId, m => m);
+            _storeItemsDict = _storeItems.Store.ToDictionary(m => m.ItemId, m => m);
         }
 
         public dynamic GetTitleDataProperty(string key, dynamic dict = null)
@@ -101,7 +66,7 @@ namespace SocialEdge.Server.DataService
 
         public CatalogItem GetCatalogItem(string ItemId)
         {
-            return _titleDataDict.ContainsKey(ItemId) ? _titleDataDict[ItemId] : null;
+            return _catalogItemsDict.ContainsKey(ItemId) ? _catalogItemsDict[ItemId] : null;
         }
         
         public StoreItem GetStoreItem(string ItemId)
