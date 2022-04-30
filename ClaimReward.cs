@@ -115,6 +115,36 @@ namespace SocialEdge.Server.Requests
             return result;
         }
 
+        /*
+               else if (rewardType ===  'dailyReward') {
+            var leagueDailyRewardMsgId = Inbox.find(sparkPlayer, "RewardDailyLeague");
+            
+            if(leagueDailyRewardMsgId != null) {
+                var inbox = InboxModel.get(sparkPlayer);
+                var msg = inbox.messages[leagueDailyRewardMsgId];
+        
+                if (msg != undefined && currentTime >= msg.startTime) {
+                    msg.startTime = moment(moment().endOf('day').toString()).valueOf();
+                    msg.time = msg.startTime;
+                    InboxModel.set(sparkPlayer);
+            
+                    var reward = Leagues.getDailyReward(playerData.pub.league);
+                    var doubleReward = { gems: reward.gems*2, coins: reward.coins*2 };
+                    var granted = Transactions.grant(sparkPlayer, doubleReward);
+            
+                    Spark.setScriptData('claimRewardType', rewardType);
+                    Spark.setScriptData('reward', granted);
+                }
+                else {
+                    Spark.setScriptError("error", "invalidDailyReward");
+                    Spark.setScriptError("coins", sparkPlayer.getBalance4());
+                    Spark.setScriptError("gems", sparkPlayer.getBalance3());
+                    Spark.setScriptError("msgStartTime", msg.startTime);
+                }
+            }
+        }
+        */
+
     }
 
 }

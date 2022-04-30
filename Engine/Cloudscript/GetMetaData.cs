@@ -18,6 +18,7 @@ using SocialEdge.Server.DataService;
 using PlayFab.ProfilesModels;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using Newtonsoft.Json.Linq;
 
 namespace SocialEdge.Server.Requests
 {
@@ -47,20 +48,19 @@ namespace SocialEdge.Server.Requests
 
             var objs = context.CallerEntityProfile.Objects;
             var DBIds = objs["DBIds"];
-            var dbIdsDict = JsonConvert.DeserializeObject<dynamic>(DBIds.EscapedDataObject);
+            var dbIdsDict = JObject.Parse(DBIds.EscapedDataObject);
 
             try
             {
-                // Fetch Inbox
-                BsonDocument inboxT = await _dataService.GetCollection("inbox").FindOneById(dbIdsDict["inbox"].Value.ToString());
-                // Fetch Chat
-                BsonDocument chatT = await _dataService.GetCollection("chat").FindOneById(dbIdsDict["chat"].Value.ToString());
-                // Fetch Live Tournaments
-                BsonDocument liveTournamentsT = await _dataService.GetCollection("liveTournaments").FindOneById("625feb0f0cf3edd2a788b4be");
-
-                // Fetch friends
+                // Initiate fetch title token and friends list tasks
                 var getTitleTokenT = await Player.GetTitleEntityToken();
                 var getFriendsT = await Player.GetFriendsList(playerId);
+
+                BsonDocument inboxT = await _dataService.GetCollection("inbox").FindOneById(dbIdsDict["inbox"].ToString());
+                BsonDocument chatT = await _dataService.GetCollection("chat").FindOneById(dbIdsDict["chat"].ToString());
+                BsonDocument liveTournamentsT = await _dataService.GetCollection("liveTournaments").FindOneById("625feb0f0cf3edd2a788b4be");
+
+                // Initiate fetch friend profiles and public data tasks
                 var friends = getFriendsT.Result.Friends;
                 var getFriendProfilesT = await Player.GetFriendProfiles(friends, getTitleTokenT.Result.EntityToken);
                 var getObjectsResT = await Player.GetPublicData(getTitleTokenT.Result.EntityToken, context.CallerEntityProfile.Entity.Id);
@@ -71,13 +71,14 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.shop = new GetShopResult();
                 metaDataResponse.titleData = new GetTitleDataResult();
                 metaDataResponse.dataObjects = new PlayFab.DataModels.GetObjectsResponse();
-                metaDataResponse.friends = getFriendsT.Result;
                 metaDataResponse.shop.catalogResult = _titleContext.CatalogItems;
                 metaDataResponse.shop.storeResult = _titleContext.StoreItems;
                 metaDataResponse.titleData = _titleContext.TitleData;
+
+                // Process task dependendies last
                 metaDataResponse.friendsProfiles = getFriendProfilesT.Result;
                 metaDataResponse.dataObjects = getObjectsResT.Result;
-
+                metaDataResponse.friends = getFriendsT.Result;
                 var inboxJson = inboxT["inboxData"].ToJson();
                 var chatJson = chatT["ChatData"].ToJson();
                 List<string> liveTournamentsList = new List<string>();
