@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using PlayFab;
-using PlayFab.ServerModels;
+using System;
+
 namespace SocialEdge.Server.Common.Utils
 {
     public static class UtilFunc
@@ -11,6 +12,11 @@ namespace SocialEdge.Server.Common.Utils
                 return true;
             else
                 return false;
+        }
+
+        public static long UTCNow()
+        {
+            return (long)DateTime.UtcNow.ToUniversalTime().Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
         }
     }
 

@@ -11,6 +11,7 @@ namespace SocialEdge.Server.Common.Utils
         private static ITitleContext _titleContext = null;
 
         public static ITitleContext TitleContext { get => _titleContext; }
+        public static IDataService DataService { get => _dataService; }
 
         public static void Init(HttpRequestMessage req = null, ITitleContext titleContext = null, IDataService dataService = null)
         {   
