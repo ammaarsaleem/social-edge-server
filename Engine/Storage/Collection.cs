@@ -103,16 +103,17 @@ namespace SocialEdge.Server.DataService{
             var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
             var updateOptions = new ReplaceOptions
             {
-                IsUpsert = upsert
+                IsUpsert = upsert,
+                BypassDocumentValidation = true
             };
-            var opResult = await _collection.ReplaceOneAsync(filter,val,updateOptions);
-           if(opResult.IsAcknowledged)
+
+            var opResult = await _collection.ReplaceOneAsync(filter, val, updateOptions);
+            if (opResult.IsAcknowledged)
             {
                 result = new UpdateResult
                 {
                     MatchCount = opResult.MatchedCount,
-                    ModifiedCount = opResult.ModifiedCount,
-                    UpsertedId = opResult.UpsertedId.ToString()
+                    ModifiedCount = opResult.ModifiedCount
                 };
             }
             return result;

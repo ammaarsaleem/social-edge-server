@@ -22,22 +22,50 @@ using PlayFab.ProfilesModels;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Newtonsoft.Json.Linq;
+using MongoDB.Bson.IO;
 
 namespace SocialEdge.Server.Models
 {
     public static class InboxModel
     {
-        public static async Task<JObject> Get(string inboxId)
+        public static async Task<BsonDocument> Get(string inboxId)
         {
-            BsonDocument inboxT = await SocialEdgeEnvironment.DataService.GetCollection("inbox").FindOneById(inboxId);
-            return inboxT != null ? JObject.Parse(inboxT["inboxData"].ToJson()) : null;
+            return await SocialEdgeEnvironment.DataService.GetCollection("inbox").FindOneById(inboxId);
         }
 
-        public static async Task<SocialEdge.Server.DataService.UpdateResult> Set(string inboxId, JObject inbox)
-        { 
-            BsonDocument document = BsonDocument.Parse(inbox.ToString(Newtonsoft.Json.Formatting.None));
-            return await SocialEdgeEnvironment.DataService.GetCollection("inbox").ReplaceOneById(inboxId, document, true);
+        public static async Task<SocialEdge.Server.DataService.UpdateResult> Set(string inboxId, BsonDocument inbox)
+        {  
+            return await SocialEdgeEnvironment.DataService.GetCollection("inbox").ReplaceOneById(inboxId, inbox, true);
         }
+
+        public static int Count(JObject inbox)
+        {
+            long now = UtilFunc.UTCNow();
+            int count = 0;
+            var messages = inbox["messages"];
+            foreach(var msg in messages)
+            {
+               // msg.
+               count++;
+            }
+
+            return 0;
+        }
+
+        /*
+            var count = function (sparkPlayer) {
+        var inbox = get(sparkPlayer);
+        
+        var count = 0;
+        var now = moment.utc().valueOf();
+        for (var i in inbox.messages) {
+            var msg = inbox.messages[i];
+            count += msg.startTime == undefined || now >= msg.startTime ? 1 : 0;
+        }
+        
+        return count;
+    };
+        */
     }
     
 }

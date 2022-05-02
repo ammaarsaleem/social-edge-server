@@ -74,7 +74,7 @@ namespace SocialEdge.Server.DataService
         ///<param name="upsert">Upsert</param>
         ///<returns>UpdateResult</returns>           
 
-        Task<ReplaceResult> ReplaceOneById(string id, BsonDocument val, bool upsert=false);
+        Task<UpdateResult> ReplaceOneById(string id, BsonDocument val, bool upsert=false);
 
         Task<UpdateResult> UpdateOneById<T>(string id, string prop, T val, bool upsert=false);
         ///<summary>Updates the matching document</summary>      
