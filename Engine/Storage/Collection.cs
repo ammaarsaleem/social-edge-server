@@ -97,6 +97,29 @@ namespace SocialEdge.Server.DataService{
             return result;
         }        
 
+        public async Task<UpdateResult> ReplaceOneById(string id, BsonDocument val, bool upsert=false)
+        {
+            UpdateResult result = null;
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
+            var updateOptions = new ReplaceOptions
+            {
+                IsUpsert = upsert
+            };
+            var opResult = await _collection.ReplaceOneAsync(filter,val,updateOptions);
+           if(opResult.IsAcknowledged)
+            {
+                result = new UpdateResult
+                {
+                    MatchCount = opResult.MatchedCount,
+                    ModifiedCount = opResult.ModifiedCount,
+                    UpsertedId = opResult.UpsertedId.ToString()
+                };
+            }
+            return result;
+        }
+
+
+    
         public async Task<UpdateResult> UpdateOneById<T>(string id, string prop, T val, bool upsert=false)
         {
             UpdateResult result = null;

@@ -30,13 +30,14 @@ namespace SocialEdge.Server.Models
         public static async Task<JObject> Get(string inboxId)
         {
             BsonDocument inboxT = await SocialEdgeEnvironment.DataService.GetCollection("inbox").FindOneById(inboxId);
-            return new JObject(inboxT.ToJson());
+            return inboxT != null ? JObject.Parse(inboxT["inboxData"].ToJson()) : null;
         }
 
         public static async Task<SocialEdge.Server.DataService.UpdateResult> Set(string inboxId, JObject inbox)
-        {
-           var T = await SocialEdgeEnvironment.DataService.GetCollection("inbox").UpdateOneById(inboxId,  "inboxData", inbox.ToJson(), true);
-           return T;
+        { 
+            BsonDocument document = BsonDocument.Parse(inbox.ToString(Newtonsoft.Json.Formatting.None));
+            return await SocialEdgeEnvironment.DataService.GetCollection("inbox").ReplaceOneById(inboxId, document, true);
         }
     }
+    
 }

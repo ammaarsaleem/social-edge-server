@@ -55,28 +55,6 @@ namespace SocialEdge.Server.Api
 /*
 var Inbox = (function () {
 
-    var create = function (sparkPlayer, messageInfo) {
-        var message = _getDefaultMessage();
-        
-        message.id = ScriptUtil.generateUUID();
-        message.type = messageInfo.type;
-
-        if (messageInfo.isDaily !== undefined) message.isDaily = messageInfo.isDaily;
-        if (messageInfo.heading !== undefined) message.heading = messageInfo.heading;
-        if (messageInfo.body !== undefined) message.body = messageInfo.body;
-        if (messageInfo.time !== undefined) message.time = messageInfo.time;
-        if (messageInfo.reward !== undefined) message.reward = messageInfo.reward;
-        if (messageInfo.trophies !== undefined) message.trophies = messageInfo.trophies;
-        if (messageInfo.rank !== undefined) message.rank = messageInfo.rank;
-        if (messageInfo.chest !== undefined) message.chestType = messageInfo.chest;
-        if (messageInfo.tournamentType !== undefined) message.tournamentType = messageInfo.tournamentType;
-        if (messageInfo.tournamentId !== undefined) message.tournamentId = messageInfo.tournamentId;
-        if (messageInfo.league !== undefined) message.league = messageInfo.league;
-        if (messageInfo.startTime !== undefined) message.startTime = messageInfo.startTime;
-        if (messageInfo.expireAt !== undefined) message.expireAt = messageInfo.expireAt;
-        
-        return message;
-    };
 
     var collect = function (sparkPlayer, messageId) {
         var inbox = InboxModel.get(sparkPlayer);
