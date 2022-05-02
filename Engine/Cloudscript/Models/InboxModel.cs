@@ -1,28 +1,7 @@
-using PlayFab.ServerModels;
-using System.Collections.Generic;
+
 using SocialEdge.Server.Common.Utils;
-using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Logging;
-using PlayFab.ServerModels;
-using System.Collections.Generic;
-using System.Net.Http;
-using Newtonsoft.Json;
-using PlayFab.Samples;
-using PlayFab;
-using SocialEdge.Server.Common.Utils;
-using SocialEdge.Server.Models;
-using SocialEdge.Server.Constants;
-using SocialEdge.Server.Db;
-using SocialEdge.Server.Api;
-using SocialEdge.Server.DataService;
-using PlayFab.ProfilesModels;
-using MongoDB.Driver;
 using MongoDB.Bson;
-using Newtonsoft.Json.Linq;
-using MongoDB.Bson.IO;
 
 namespace SocialEdge.Server.Models
 {
@@ -38,34 +17,20 @@ namespace SocialEdge.Server.Models
             return await SocialEdgeEnvironment.DataService.GetCollection("inbox").ReplaceOneById(inboxId, inbox, true);
         }
 
-        public static int Count(JObject inbox)
+        public static int Count(BsonDocument inbox)
         {
             long now = UtilFunc.UTCNow();
             int count = 0;
-            var messages = inbox["messages"];
-            foreach(var msg in messages)
+            var messages = inbox["inboxData"]["messages"].AsBsonDocument;
+            foreach (string key in messages.Names)
             {
-               // msg.
-               count++;
+                var msg = messages[key].AsBsonDocument;
+                //SocialEdgeEnvironment.Log.LogInformation(msg.ToString());
+                count += (msg["startTime"] == null || now >= msg["startTime"]) ? 1 : 0;
             }
 
-            return 0;
+            return count;
         }
-
-        /*
-            var count = function (sparkPlayer) {
-        var inbox = get(sparkPlayer);
-        
-        var count = 0;
-        var now = moment.utc().valueOf();
-        for (var i in inbox.messages) {
-            var msg = inbox.messages[i];
-            count += msg.startTime == undefined || now >= msg.startTime ? 1 : 0;
-        }
-        
-        return count;
-    };
-        */
     }
     
 }
