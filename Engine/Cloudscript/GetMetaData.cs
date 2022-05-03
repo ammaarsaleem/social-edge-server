@@ -19,6 +19,7 @@ using PlayFab.ProfilesModels;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Newtonsoft.Json.Linq;
+using MongoDB.Bson.IO;
 
 namespace SocialEdge.Server.Requests
 {
@@ -41,14 +42,20 @@ namespace SocialEdge.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            SocialEdgeEnvironment.Init(req, _titleContext, _dataService);
-            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
+            SocialEdgeEnvironment.Init(req, log, _titleContext, _dataService);
+            var context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
 
             var objs = context.CallerEntityProfile.Objects;
             var DBIds = objs["DBIds"];
             var dbIdsDict = JObject.Parse(DBIds.EscapedDataObject);
+
+            // test code
+            //var inboxId = dbIdsDict["inbox"].ToString();
+            //var inboxTT = await InboxModel.Get(inboxId);
+            //var inboxResult = inboxTT["inboxData"]["messages"];
+            //var id = InboxModel.FindOne(inboxTT, "DailyAAAReward");
 
             try
             {
@@ -79,10 +86,10 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.friendsProfiles = getFriendProfilesT.Result;
                 metaDataResponse.dataObjects = getObjectsResT.Result;
                 metaDataResponse.friends = getFriendsT.Result;
-                var inboxJson = inboxT["inboxData"].ToJson();
-                var chatJson = chatT["ChatData"].ToJson();
+                var inboxJson = inboxT["inboxData"].ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
+                var chatJson = chatT["ChatData"].ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
                 List<string> liveTournamentsList = new List<string>();
-                var liveTournamentsJson = liveTournamentsT["tournament"].ToJson();
+                var liveTournamentsJson = liveTournamentsT["tournament"].ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
                 liveTournamentsList.Add(liveTournamentsJson);
                 var liveTournamentsListJson = liveTournamentsList.ToJson();
 

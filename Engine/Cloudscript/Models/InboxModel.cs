@@ -54,5 +54,13 @@ namespace SocialEdge.Server.Models
             if (isExists) messages.Remove(msgId);
             return isExists;
         }
+
+        public static string FindOne(BsonDocument inbox, string msgType)
+        {
+            var messages = inbox["inboxData"]["messages"].AsBsonDocument;
+            var it = messages.GetEnumerator();
+            while (it.MoveNext() && !(messages[it.Current.Name]["type"] == msgType));
+            return it.Current.Name != null ? messages[it.Current.Name]["id"].ToString() : null;
+        }
     }
 }
