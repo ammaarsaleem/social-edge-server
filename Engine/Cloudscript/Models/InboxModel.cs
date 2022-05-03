@@ -38,6 +38,21 @@ namespace SocialEdge.Server.Models
             BsonDocument msg = new BsonDocument() { [message["id"].ToString()] = message };
             messages.AddRange(msg);
         }
+
+        public static bool Update(BsonDocument inbox, string msgId, BsonDocument message)
+        {
+            var messages = inbox["inboxData"]["messages"].AsBsonDocument;
+            message["id"] = msgId;
+            messages[msgId] = message;
+            return true;
+        }
+
+        public static bool Del(BsonDocument inbox, string msgId)
+        {
+            var messages = inbox["inboxData"]["messages"].AsBsonDocument;
+            bool isExists = messages.GetValue(msgId, null) != null;
+            if (isExists) messages.Remove(msgId);
+            return isExists;
+        }
     }
-    
 }
