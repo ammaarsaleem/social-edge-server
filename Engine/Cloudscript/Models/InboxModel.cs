@@ -31,6 +31,13 @@ namespace SocialEdge.Server.Models
 
             return count;
         }
+
+        public static void Add(BsonDocument inbox, BsonDocument message)
+        {
+            var messages = inbox["inboxData"]["messages"].AsBsonDocument;
+            BsonDocument msg = new BsonDocument() { [message["id"].ToString()] = message };
+            messages.AddRange(msg);
+        }
     }
     
 }

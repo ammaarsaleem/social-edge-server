@@ -1,38 +1,39 @@
 using System;
 using SocialEdge.Server.Common.Utils;
 using Newtonsoft.Json.Linq;
+using MongoDB.Bson;
 
 namespace SocialEdge.Server.Api
 {
     public static class Inbox
     {
-        public static JToken Create(JObject messageInfo)
+        public static BsonDocument Create(BsonDocument messageInfo)
         {
-            JObject message = _getDefaultMessage();
+            BsonDocument message = _getDefaultMessage();
 
-            message["id"] = Guid.NewGuid();
+            message["id"] = Guid.NewGuid().ToString();
             message["type"] = messageInfo["type"];
 
-            if (messageInfo["isDaily"] != null) message["isDaily"] = messageInfo["isDaily"];
-            if (messageInfo["heading"] != null) message["heading"] = messageInfo["heading"];
-            if (messageInfo["body"] != null) message["body"] = messageInfo["body"];
-            if (messageInfo["time"] != null) message["time"] = messageInfo["time"];
-            if (messageInfo["reward"] != null) message["reward"] = messageInfo["reward"];
-            if (messageInfo["trophies"] != null) message["trophies"] = messageInfo["trophies"];
-            if (messageInfo["rank"] != null) message["rank"] = messageInfo["rank"];
-            if (messageInfo["chest"] != null) message["chestType"] = messageInfo["chest"];
-            if (messageInfo["tournamentType"] != null) message["tournamentType"] = messageInfo["tournamentType"];
-            if (messageInfo["tournamentId"] != null) message["tournamentId"] = messageInfo["tournamentId"];
-            if (messageInfo["league"] != null) message["league"] = messageInfo["league"];
-            if (messageInfo["startTime"] != null) message["startTime"] = messageInfo["startTime"];
-            if (messageInfo["expireAt"] != null) message["expireAt"] = messageInfo["expireAt"];
+            if (messageInfo.GetValue("isDaily", null) != null) message["isDaily"] = messageInfo["isDaily"];
+            if (messageInfo.GetValue("heading", null) != null) message["heading"] = messageInfo["heading"];
+            if (messageInfo.GetValue("body", null) != null) message["body"] = messageInfo["body"];
+            if (messageInfo.GetValue("time", null) != null) message["time"] = messageInfo["time"];
+            if (messageInfo.GetValue("reward", null) != null) message["reward"] = messageInfo["reward"];
+            if (messageInfo.GetValue("trophies", null) != null) message["trophies"] = messageInfo["trophies"];
+            if (messageInfo.GetValue("rank", null) != null) message["rank"] = messageInfo["rank"];
+            if (messageInfo.GetValue("chest", null) != null) message["chestType"] = messageInfo["chest"];
+            if (messageInfo.GetValue("tournamentType", null) != null) message["tournamentType"] = messageInfo["tournamentType"];
+            if (messageInfo.GetValue("tournamentId", null) != null) message["tournamentId"] = messageInfo["tournamentId"];
+            if (messageInfo.GetValue("league", null) != null) message["league"] = messageInfo["league"];
+            if (messageInfo.GetValue("startTime", null) != null) message["startTime"] = messageInfo["startTime"];
+            if (messageInfo.GetValue("expireAt", null) != null) message["expireAt"] = messageInfo["expireAt"];
 
             return message;
         }
 
-        private static JObject _getDefaultMessage()
+        private static BsonDocument _getDefaultMessage()
         {
-            return new JObject() {
+            return new BsonDocument() {
 
                 ["id"] = 0,
                 ["type"] = "",
@@ -40,7 +41,7 @@ namespace SocialEdge.Server.Api
                 ["heading"] = "",
                 ["body"] = "",
                 ["time"] = UtilFunc.UTCNow(),
-                ["reward"] = new JObject(),
+                ["reward"] = new BsonDocument(),
                 ["trophies"] = 0,
                 ["rank"] = 0,
                 ["chestType"] = "",
