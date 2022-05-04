@@ -60,6 +60,7 @@ namespace SocialEdge.Server.Api
             request.AuthenticationContext = new PlayFabAuthenticationContext();
             request.AuthenticationContext.EntityToken = entityToken;
             request.Entity.Id = entityId;
+            request.EscapeObject = true;
             request.Entity.Type = "title_player_account";
 
             return await PlayFabDataAPI.GetObjectsAsync(request);

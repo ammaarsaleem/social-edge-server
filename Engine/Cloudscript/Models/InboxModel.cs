@@ -2,6 +2,7 @@
 using SocialEdge.Server.Common.Utils;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using System.Collections.Generic;
 
 namespace SocialEdge.Server.Models
 {
@@ -61,6 +62,22 @@ namespace SocialEdge.Server.Models
             var it = messages.GetEnumerator();
             while (it.MoveNext() && !(messages[it.Current.Name]["type"] == msgType));
             return it.Current.Name != null ? messages[it.Current.Name]["id"].ToString() : null;
+        }
+
+        public static List<string> FindAll(BsonDocument inbox, string msgType)
+        {
+            List<string> list = new List<string>();
+            var messages = inbox["inboxData"]["messages"].AsBsonDocument;
+            var it = messages.GetEnumerator();
+            while (it.MoveNext())
+            {
+                if (messages[it.Current.Name]["type"] == msgType)
+                {
+                    list.Add(it.Current.Name.ToString());
+                }
+            }
+
+            return list;
         }
     }
 }

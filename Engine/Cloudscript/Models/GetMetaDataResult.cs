@@ -4,19 +4,20 @@ using PlayFab;
 using PlayFab.ServerModels;
 using PlayFab.ProfilesModels;
 using PlayFab.DataModels;
+using MongoDB.Bson;
 
 namespace SocialEdge.Server.Models{
     public class GetMetaDataResult
     {
-        public GetObjectsResponse dataObjects;
-        public object liveTournaments;
-        public object chat;
+        public string dataObjects;
+        public string liveTournaments;
+        public string chat;
         public int inboxCount;
-        public object inbox;
+        public string inbox;
         public GetShopResult shop;
-        public GetFriendsListResult friends;
+        public List<FriendInfo> friends;
         public GetTitleDataResult titleData;
-        public  GetEntityProfilesResponse friendsProfiles;
+        public List<EntityProfileBody> friendsProfiles;
 
         public bool appVersionValid;
         
