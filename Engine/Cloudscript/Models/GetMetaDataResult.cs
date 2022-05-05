@@ -9,7 +9,7 @@ using MongoDB.Bson;
 namespace SocialEdge.Server.Models{
     public class GetMetaDataResult
     {
-        public string dataObjects;
+        public string publicDataObjs;
         public string liveTournaments;
         public string chat;
         public int inboxCount;

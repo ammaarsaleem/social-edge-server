@@ -10,6 +10,7 @@ using SocialEdge.Server.DataService;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using SocialEdge.Server.Common.Utils;
+using SocialEdge.Server.Api;
 
 namespace SocialEdge.Server.Requests
 {
@@ -25,6 +26,9 @@ namespace SocialEdge.Server.Requests
             await FunctionContextInit(req, log);
             await FnPlayerContext.ValidateCache(FetchBits.ALL);
 
+            //InboxModel.Count(FnPlayerContext.Inbox);
+            //int qty = await Transactions.GrantTrophies(1, FnPlayerContext); 
+
             try
             {
                 // Prepare client response
@@ -36,7 +40,7 @@ namespace SocialEdge.Server.Requests
                 metaDataResponse.titleData = SocialEdgeEnvironment.TitleContext.TitleData;
                 metaDataResponse.friends = FnPlayerContext.Friends;
                 metaDataResponse.friendsProfiles = FnPlayerContext.FriendsProfiles;
-                metaDataResponse.dataObjects = FnPlayerContext.PublicDataJson;
+                metaDataResponse.publicDataObjs = FnPlayerContext.PublicDataObjsJson;
                 metaDataResponse.inbox = FnPlayerContext.InboxJson;
                 metaDataResponse.chat = FnPlayerContext.ChatJson;
                 metaDataResponse.appVersionValid = true; // TODO

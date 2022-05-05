@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using System.Collections.Generic;
 using PlayFab.ServerModels;
 using System.Threading.Tasks;
+using SocialEdge.Server.Models;
 
 namespace SocialEdge.Server.Api
 {
@@ -96,9 +97,14 @@ namespace SocialEdge.Server.Api
             return rewarded;
         }
 
-        //public static async Task<bool> GrantTrophies(string playerId, int qty)
-        //{
-//
-  //      }
+        public static async Task<int> GrantTrophies(int qty, PlayerContext playerContext)
+        {
+            int trophies = (int)playerContext.PublicData["trpy"] + qty;
+            playerContext.PublicData["trpy"] = trophies;
+
+            BsonDocument publicData = new BsonDocument() {["PublicProfileEx"] = UtilFunc.CleanupJsonString(playerContext.PublicDataJson)};
+            await Player.UpdatePublicData(playerContext.EntityToken, playerContext.EntityId, publicData);
+            return trophies;
+        }
     }
 }
