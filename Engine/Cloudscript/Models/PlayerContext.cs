@@ -118,6 +118,7 @@ namespace SocialEdge.Server.Models
             // Friends Profiles
             if ((fetchMask & FetchBits.FRIENDS_PROFILES) != 0)
             {
+                await ValidateEntityTokenCache();
                 if (_friends == null && ((fetchMask & FetchBits.FRIENDS) != 0))
                 {
                     friendsProfilesT = await Player.GetFriendProfiles( friendsT.Result.Friends, _entityToken);

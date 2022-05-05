@@ -10,12 +10,10 @@ namespace SocialEdge.Server.Common.Utils
     {
         private static IDataService _dataService = null;
         private static ITitleContext _titleContext = null;
-
         private static ILogger _log = null; 
 
         public static ITitleContext TitleContext { get => _titleContext; }
         public static IDataService DataService { get => _dataService; }
-
         public static ILogger Log { get => _log; }
 
         public static void Init(HttpRequestMessage req = null, ILogger logger = null, ITitleContext titleContext = null, IDataService dataService = null)
