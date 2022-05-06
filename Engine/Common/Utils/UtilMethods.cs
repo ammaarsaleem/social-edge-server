@@ -19,6 +19,11 @@ namespace SocialEdge.Server.Common.Utils
             return (long)DateTime.UtcNow.ToUniversalTime().Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
         }
 
+        public static long ToUTC(DateTime dateTime)
+        {
+            return (long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds; 
+        }
+
         public static string CleanupJsonString(string json)
         {
             json = json.Replace("\\n", "").Replace("\n", "").Replace("\\", "");
@@ -29,7 +34,7 @@ namespace SocialEdge.Server.Common.Utils
                 ar[0] = ' ';
                 json = new string(ar);
             }
-            
+
             if (json[json.Length - 1] == '\"')
             {
                 char[] ar = json.ToCharArray();
@@ -39,6 +44,15 @@ namespace SocialEdge.Server.Common.Utils
 
             return json;
         }
-    }
 
+        public static DateTime StartOfDay(DateTime dateTime) 
+        {  
+            return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 0, 0, 0, 0);  
+        }  
+
+        public static DateTime EndOfDay(DateTime dateTime) 
+        {  
+            return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 23, 59, 59, 999);
+        }  
+    }
 }

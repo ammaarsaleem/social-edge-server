@@ -8,6 +8,8 @@ using SocialEdge.Server.Api;
 using SocialEdge.Server.Common.Utils;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using MongoDB.Bson;
+using MongoDB.Bson.IO;
 
 namespace SocialEdge.Server.DataService
 {
@@ -29,7 +31,7 @@ namespace SocialEdge.Server.DataService
         private GetTitleDataResult _titleData;
         private GetCatalogItemsResult _catalogItems;
         private GetStoreItemsResult _storeItems;
-        private Dictionary<string, JObject> _titleDataDict;
+        private Dictionary<string, BsonDocument> _titleDataDict;
         private Dictionary<string, CatalogItem> _catalogItemsDict;
         private Dictionary<string, StoreItem> _storeItemsDict;
 
@@ -48,9 +50,9 @@ namespace SocialEdge.Server.DataService
             SocialEdgeEnvironment.Init();
             var titleDataTask = Title.GetTitleData();
             _titleData = titleDataTask.Result.Result;
-            _titleDataDict = _titleData.Data.ToDictionary(m => m.Key, m => JObject.Parse(m.Value.ToString()));
-            string storeId = _titleDataDict["Economy"]["StoreId"].Value<string>();
-            string catalogId = _titleDataDict["Economy"]["CatalogId"].Value<string>();
+            _titleDataDict = _titleData.Data.ToDictionary(m => m.Key, m => BsonDocument.Parse(m.Value.ToString()));
+            string storeId = _titleDataDict["Economy"]["StoreId"].ToString();
+            string catalogId = _titleDataDict["Economy"]["CatalogId"].ToString();
             var getShopTask = Shop.GetShop(storeId, catalogId);
             _catalogItems = getShopTask.Result.catalogResult;
             _storeItems = getShopTask.Result.storeResult;

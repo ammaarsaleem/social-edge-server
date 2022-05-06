@@ -46,7 +46,7 @@ namespace SocialEdge.Server.Requests
                 {"dailyReward", rewardsData["dailyReward"]},
                 {"personalisedAdsGemReward", rewardsData["personalisedAdsGemReward"]},
                 {"powerPlayReward", rewardsData["powerPlayReward"]},
-                {"freeFullGameAnalysis", rewardsData["Settings.Rewards.freeFullGameAnalysis"]},
+               // TODO {"freeFullGameAnalysis", rewardsData[Settings.Rewards.freeFullGameAnalysis]}, 
                 {"ratingBoosterReward", rewardsData["rvBoosterReward"]},
                 {"chestGemsReward", rewardsData["chestGemsReward"]},
                 {"analysisReward", rewardsData["rvAnalysisReward"]},

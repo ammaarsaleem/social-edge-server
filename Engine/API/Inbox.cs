@@ -1,7 +1,10 @@
 using System;
 using SocialEdge.Server.Common.Utils;
-using Newtonsoft.Json.Linq;
 using MongoDB.Bson;
+using SocialEdge.Server.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace SocialEdge.Server.Api
 {
@@ -49,6 +52,28 @@ namespace SocialEdge.Server.Api
                 ["league"] = "",
                 ["startTime"] = UtilFunc.UTCNow()
             };
+        }
+
+        public static async Task<Dictionary<string, int>> Collect(string messageId, PlayerContext playerContext)
+        {
+            var inbox = playerContext.Inbox;
+            var msg = inbox["messages"].AsBsonDocument.Contains(messageId) ? inbox["messages"][messageId] : null;
+            if (msg == null)
+            {
+                return null;
+            }
+
+            var granted = await Transactions.Grant(msg["reward"].AsBsonDocument, playerContext);
+
+            if (msg["isDaily"] == true)
+            {
+                var league = playerContext.PublicData["leag"];
+                msg["reward"] = Leagues.GetDailyReward(league.ToString());
+                msg["startTime"] = UtilFunc.ToUTC(UtilFunc.EndOfDay(DateTime.Now));
+                msg["time"] = msg["startTime"];
+            }
+
+            return granted;
         }
     }
 }
@@ -184,43 +209,6 @@ var Inbox = (function () {
         validateChampionshipRewardMessages(sparkPlayer);
     };
     
-    var update = function(sparkPlayer, messageId, message) {
-        var inbox = InboxModel.get(sparkPlayer);
-        inbox.messages[messageId] = message;
-        inbox.messages[messageId].id = messageId;
-        InboxModel.set(sparkPlayer);
-    };
-    
-    var find = function(sparkPlayer, msgType) {
-        var inboxData = InboxModel.get(sparkPlayer, true);
-        var keys = Object.keys(inboxData.messages);
-        var found = false;
-        var i = 0;
-        while (!found && i < keys.length) {
-            found = inboxData.messages[keys[i]].type == msgType;
-            if (!found) i++;
-        }
-        
-        return found ? inboxData.messages[keys[i]].id : null;
-    }
-
-    var findAll = function(sparkPlayer, msgType) {
-        var inboxData = InboxModel.get(sparkPlayer, true);
-        var keys = Object.keys(inboxData.messages);
-        
-        var messages = [];
-        var i = 0;
-        while (i < keys.length) {
-            var found = inboxData.messages[keys[i]].type == msgType;
-            if (found) {
-                messages.push(inboxData.messages[keys[i]]);
-            }
-            
-            i++;
-        }
-        
-        return messages;
-    }
     
     var validateChampionshipRewardMessages = function (sparkPlayer)
     {

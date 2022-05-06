@@ -11,7 +11,7 @@ namespace SocialEdge.Server.Api
 {
     public static class Transactions
     {
-        public static async Task<bool> Consume(string playerId, string itemId, int qty)
+        public static async Task<bool> Consume(string itemId, int qty, PlayerContext playerContext)
         {
             bool used = false;
         
@@ -19,7 +19,7 @@ namespace SocialEdge.Server.Api
             {
                 SubtractUserVirtualCurrencyRequest request = new SubtractUserVirtualCurrencyRequest();
                 request.Amount = qty;
-                request.PlayFabId = playerId;
+                request.PlayFabId = playerContext.PlayerId;
                 request.VirtualCurrency = "GM";
                 var resultT = await PlayFab.PlayFabServerAPI.SubtractUserVirtualCurrencyAsync(request);
                 used = resultT.Result.VirtualCurrency != null;
@@ -28,7 +28,7 @@ namespace SocialEdge.Server.Api
             {
                 SubtractUserVirtualCurrencyRequest request = new SubtractUserVirtualCurrencyRequest();
                 request.Amount = qty;
-                request.PlayFabId = playerId;
+                request.PlayFabId = playerContext.PlayerId;
                 request.VirtualCurrency = "CN";
                 var resultT = await PlayFab.PlayFabServerAPI.SubtractUserVirtualCurrencyAsync(request);
                 used = resultT.Result.VirtualCurrency != null;
@@ -36,7 +36,7 @@ namespace SocialEdge.Server.Api
             else // consume virtual good
             {
                 ConsumeItemRequest request = new ConsumeItemRequest();
-                request.PlayFabId = playerId;
+                request.PlayFabId = playerContext.PlayerId;
                 request.ConsumeCount = qty;
                 request.ItemInstanceId = itemId;
 
@@ -47,7 +47,7 @@ namespace SocialEdge.Server.Api
             return used;
         }
 
-        public static async Task<bool> Add(string playerId, string itemId, int qty)
+        public static async Task<bool> Add(string itemId, int qty, PlayerContext playerContext)
         {
             bool added = false;
         
@@ -55,7 +55,7 @@ namespace SocialEdge.Server.Api
             {
                 AddUserVirtualCurrencyRequest request = new AddUserVirtualCurrencyRequest();
                 request.Amount = qty;
-                request.PlayFabId = playerId;
+                request.PlayFabId = playerContext.PlayerId;
                 request.VirtualCurrency = "GM";
                 var resultT = await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
                 added = resultT.Result.VirtualCurrency != null;
@@ -64,7 +64,7 @@ namespace SocialEdge.Server.Api
             {
                 AddUserVirtualCurrencyRequest request = new AddUserVirtualCurrencyRequest();
                 request.Amount = qty;
-                request.PlayFabId = playerId;
+                request.PlayFabId = playerContext.PlayerId;
                 request.VirtualCurrency = "CN";
                 var resultT = await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
                 added = resultT.Result.VirtualCurrency != null;
@@ -73,7 +73,7 @@ namespace SocialEdge.Server.Api
             {
                 GrantItemsToUserRequest request = new GrantItemsToUserRequest();
                 request.ItemIds = new List<string> {itemId};
-                request.PlayFabId = playerId;
+                request.PlayFabId = playerContext.PlayerId;
                 var resutlT = await PlayFab.PlayFabServerAPI.GrantItemsToUserAsync(request);
                 added = resutlT.Result.ItemGrantResults.Count != 0;
             }
@@ -81,16 +81,32 @@ namespace SocialEdge.Server.Api
             return added;
         }
 
-        public static async Task<Dictionary<string, int>> Grant(string playerId, Dictionary<string, int> rewards)
+        public static async Task<Dictionary<string, int>> Grant(Dictionary<string, int> rewards, PlayerContext playerContext)
         {
             Dictionary<string, int> rewarded = new Dictionary<string, int>();
         
             foreach(var item in rewards)
             {
-                bool added = await Add(playerId, item.Key, (int)item.Value);
+                bool added = await Add(item.Key, (int)item.Value, playerContext);
                 if (added)
                 {
                     rewarded.Add(item.Key, (int)item.Value);
+                }
+            }
+        
+            return rewarded;
+        }
+
+        public static async Task<Dictionary<string, int>> Grant(BsonDocument rewards, PlayerContext playerContext)
+        {
+            Dictionary<string, int> rewarded = new Dictionary<string, int>();
+        
+            foreach(var item in rewards)
+            {
+                bool added = await Add(item.Name, (int)item.Value, playerContext);
+                if (added)
+                {
+                    rewarded.Add(item.Name, (int)item.Value);
                 }
             }
         

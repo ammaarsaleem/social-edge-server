@@ -177,7 +177,7 @@ namespace SocialEdge.Server.Models
                 _fetchMask |=  inboxT != null ? FetchBits.INBOX : 0;
                 if ((_fetchMask & FetchBits.INBOX) != 0)
                 {
-                    _inbox = inboxT;
+                    _inbox = inboxT["inboxData"].AsBsonDocument;
                 }
             }
 
