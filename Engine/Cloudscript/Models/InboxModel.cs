@@ -15,7 +15,8 @@ namespace SocialEdge.Server.Models
 
         public static async Task<SocialEdge.Server.DataService.UpdateResult> Set(string inboxId, BsonDocument inbox)
         {  
-            return await SocialEdgeEnvironment.DataService.GetCollection("inbox").ReplaceOneById(inboxId, inbox, true);
+            BsonDocument inboxData = new BsonDocument() { ["inboxData"] = inbox };
+            return await SocialEdgeEnvironment.DataService.GetCollection("inbox").ReplaceOneById(inboxId, inboxData, true);
         }
 
         public static int Count(BsonDocument inbox)

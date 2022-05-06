@@ -71,6 +71,8 @@ namespace SocialEdge.Server.Api
                 msg["reward"] = Leagues.GetDailyReward(league.ToString());
                 msg["startTime"] = UtilFunc.ToUTC(UtilFunc.EndOfDay(DateTime.Now));
                 msg["time"] = msg["startTime"];
+                
+                await InboxModel.Set(playerContext.InboxId, playerContext.Inbox);
             }
 
             return granted;

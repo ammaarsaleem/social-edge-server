@@ -36,6 +36,7 @@ namespace SocialEdge.Server.Models
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private BsonDocument _mongoDocIds;
         private BsonDocument _inbox;
+        private string _inboxId;
         private BsonDocument _chat;
         private BsonDocument _publicData;
         private BsonDocument _activeInventory;
@@ -45,13 +46,14 @@ namespace SocialEdge.Server.Models
         public string PlayerId { get => _playerId; }
         public string EntityToken { get => _entityToken; }
         public string EntityId { get => _entityId; }
+        public string InboxId { get => _inboxId; }
 
-        public BsonDocument ActiveInventory { get => (ValidateCache(FetchBits.ACTIVE_INVENTORY).Result & FetchBits.ACTIVE_INVENTORY) != 0 ? _activeInventory : null; }
-        public BsonDocument PublicData { get => (ValidateCache(FetchBits.PUBLIC_DATA).Result & FetchBits.PUBLIC_DATA) != 0 ? _publicData : null; }
-        public BsonDocument Inbox { get => (ValidateCache(FetchBits.INBOX).Result & FetchBits.INBOX) != 0 ? _inbox : null; }                                                
-        public BsonDocument Chat { get => (ValidateCache(FetchBits.CHAT).Result & FetchBits.CHAT) != 0 ? _chat : null; }
-        public List<FriendInfo> Friends { get => (ValidateCache(FetchBits.FRIENDS).Result & FetchBits.FRIENDS) != 0 ? _friends : null; }
-        public List<EntityProfileBody> FriendsProfiles { get => (ValidateCache(FetchBits.FRIENDS_PROFILES).Result & FetchBits.FRIENDS_PROFILES) != 0 ? _friendsProfiles : null; }
+        public BsonDocument ActiveInventory { get => (((_fetchMask & FetchBits.ACTIVE_INVENTORY) != 0) || (ValidateCache(FetchBits.ACTIVE_INVENTORY).Result & FetchBits.ACTIVE_INVENTORY) != 0) ? _activeInventory : null; }
+        public BsonDocument PublicData { get => (((_fetchMask & FetchBits.PUBLIC_DATA) != 0) || (ValidateCache(FetchBits.PUBLIC_DATA).Result & FetchBits.PUBLIC_DATA) != 0) ? _publicData : null; }
+        public BsonDocument Inbox { get => (((_fetchMask & FetchBits.INBOX) != 0) || (ValidateCache(FetchBits.INBOX).Result & FetchBits.INBOX) != 0) ? _inbox : null; }                                                
+        public BsonDocument Chat { get => (((_fetchMask & FetchBits.CHAT) != 0) || (ValidateCache(FetchBits.CHAT).Result & FetchBits.CHAT) != 0) ? _chat : null; }
+        public List<FriendInfo> Friends { get => (((_fetchMask & FetchBits.FRIENDS) != 0) || (ValidateCache(FetchBits.FRIENDS).Result & FetchBits.FRIENDS) != 0) ? _friends : null; }
+        public List<EntityProfileBody> FriendsProfiles { get => (((_fetchMask & FetchBits.FRIENDS_PROFILES) != 0) || (ValidateCache(FetchBits.FRIENDS_PROFILES).Result & FetchBits.FRIENDS_PROFILES) != 0) ? _friendsProfiles : null; }
 
         public string PublicDataJson { get => _publicData.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
         public string InboxJson { get => _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
@@ -177,6 +179,7 @@ namespace SocialEdge.Server.Models
                 _fetchMask |=  inboxT != null ? FetchBits.INBOX : 0;
                 if ((_fetchMask & FetchBits.INBOX) != 0)
                 {
+                    _inboxId = _mongoDocIds["inbox"].ToString();
                     _inbox = inboxT["inboxData"].AsBsonDocument;
                 }
             }
