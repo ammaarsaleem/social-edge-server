@@ -71,7 +71,12 @@ namespace SocialEdge.Server.Api
                 msg["reward"] = Leagues.GetDailyReward(league.ToString());
                 msg["startTime"] = UtilFunc.ToUTC(UtilFunc.EndOfDay(DateTime.Now));
                 msg["time"] = msg["startTime"];
-                
+                await InboxModel.Set(playerContext.InboxId, playerContext.Inbox);
+            }
+            else if (msg.AsBsonDocument.Contains("tournamentId") == true)
+            {
+                // TODO Tournaments.deleteTournament(sparkPlayer, msg.tournamentId);
+                 InboxModel.Del(playerContext.Inbox, messageId);
                 await InboxModel.Set(playerContext.InboxId, playerContext.Inbox);
             }
 
@@ -83,33 +88,6 @@ namespace SocialEdge.Server.Api
 /*
 var Inbox = (function () {
 
-
-    var collect = function (sparkPlayer, messageId) {
-        var inbox = InboxModel.get(sparkPlayer);
-        var msg = inbox.messages[messageId];
-        if (msg == undefined) {
-            return null;
-        }
-        
-        var granted = Transactions.grant(sparkPlayer, msg.reward, msg.trophies);
-        
-        if (msg.isDaily == true) {
-            var playerData = PlayerModel.get(sparkPlayer);
-            msg.reward = Leagues.getDailyReward(playerData.pub.league);
-            msg.startTime = moment(moment().endOf('day').toString()).valueOf();
-            msg.time = msg.startTime;
-            InboxModel.set(sparkPlayer);
-        }
-        else {
-            if (msg.tournamentId) {
-                Tournaments.deleteTournament(sparkPlayer, msg.tournamentId);
-            }
-            
-            InboxModel.del(sparkPlayer, messageId);
-        }
-
-        return granted;
-    };
     
     var setupLeaguePromotion = function(sparkPlayer, qualifiedLeagueId, promoted) {
         var league = Leagues.getLeague(qualifiedLeagueId);

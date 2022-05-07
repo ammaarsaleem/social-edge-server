@@ -23,7 +23,7 @@ namespace SocialEdge.Server.Requests
         public PlayerContext FnPlayerContext { get => _playerContext; }
         public dynamic FnArgs { get => _args; }
 
-        public void Base(ITitleContext titleContext, IDataService dataService)
+        public void Base(ITitleContext titleContext, IDataService dataService = null)
         {
             _titleContext = titleContext;
             _dataService = dataService;

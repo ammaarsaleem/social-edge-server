@@ -108,5 +108,12 @@ namespace SocialEdge.Server.Api
 
             return await PlayFab.PlayFabServerAPI.UpdateUserReadOnlyDataAsync(request);
         }
+
+        public static async Task<PlayFabResult<GetUserInventoryResult>> GetPlayerInventory(string playerId)
+        {
+            GetUserInventoryRequest request = new GetUserInventoryRequest();
+            request.PlayFabId = playerId;            
+            return await PlayFab.PlayFabServerAPI.GetUserInventoryAsync(request);
+        }
     }
 }
