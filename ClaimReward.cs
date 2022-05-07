@@ -71,7 +71,7 @@ namespace SocialEdge.Server.Requests
             var economy = SocialEdgeEnvironment.TitleContext.GetTitleDataProperty("Economy");
             var ads = economy["Ads"];
             long chestUnlockTimestamp = hotData["chestUnlockTimestamp"];
-            long chestCooldownTimeInMin = ads["chestCooldownTimeInMin"];
+            var chestCooldownTimeInMin = Convert.ToInt64(ads["chestCooldownTimeInMin"]);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
 
@@ -89,7 +89,7 @@ namespace SocialEdge.Server.Requests
                 var chestUnlockTimestampUpdated = currentTime + chestCooldownTimeSec;
                 hotData["chestUnlockTimestamp"] = chestUnlockTimestampUpdated;
 
-                BsonDocument obj = new BsonDocument() {["hotData"] = hotData };
+                BsonDocument obj = new BsonDocument() { ["hotData"] = hotData.ToString() };
                 var resultUpdateT = await Player.UpdatePlayerData(playerContext.PlayerId, obj);
 
                 result.Add("claimRewardType", rewardType);
@@ -98,6 +98,10 @@ namespace SocialEdge.Server.Requests
             }
             else
             {
+                // TODO avoid unnecessary requests
+                var playerinventoryResult = await Player.GetPlayerInventory(playerContext.PlayerId);
+                var coins = playerinventoryResult.Result.VirtualCurrency["CN"];
+                var gems = playerinventoryResult.Result.VirtualCurrency["GM"];
                 result.Add("error", "invalidChestReward");
                 result.Add("claimRewardType", rewardType);
                 result.Add("coins", 0);// TODO
@@ -135,6 +139,7 @@ namespace SocialEdge.Server.Requests
                     }
                     else
                     {
+                        // TODO avoid unnecessary requests
                         var playerinventoryResult = await Player.GetPlayerInventory(playerContext.PlayerId);
                         var coins = playerinventoryResult.Result.VirtualCurrency["CN"];
                         var gems = playerinventoryResult.Result.VirtualCurrency["GM"];
