@@ -1,12 +1,17 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
 using MongoDB.Bson;
-using SocialEdge.Server.Models;
+using SocialEdgeSDK.Server.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using SocialEdgeSDK.Server.Common;
 
-namespace SocialEdge.Server.Api
+namespace SocialEdgeSDK.Server.Api
 {
     public static class Inbox
     {
@@ -43,18 +48,18 @@ namespace SocialEdge.Server.Api
                 ["isDaily"] = false,
                 ["heading"] = "",
                 ["body"] = "",
-                ["time"] = UtilFunc.UTCNow(),
+                ["time"] = Utils.UTCNow(),
                 ["reward"] = new BsonDocument(),
                 ["trophies"] = 0,
                 ["rank"] = 0,
                 ["chestType"] = "",
                 ["tournamentType"] = "",
                 ["league"] = "",
-                ["startTime"] = UtilFunc.UTCNow()
+                ["startTime"] = Utils.UTCNow()
             };
         }
 
-        public static async Task<Dictionary<string, int>> Collect(string messageId, PlayerContext playerContext)
+        public static async Task<Dictionary<string, int>> Collect(string messageId, SocialEdgePlayer playerContext)
         {
             var inbox = playerContext.Inbox;
             var msg = inbox["messages"].AsBsonDocument.Contains(messageId) ? inbox["messages"][messageId] : null;
@@ -69,7 +74,7 @@ namespace SocialEdge.Server.Api
             {
                 var league = playerContext.PublicData["leag"];
                 msg["reward"] = Leagues.GetDailyReward(league.ToString());
-                msg["startTime"] = UtilFunc.ToUTC(UtilFunc.EndOfDay(DateTime.Now));
+                msg["startTime"] = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
                 msg["time"] = msg["startTime"];
                 await InboxModel.Set(playerContext.InboxId, playerContext.Inbox);
             }

@@ -1,9 +1,14 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System.Threading.Tasks;
 using PlayFab;
 using PlayFab.ServerModels;
-using SocialEdge.Server.Models;
+using SocialEdgeSDK.Server.Models;
 
-namespace SocialEdge.Server.Api
+namespace SocialEdgeSDK.Server.Api
 {
     public static class Shop
     {

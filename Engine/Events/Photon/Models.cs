@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System;
-namespace SocialEdge.Playfab.Photon
+namespace SocialEdgeSDK.Playfab.Photon
 {
     #region Requests
     public class GameCloseRequest

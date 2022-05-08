@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System.Collections.Generic;
 using PlayFab.ServerModels;
-using SocialEdge.Server.Constants;
-namespace SocialEdge.Playfab.Photon.Events
+using SocialEdgeSDK.Server.Constants;
+namespace SocialEdgeSDK.Playfab.Photon.Events
 {
     public partial class GameCreate
     {

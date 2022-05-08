@@ -1,3 +1,7 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
 
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -7,10 +11,10 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using PlayFab.Samples;
 using System.Net;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
 using System.Collections.Generic;
 
-namespace SocialEdge.Server.Requests
+namespace SocialEdgeSDK.Server.Requests
 {
     public static class UpdatePlayerData
     {
@@ -19,7 +23,7 @@ namespace SocialEdge.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            SocialEdgeEnvironment.Init(req);
+            SocialEdge.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;

@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using SocialEdge.Server.Constants;
-namespace SocialEdge.Playfab.Photon.Events
+using SocialEdgeSDK.Server.Constants;
+namespace SocialEdgeSDK.Playfab.Photon.Events
 {
     public partial class GameLeave
     {

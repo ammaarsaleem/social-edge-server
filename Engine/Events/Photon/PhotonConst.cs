@@ -1,5 +1,5 @@
 
-namespace SocialEdge.Server.Constants
+namespace SocialEdgeSDK.Server.Constants
 {
     public static partial class Constant
     {

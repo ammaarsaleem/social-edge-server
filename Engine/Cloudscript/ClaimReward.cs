@@ -1,3 +1,8 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -5,15 +10,15 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Net.Http;
-using SocialEdge.Server.Models;
-using SocialEdge.Server.DataService;
+using SocialEdgeSDK.Server.Models;
+using SocialEdgeSDK.Server.DataService;
 using MongoDB.Bson;
-using MongoDB.Bson.IO;
-using SocialEdge.Server.Common.Utils;
-using SocialEdge.Server.Api;
+using SocialEdgeSDK.Server.Context;
+using SocialEdgeSDK.Server.Api;
 using PlayFab.ServerModels;
+using SocialEdgeSDK.Server.Common;
 
-namespace SocialEdge.Server.Requests
+namespace SocialEdgeSDK.Server.Requests
 {
     public class ClaimReward : FunctionContext
     {
@@ -27,7 +32,7 @@ namespace SocialEdge.Server.Requests
             await FunctionContextInit(req, log);
             var data = FnArgs["data"];
             var rewardType = data["rewardType"].Value;
-            var economyData = SocialEdgeEnvironment.TitleContext.GetTitleDataProperty("Economy");
+            var economyData = SocialEdge.TitleContext.GetTitleDataProperty("Economy");
             var rewardsData = economyData["Rewards"];
             var rewardsTable = new Dictionary<string, object>() 
             {
@@ -64,18 +69,18 @@ namespace SocialEdge.Server.Requests
             return null;
         }
 
-        private async Task<object> RewardChest(string rewardType, int amount, dynamic data, PlayerContext playerContext)
+        private async Task<object> RewardChest(string rewardType, int amount, dynamic data, SocialEdgePlayer playerContext)
         {
             var userData = data["userData"];
             var hotData = userData["hotData"];
-            var economy = SocialEdgeEnvironment.TitleContext.GetTitleDataProperty("Economy");
+            var economy = SocialEdge.TitleContext.GetTitleDataProperty("Economy");
             var ads = economy["Ads"];
             long chestUnlockTimestamp = hotData["chestUnlockTimestamp"];
             var chestCooldownTimeInMin = Convert.ToInt64(ads["chestCooldownTimeInMin"]);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
 
-            var currentTime = UtilFunc.UTCNow();
+            var currentTime = Utils.UTCNow();
             if (currentTime >= chestUnlockTimestamp)
             {
                 var chestCooldownTimeSec = chestCooldownTimeInMin * 60 * 1000;
@@ -112,7 +117,7 @@ namespace SocialEdge.Server.Requests
             return result;
         }
 
-        private async Task<object> RewardDaily(string rewardType, int amount, object data, PlayerContext playerContext)
+        private async Task<object> RewardDaily(string rewardType, int amount, object data, SocialEdgePlayer playerContext)
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
             string leagueDailyRewardMsgId = InboxModel.FindOne(playerContext.Inbox, "RewardDailyLeague");
@@ -124,9 +129,9 @@ namespace SocialEdge.Server.Requests
                 {
                     var msg = inbox["messages"][leagueDailyRewardMsgId];
                     var startTime = Convert.ToInt64(msg["startTime"]);
-                    if (false && UtilFunc.UTCNow() >= startTime)
+                    if (false && Utils.UTCNow() >= startTime)
                     {
-                        msg["tartTime"] = UtilFunc.EndOfDay(DateTime.Now);
+                        msg["tartTime"] = Utils.EndOfDay(DateTime.Now);
                         msg["time"] = msg["startTime"];
                         await InboxModel.Set(playerContext.InboxId, playerContext.Inbox);
             

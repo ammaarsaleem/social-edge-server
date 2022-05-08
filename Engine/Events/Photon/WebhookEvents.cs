@@ -10,9 +10,9 @@
 // using Microsoft.Azure.WebJobs.Extensions.Http;
 // using Microsoft.AspNetCore.Mvc;
 // using System.Collections.Generic;
-// using SocialEdge.Server.Utils;
+// using SocialEdgeSDK.Server.Utils;
 // using System.Linq;
-// namespace SocialEdge.Playfab.Photon.abc
+// namespace SocialEdgeSDK.Playfab.Photon.abc
 // {
     // public class GameCreate
     // {

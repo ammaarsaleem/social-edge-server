@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-using SocialEdge.Server.DataService;
+using SocialEdgeSDK.Server.DataService;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using System.Threading.Tasks;

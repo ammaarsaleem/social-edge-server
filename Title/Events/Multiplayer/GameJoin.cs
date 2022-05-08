@@ -7,10 +7,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
-using SocialEdge.Server.Constants;
+using SocialEdgeSDK.Server.Constants;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
-namespace SocialEdge.Playfab.Photon.Events
+namespace SocialEdgeSDK.Playfab.Photon.Events
 {
     public partial class GameJoin
     {

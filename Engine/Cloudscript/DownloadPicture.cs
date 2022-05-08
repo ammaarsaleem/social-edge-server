@@ -1,3 +1,8 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -6,11 +11,11 @@ using Microsoft.Extensions.Logging;
 using PlayFab.ServerModels;
 using System.Net.Http;
 using Newtonsoft.Json;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
 using PlayFab.Samples;
 using PlayFab;
 
-namespace SocialEdge.Server.Requests
+namespace SocialEdgeSDK.Server.Requests
 {
     public class DownloadPicture
     {
@@ -20,7 +25,7 @@ namespace SocialEdge.Server.Requests
             ILogger log)
         {
             byte[] profilePic = null;
-            SocialEdgeEnvironment.Init(req);
+            SocialEdge.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             try

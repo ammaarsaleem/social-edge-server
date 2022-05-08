@@ -1,17 +1,16 @@
-using System.Threading.Tasks;
-using PlayFab;
-using PlayFab.ServerModels;
-using System.Collections;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using SocialEdge.Server.Api;
-using SocialEdge.Server.Common.Utils;
-using System.Linq;
-using Newtonsoft.Json.Linq;
-using MongoDB.Bson;
-using MongoDB.Bson.IO;
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
 
-namespace SocialEdge.Server.DataService
+using PlayFab.ServerModels;
+using System.Collections.Generic;
+using SocialEdgeSDK.Server.Api;
+using SocialEdgeSDK.Server.Context;
+using System.Linq;
+using MongoDB.Bson;
+
+namespace SocialEdgeSDK.Server.DataService
 {
     public interface ITitleContext
     {
@@ -47,7 +46,7 @@ namespace SocialEdge.Server.DataService
         private void FetchTitleContext()
         {
             version = "0.0.0";
-            SocialEdgeEnvironment.Init();
+            SocialEdge.Init();
             var titleDataTask = Title.GetTitleData();
             _titleData = titleDataTask.Result.Result;
             _titleDataDict = _titleData.Data.ToDictionary(m => m.Key, m => BsonDocument.Parse(m.Value.ToString()));

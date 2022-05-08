@@ -5,7 +5,7 @@
 // using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 
 
-// namespace SocialEdge.Server.Realtime
+// namespace SocialEdgeSDK.Server.Realtime
 // {
 //     public static class PubSub
 //     {

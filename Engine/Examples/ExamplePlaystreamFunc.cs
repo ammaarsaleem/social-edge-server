@@ -16,12 +16,12 @@
 // using Microsoft.AspNetCore.Http;
 // // using PlayFab.Plugins.CloudScript;
 // using PlayFab.Samples;
-// using SocialEdge.Server.Constants;
+// using SocialEdgeSDK.Server.Constants;
 // using PlayFab;
 // using System.Net;
 // using System.Text;
-// using SocialEdge.Server.Common.Utils;
-// // namespace SocialEdge.Playfab
+// using SocialEdgeSDK.Server.Context;
+// // namespace SocialEdgeSDK.Playfab
 //     public class OnPlayerCreated
 //     {
 // [FunctionName("ExamplePlaystreamFunc")]

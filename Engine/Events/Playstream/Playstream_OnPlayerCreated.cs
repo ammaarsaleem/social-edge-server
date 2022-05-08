@@ -1,25 +1,22 @@
-using System;
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using PlayFab.ServerModels;
-using PlayFab.Json;
 using System.Collections.Generic;
-using PlayFab.DataModels;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
-// using PlayFab.Plugins.CloudScript;
 using PlayFab.Samples;
-using SocialEdge.Server.Constants;
 using PlayFab;
 using System.Net;
-using SocialEdge.Server.Common.Utils;
-namespace SocialEdge.Playfab
+using SocialEdgeSDK.Server.Context;
+
+namespace SocialEdgeSDK.Playfab
 {
     public class PlayerHotDataSegment
     {
@@ -170,7 +167,7 @@ namespace SocialEdge.Playfab
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            SocialEdgeEnvironment.Init(req);
+            SocialEdge.Init(req);
             var context = JsonConvert.DeserializeObject<PlayerPlayStreamFunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
 

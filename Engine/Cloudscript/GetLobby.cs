@@ -1,3 +1,8 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -7,12 +12,12 @@ using PlayFab.ServerModels;
 using System.Collections.Generic;
 using System.Net.Http;
 using Newtonsoft.Json;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
 using PlayFab.Samples;
-using SocialEdge.Server.Constants;
+using SocialEdgeSDK.Server.Constants;
 using PlayFab;
 
-namespace SocialEdge.Server.Requests
+namespace SocialEdgeSDK.Server.Requests
 {
     public class GetLobby
     {
@@ -21,7 +26,7 @@ namespace SocialEdge.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            SocialEdgeEnvironment.Init(req);
+            SocialEdge.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             try

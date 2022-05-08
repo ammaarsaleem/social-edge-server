@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
-using SocialEdge.Server.Constants;
-using SocialEdge.Server.Common.Models;
-namespace SocialEdge.Playfab.Photon
+using SocialEdgeSDK.Server.Constants;
+using SocialEdgeSDK.Server.Common.Models;
+namespace SocialEdgeSDK.Playfab.Photon
 {
     public static class Utils
     {

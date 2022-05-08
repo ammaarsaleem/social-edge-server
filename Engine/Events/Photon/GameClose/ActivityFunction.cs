@@ -6,12 +6,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System.Collections.Generic;
-using SocialEdge.Server.Common.Models;
+using SocialEdgeSDK.Server.Common.Models;
 using PlayFab.ServerModels;
-using SocialEdge.Server.Constants;
+using SocialEdgeSDK.Server.Constants;
 using Newtonsoft.Json;
 using System.Linq;
-namespace SocialEdge.Playfab.Photon.Events
+namespace SocialEdgeSDK.Playfab.Photon.Events
 {
     public partial class GameClose
     {

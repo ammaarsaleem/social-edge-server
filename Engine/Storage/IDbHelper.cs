@@ -1,7 +1,13 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-namespace SocialEdge.Server.Db
+
+namespace SocialEdgeSDK.Server.Db
 {
     public interface IDbHelper
     {

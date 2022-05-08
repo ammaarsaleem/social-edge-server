@@ -1,17 +1,20 @@
-using System;
-using SocialEdge.Server.Common.Utils;
-using Newtonsoft.Json.Linq;
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
+using SocialEdgeSDK.Server.Context;
 using MongoDB.Bson;
 using System.Collections.Generic;
 using PlayFab.ServerModels;
 using System.Threading.Tasks;
-using SocialEdge.Server.Models;
+using SocialEdgeSDK.Server.Common;
 
-namespace SocialEdge.Server.Api
+namespace SocialEdgeSDK.Server.Api
 {
     public static class Transactions
     {
-        public static async Task<bool> Consume(string itemId, int qty, PlayerContext playerContext)
+        public static async Task<bool> Consume(string itemId, int qty, SocialEdgePlayer playerContext)
         {
             bool used = false;
         
@@ -47,7 +50,7 @@ namespace SocialEdge.Server.Api
             return used;
         }
 
-        public static async Task<bool> Add(string itemId, int qty, PlayerContext playerContext)
+        public static async Task<bool> Add(string itemId, int qty, SocialEdgePlayer playerContext)
         {
             bool added = false;
         
@@ -81,7 +84,7 @@ namespace SocialEdge.Server.Api
             return added;
         }
 
-        public static async Task<Dictionary<string, int>> Grant(Dictionary<string, int> rewards, PlayerContext playerContext)
+        public static async Task<Dictionary<string, int>> Grant(Dictionary<string, int> rewards, SocialEdgePlayer playerContext)
         {
             Dictionary<string, int> rewarded = new Dictionary<string, int>();
         
@@ -97,7 +100,7 @@ namespace SocialEdge.Server.Api
             return rewarded;
         }
 
-        public static async Task<Dictionary<string, int>> Grant(BsonDocument rewards, PlayerContext playerContext)
+        public static async Task<Dictionary<string, int>> Grant(BsonDocument rewards, SocialEdgePlayer playerContext)
         {
             Dictionary<string, int> rewarded = new Dictionary<string, int>();
         
@@ -113,12 +116,12 @@ namespace SocialEdge.Server.Api
             return rewarded;
         }
 
-        public static async Task<int> GrantTrophies(int qty, PlayerContext playerContext)
+        public static async Task<int> GrantTrophies(int qty, SocialEdgePlayer playerContext)
         {
             int trophies = (int)playerContext.PublicData["trpy"] + qty;
             playerContext.PublicData["trpy"] = trophies;
 
-            BsonDocument publicData = new BsonDocument() {["PublicProfileEx"] = UtilFunc.CleanupJsonString(playerContext.PublicDataJson)};
+            BsonDocument publicData = new BsonDocument() {["PublicProfileEx"] = Utils.CleanupJsonString(playerContext.PublicDataJson)};
             await Player.UpdatePublicData(playerContext.EntityToken, playerContext.EntityId, publicData);
             return trophies;
         }

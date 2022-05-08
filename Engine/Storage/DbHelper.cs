@@ -1,5 +1,10 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Microsoft.Extensions.Logging;
@@ -10,7 +15,8 @@ using Newtonsoft.Json;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
-namespace SocialEdge.Server.Db
+
+namespace SocialEdgeSDK.Server.Db
 {
     public class DbHelper: IDbHelper
     {
@@ -21,7 +27,7 @@ namespace SocialEdge.Server.Db
 
         public DbHelper(MongoClient dbclient)
         {
-            SocialEdgeEnvironment.Init();
+            SocialEdge.Init();
             _dbClient = dbclient;
             string dbName = ConfigConstants.DATABASE;
             _database = _dbClient.GetDatabase(dbName);

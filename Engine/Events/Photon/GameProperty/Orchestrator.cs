@@ -6,10 +6,10 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using SocialEdge.Server.Common.Utils;
-using SocialEdge.Server.Common.Models;
-using SocialEdge.Server.Constants;
-namespace SocialEdge.Playfab.Photon.Events
+using SocialEdgeSDK.Server.Context;
+using SocialEdgeSDK.Server.Common.Models;
+using SocialEdgeSDK.Server.Constants;
+namespace SocialEdgeSDK.Playfab.Photon.Events
 {
     public partial class GameProperties
     {
@@ -25,7 +25,7 @@ namespace SocialEdge.Playfab.Photon.Events
             [DurableClient] IDurableClient starter,
             ILogger log)
         {
-            SocialEdgeEnvironment.Init(req);
+            SocialEdge.Init(req);
             string message = string.Empty;
             GamePropertiesRequest body = await req.Content.ReadAsAsync<GamePropertiesRequest>();
 
@@ -56,7 +56,7 @@ namespace SocialEdge.Playfab.Photon.Events
         public static async Task<Result> Orchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
-            SocialEdgeEnvironment.Init();
+            SocialEdge.Init();
             var outputs = new List<OkObjectResult>();
             var reqBody = context.GetInput<GamePropertiesRequest>();
             List<Task> tasks = new List<Task>();

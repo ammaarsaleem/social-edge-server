@@ -1,18 +1,22 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
 
 using MongoDB.Bson;
-using SocialEdge.Server.Api;
+using SocialEdgeSDK.Server.Api;
 using System.Threading.Tasks;
 using PlayFab;
 using PlayFab.AuthenticationModels;
 using System.Collections.Generic;
 using PlayFab.ProfilesModels;
-using SocialEdge.Server.Common.Utils;
 using PlayFab.ServerModels;
-using PlayFab.DataModels;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson.IO;
+using SocialEdgeSDK.Server.Common;
+using SocialEdgeSDK.Server.Models;
 
-namespace SocialEdge.Server.Models
+namespace SocialEdgeSDK.Server.Context
 {
     public static class FetchBits
     {
@@ -27,7 +31,7 @@ namespace SocialEdge.Server.Models
         public const uint ALL = PUBLIC_DATA | INBOX | CHAT | FRIENDS | FRIENDS_PROFILES | ACTIVE_INVENTORY;
     }
 
-    public class PlayerContext
+    public class SocialEdgePlayer
     {
         private uint _fetchMask;
         private string _playerId;
@@ -59,7 +63,7 @@ namespace SocialEdge.Server.Models
         public string InboxJson { get => _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
         public string ChatJson { get => _chat.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
 
-        public PlayerContext(dynamic context)
+        public SocialEdgePlayer(dynamic context)
         {
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             _entityId = context.CallerEntityProfile.Entity.Id;
@@ -111,21 +115,21 @@ namespace SocialEdge.Server.Models
             if ((fetchMask & FetchBits.FRIENDS) != 0)
             {
                 friendsT = await Player.GetFriendsList(_playerId);
-                SocialEdgeEnvironment.Log.LogInformation("Task fetch FRIENDS");
+                SocialEdge.Log.LogInformation("Task fetch FRIENDS");
             }
 
             // Public data
             if ((fetchMask & FetchBits.PUBLIC_DATA) != 0)
             {
-                _publicData = BsonDocument.Parse(UtilFunc.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
-                SocialEdgeEnvironment.Log.LogInformation("Parse PUBLIC_DATA");
+                _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
+                SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
             }
 
             // Active inventory
             if ((fetchMask & FetchBits.ACTIVE_INVENTORY) != 0)
             {
                 _activeInventory = BsonDocument.Parse(_publicDataObjs["ActiveInventory"].EscapedDataObject);
-                SocialEdgeEnvironment.Log.LogInformation("Parse ACTIVE_INVENTORY");
+                SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");
             }
 
             // Inbox
@@ -133,15 +137,15 @@ namespace SocialEdge.Server.Models
             {
                 ValidateMongoDocIdsCache();
                 inboxT = await InboxModel.Get(_mongoDocIds["inbox"].ToString());
-                SocialEdgeEnvironment.Log.LogInformation("Task fetch INBOX");
+                SocialEdge.Log.LogInformation("Task fetch INBOX");
             }
 
             // Chat
             if ((fetchMask & FetchBits.CHAT) != 0)
             {
                 ValidateMongoDocIdsCache();
-                chatT = await SocialEdgeEnvironment.DataService.GetCollection("chat").FindOneById(_mongoDocIds["chat"].ToString());
-                SocialEdgeEnvironment.Log.LogInformation("Task fetch CHAT");
+                chatT = await SocialEdge.DataService.GetCollection("chat").FindOneById(_mongoDocIds["chat"].ToString());
+                SocialEdge.Log.LogInformation("Task fetch CHAT");
             }
 
             // Friends Profiles
@@ -157,7 +161,7 @@ namespace SocialEdge.Server.Models
                     friendsProfilesT = await Player.GetFriendProfiles(_friends, _entityToken);
                 }
 
-                SocialEdgeEnvironment.Log.LogInformation("Task fetch FRIENDS_PROFILES");
+                SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILES");
             }
 
             // Process fetches
@@ -214,7 +218,7 @@ namespace SocialEdge.Server.Models
                 }
             }
 
-            SocialEdgeEnvironment.Log.LogInformation("Task fetch Completed!");
+            SocialEdge.Log.LogInformation("Task fetch Completed!");
 
 
             return _fetchMask;

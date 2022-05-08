@@ -3,8 +3,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using SocialEdge.Server.Constants;
-namespace SocialEdge.Playfab.Photon.Events
+using SocialEdgeSDK.Server.Constants;
+namespace SocialEdgeSDK.Playfab.Photon.Events
 {
     public partial class GameEvent
     {

@@ -1,3 +1,8 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -5,13 +10,12 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using Newtonsoft.Json;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
 using PlayFab.Samples;
 using System.Collections.Generic;
-using SocialEdge.Server.Db;
-// using SocialEdge.Server.Realtime;
+using SocialEdgeSDK.Server.Db;
 
-namespace SocialEdge.Server.Requests
+namespace SocialEdgeSDK.Server.Requests
 {
     public class SearchPlayerByName
     {
@@ -30,7 +34,7 @@ namespace SocialEdge.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            SocialEdgeEnvironment.Init(req);
+            SocialEdge.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             string queryName = args["name"];

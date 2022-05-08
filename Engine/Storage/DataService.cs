@@ -1,9 +1,11 @@
-using System;
-using SocialEdge.Server.Common.Utils;
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
+using SocialEdgeSDK.Server.Context;
 using MongoDB.Driver;
-using MongoDB.Bson;
-using StackExchange.Redis;
-namespace SocialEdge.Server.DataService
+namespace SocialEdgeSDK.Server.DataService
 {
     public class DataService : IDataService
     {

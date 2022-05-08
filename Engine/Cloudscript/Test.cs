@@ -5,13 +5,13 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using Newtonsoft.Json;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
 using PlayFab.Samples;
 using System.Collections.Generic;
-using SocialEdge.Server.Db;
-using SocialEdge.Server.DataService;
-// using SocialEdge.Server.Realtime;
-namespace SocialEdge.Server.Requests
+using SocialEdgeSDK.Server.Db;
+using SocialEdgeSDK.Server.DataService;
+// using SocialEdgeSDK.Server.Realtime;
+namespace SocialEdgeSDK.Server.Requests
 {
     public class Test
     {
@@ -32,7 +32,7 @@ namespace SocialEdge.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            SocialEdgeEnvironment.Init(req);
+            SocialEdge.Init(req);
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;

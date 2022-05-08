@@ -1,27 +1,32 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
 
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
+using SocialEdgeSDK.Server.Common;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using System.Collections.Generic;
 
-namespace SocialEdge.Server.Models
+namespace SocialEdgeSDK.Server.Models
 {
     public static class InboxModel
     {
         public static async Task<BsonDocument> Get(string inboxId)
         {
-            return await SocialEdgeEnvironment.DataService.GetCollection("inbox").FindOneById(inboxId);
+            return await SocialEdge.DataService.GetCollection("inbox").FindOneById(inboxId);
         }
 
-        public static async Task<SocialEdge.Server.DataService.UpdateResult> Set(string inboxId, BsonDocument inbox)
+        public static async Task<DataService.UpdateResult> Set(string inboxId, BsonDocument inbox)
         {  
             BsonDocument inboxData = new BsonDocument() { ["inboxData"] = inbox };
-            return await SocialEdgeEnvironment.DataService.GetCollection("inbox").ReplaceOneById(inboxId, inboxData, true);
+            return await SocialEdge.DataService.GetCollection("inbox").ReplaceOneById(inboxId, inboxData, true);
         }
 
         public static int Count(BsonDocument inbox)
         {
-            long now = UtilFunc.UTCNow();
+            long now = Utils.UTCNow();
             int count = 0;
             var messages = inbox["messages"].AsBsonDocument;
             foreach (string key in messages.Names)

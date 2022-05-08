@@ -1,12 +1,17 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
 using PlayFab;
 using System.Net.Http;
-using SocialEdge.Server.DataService;
+using SocialEdgeSDK.Server.DataService;
 using Microsoft.Extensions.Logging;
 
-namespace SocialEdge.Server.Common.Utils
+namespace SocialEdgeSDK.Server.Context
 {
-    public static class SocialEdgeEnvironment
+    public static class SocialEdge
     {
         private static IDataService _dataService = null;
         private static ITitleContext _titleContext = null;

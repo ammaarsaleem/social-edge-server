@@ -1,21 +1,25 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Context;
 using Newtonsoft.Json.Linq;
 using MongoDB.Bson;
-using MongoDB.Bson.IO;
 
-namespace SocialEdge.Server.Api
+namespace SocialEdgeSDK.Server.Api
 {
     public static class Leagues
     {
         public static BsonDocument GetDailyReward(string leagueId)
         {
-            return SocialEdgeEnvironment.TitleContext.GetTitleDataProperty("Leagues")[leagueId]["dailyReward"];
+            return SocialEdge.TitleContext.GetTitleDataProperty("Leagues")[leagueId]["dailyReward"];
         }
 
         public static int GetQualifiedLeageId(int trophies)
         {
-            BsonDocument leagueSettings = SocialEdgeEnvironment.TitleContext.GetTitleDataProperty("Leagues");
+            BsonDocument leagueSettings = SocialEdge.TitleContext.GetTitleDataProperty("Leagues");
             int i = leagueSettings.ElementCount - 1;
             while (i >= 0 && trophies <= (int)leagueSettings[i.ToString()]["qualification"]["trophies"]) i--;
             return Math.Clamp(i, 0, leagueSettings.ElementCount - 1);
@@ -23,7 +27,7 @@ namespace SocialEdge.Server.Api
         
         public static JToken GetLeague(string leagueId)
         {
-            return SocialEdgeEnvironment.TitleContext.GetTitleDataProperty("Leagues")[leagueId];
+            return SocialEdge.TitleContext.GetTitleDataProperty("Leagues")[leagueId];
         }
     }
 }

@@ -1,16 +1,14 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
-using SocialEdge.Server.Common.Utils;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Newtonsoft.Json;
-using System.IO;
-using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
-namespace SocialEdge.Server.DataService{
+namespace SocialEdgeSDK.Server.DataService{
 
    public class Collection : ICollection
    {

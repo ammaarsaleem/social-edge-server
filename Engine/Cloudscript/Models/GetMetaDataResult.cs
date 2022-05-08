@@ -1,12 +1,13 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using PlayFab;
 using PlayFab.ServerModels;
 using PlayFab.ProfilesModels;
-using PlayFab.DataModels;
-using MongoDB.Bson;
 
-namespace SocialEdge.Server.Models{
+namespace SocialEdgeSDK.Server.Models{
     public class GetMetaDataResult
     {
         public string publicDataObjs;

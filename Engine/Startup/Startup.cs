@@ -1,19 +1,21 @@
 
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Linq;
-using StackExchange.Redis;
-using SocialEdge.Server.Db;
-using SocialEdge.Server.DataService;
-using System;
-using SocialEdge.Server.Common.Utils;
+using SocialEdgeSDK.Server.Db;
+using SocialEdgeSDK.Server.DataService;
 
-[assembly: FunctionsStartup(typeof(SocialEdge.Playfab.Startup))]
+[assembly: FunctionsStartup(typeof(SocialEdgeSDK.Playfab.Startup))]
 
-namespace SocialEdge.Playfab
+namespace SocialEdgeSDK.Playfab
 {
     public class Startup : FunctionsStartup
     {

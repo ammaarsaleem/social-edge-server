@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using SocialEdge.Server.Constants;
-namespace SocialEdge.Playfab.Photon.Events
+using SocialEdgeSDK.Server.Constants;
+namespace SocialEdgeSDK.Playfab.Photon.Events
 {
     public partial class GameProperties
     {
