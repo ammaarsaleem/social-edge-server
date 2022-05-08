@@ -3,6 +3,7 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System;
 using MongoDB.Bson;
 using SocialEdgeSDK.Server.Api;
 using System.Threading.Tasks;
@@ -20,20 +21,25 @@ namespace SocialEdgeSDK.Server.Context
 {
     public static class FetchBits
     {
-        public const uint PUBLIC_DATA = 0x1;
-        public const uint INBOX = 0x2;
-        public const uint CHAT = 0x4;
-        public const uint FRIENDS = 0x8;
-        public const uint FRIENDS_PROFILES  = 0x10;
-        public const uint ACTIVE_INVENTORY = 0x20;
+        public const ulong NONE = 0;
+        public const ulong PUBLIC_DATA = 0x1;
+        public const ulong INBOX = 0x2;
+        public const ulong CHAT = 0x4;
+        public const ulong FRIENDS = 0x8;
+        public const ulong FRIENDS_PROFILES  = 0x10;
+        public const ulong ACTIVE_INVENTORY = 0x20;
+        public const ulong INVENTORY = 0x40;
+        public const ulong MAX = INVENTORY;
 
-        public const uint NONE = 0;
-        public const uint ALL = PUBLIC_DATA | INBOX | CHAT | FRIENDS | FRIENDS_PROFILES | ACTIVE_INVENTORY;
+        public const ulong META = PUBLIC_DATA | INBOX | CHAT | FRIENDS_PROFILES | ACTIVE_INVENTORY;
     }
 
     public class SocialEdgePlayer
     {
-        private uint _fetchMask;
+        public delegate bool ValidateCacheFnType();
+
+        private Dictionary<ulong, ValidateCacheFnType> _fetchMap;
+        private ulong _fetchMask;
         private string _playerId;
         private string _entityToken;
         private string _entityId;
@@ -52,12 +58,12 @@ namespace SocialEdgeSDK.Server.Context
         public string EntityId { get => _entityId; }
         public string InboxId { get => _inboxId; }
 
-        public BsonDocument ActiveInventory { get => (((_fetchMask & FetchBits.ACTIVE_INVENTORY) != 0) || (ValidateCache(FetchBits.ACTIVE_INVENTORY).Result & FetchBits.ACTIVE_INVENTORY) != 0) ? _activeInventory : null; }
-        public BsonDocument PublicData { get => (((_fetchMask & FetchBits.PUBLIC_DATA) != 0) || (ValidateCache(FetchBits.PUBLIC_DATA).Result & FetchBits.PUBLIC_DATA) != 0) ? _publicData : null; }
-        public BsonDocument Inbox { get => (((_fetchMask & FetchBits.INBOX) != 0) || (ValidateCache(FetchBits.INBOX).Result & FetchBits.INBOX) != 0) ? _inbox : null; }                                                
-        public BsonDocument Chat { get => (((_fetchMask & FetchBits.CHAT) != 0) || (ValidateCache(FetchBits.CHAT).Result & FetchBits.CHAT) != 0) ? _chat : null; }
-        public List<FriendInfo> Friends { get => (((_fetchMask & FetchBits.FRIENDS) != 0) || (ValidateCache(FetchBits.FRIENDS).Result & FetchBits.FRIENDS) != 0) ? _friends : null; }
-        public List<EntityProfileBody> FriendsProfiles { get => (((_fetchMask & FetchBits.FRIENDS_PROFILES) != 0) || (ValidateCache(FetchBits.FRIENDS_PROFILES).Result & FetchBits.FRIENDS_PROFILES) != 0) ? _friendsProfiles : null; }
+        public BsonDocument ActiveInventory { get => (((_fetchMask & FetchBits.ACTIVE_INVENTORY) != 0) || (ValidateCacheBit(FetchBits.ACTIVE_INVENTORY))) ? _activeInventory : null; }
+        public BsonDocument PublicData { get => (((_fetchMask & FetchBits.PUBLIC_DATA) != 0) || (ValidateCacheBit(FetchBits.PUBLIC_DATA))) ? _publicData : null; }
+        public BsonDocument Inbox { get => (((_fetchMask & FetchBits.INBOX) != 0) || (ValidateCacheBit(FetchBits.INBOX))) ? _inbox : null; }                                                
+        public BsonDocument Chat { get => (((_fetchMask & FetchBits.CHAT) != 0) || (ValidateCacheBit(FetchBits.CHAT))) ? _chat : null; }
+        public List<FriendInfo> Friends { get => (((_fetchMask & FetchBits.FRIENDS) != 0) || (ValidateCacheBit(FetchBits.FRIENDS))) ? _friends : null; }
+        public List<EntityProfileBody> FriendsProfiles { get => (((_fetchMask & FetchBits.FRIENDS_PROFILES) != 0) || (ValidateCacheBit(FetchBits.FRIENDS_PROFILES))) ? _friendsProfiles : null; }
 
         public string PublicDataJson { get => _publicData.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
         public string InboxJson { get => _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
@@ -68,6 +74,17 @@ namespace SocialEdgeSDK.Server.Context
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             _entityId = context.CallerEntityProfile.Entity.Id;
             _publicDataObjs = context.CallerEntityProfile.Objects;
+
+            _fetchMap = new Dictionary<ulong, ValidateCacheFnType>()
+            {
+                {FetchBits.NONE, ValidateCacheNone},
+                {FetchBits.PUBLIC_DATA, ValidateCachePublicData},
+                {FetchBits.INBOX, ValidateCacheInbox},
+                {FetchBits.CHAT, ValidateCacheChat},
+                {FetchBits.FRIENDS, ValidateCacheFriends},
+                {FetchBits.FRIENDS_PROFILES, ValidateCacheFriendProfiles},
+                {FetchBits.ACTIVE_INVENTORY, ValidataCacheActiveInventory}
+            };
         }
 
         public string PublicDataObjsJson 
@@ -83,8 +100,7 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
-
-        private void ValidateMongoDocIdsCache()
+        private void ValidateCacheMongoDocIds()
         {
             if (_mongoDocIds == null)
             {
@@ -92,7 +108,7 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
-        private async Task<PlayFabResult<GetEntityTokenResponse>> ValidateEntityTokenCache()
+        private async Task<PlayFabResult<GetEntityTokenResponse>> ValidateCacheEntityToken()
         {
             if (_entityToken == null)
             {
@@ -103,126 +119,92 @@ namespace SocialEdgeSDK.Server.Context
             return null;
         }
 
-        public async Task<uint> ValidateCache(uint fetchMask)
+        private bool ValidateCacheNone()
         {
-            //PlayFabResult<GetObjectsResponse> publicDataT = null;
-            BsonDocument inboxT = null;
-            BsonDocument chatT = null;  
-            PlayFabResult<GetFriendsListResult> friendsT = null;
-            PlayFabResult<GetEntityProfilesResponse> friendsProfilesT = null;
-
-            // Friends
-            if ((fetchMask & FetchBits.FRIENDS) != 0)
-            {
-                friendsT = await Player.GetFriendsList(_playerId);
-                SocialEdge.Log.LogInformation("Task fetch FRIENDS");
-            }
-
-            // Public data
-            if ((fetchMask & FetchBits.PUBLIC_DATA) != 0)
-            {
-                _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
-                SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
-            }
-
-            // Active inventory
-            if ((fetchMask & FetchBits.ACTIVE_INVENTORY) != 0)
-            {
-                _activeInventory = BsonDocument.Parse(_publicDataObjs["ActiveInventory"].EscapedDataObject);
-                SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");
-            }
-
-            // Inbox
-            if ((fetchMask & FetchBits.INBOX) != 0)
-            {
-                ValidateMongoDocIdsCache();
-                inboxT = await InboxModel.Get(_mongoDocIds["inbox"].ToString());
-                SocialEdge.Log.LogInformation("Task fetch INBOX");
-            }
-
-            // Chat
-            if ((fetchMask & FetchBits.CHAT) != 0)
-            {
-                ValidateMongoDocIdsCache();
-                chatT = await SocialEdge.DataService.GetCollection("chat").FindOneById(_mongoDocIds["chat"].ToString());
-                SocialEdge.Log.LogInformation("Task fetch CHAT");
-            }
-
-            // Friends Profiles
-            if ((fetchMask & FetchBits.FRIENDS_PROFILES) != 0)
-            {
-                await ValidateEntityTokenCache();
-                if (_friends == null && ((fetchMask & FetchBits.FRIENDS) != 0))
-                {
-                    friendsProfilesT = await Player.GetFriendProfiles( friendsT.Result.Friends, _entityToken);
-                }
-                else
-                {
-                    friendsProfilesT = await Player.GetFriendProfiles(_friends, _entityToken);
-                }
-
-                SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILES");
-            }
-
-            // Process fetches
-            // Public data
-            if ((fetchMask & FetchBits.PUBLIC_DATA) != 0)
-            {
-                _fetchMask |= _publicData != null ? FetchBits.PUBLIC_DATA : 0;
-            }
-
-            // Active inventory
-            if ((fetchMask & FetchBits.ACTIVE_INVENTORY) != 0)
-            {
-                _fetchMask |= _publicData != null ? FetchBits.ACTIVE_INVENTORY : 0;
-            }            
-
-            // Inbox
-            if ((fetchMask & FetchBits.INBOX) != 0)
-            {
-                _fetchMask |=  inboxT != null ? FetchBits.INBOX : 0;
-                if ((_fetchMask & FetchBits.INBOX) != 0)
-                {
-                    _inboxId = _mongoDocIds["inbox"].ToString();
-                    _inbox = inboxT["inboxData"].AsBsonDocument;
-                }
-            }
-
-            // Chat
-            if ((fetchMask & FetchBits.CHAT) != 0)
-            {
-                _fetchMask |=  chatT != null ? FetchBits.CHAT : 0;
-                if ((_fetchMask & FetchBits.CHAT) != 0)
-                {
-                    _chat = chatT;
-                }
-            }
-
-            // Friends
-            if ((fetchMask & FetchBits.FRIENDS) != 0)
-            {
-                _fetchMask |=  friendsT.Error == null ? FetchBits.FRIENDS : 0;
-                if ((_fetchMask & FetchBits.FRIENDS) != 0)
-                {
-                    _friends = friendsT.Result.Friends;
-                }
-            }
-
-            // Friends Profiles
-            if ((fetchMask & FetchBits.FRIENDS_PROFILES) != 0)
-            {
-                _fetchMask |=  friendsProfilesT.Error == null ? FetchBits.FRIENDS_PROFILES : 0;
-                if ((_fetchMask & FetchBits.FRIENDS_PROFILES) != 0)
-                {
-                    _friendsProfiles = friendsProfilesT.Result.Profiles;
-                }
-            }
-
-            SocialEdge.Log.LogInformation("Task fetch Completed!");
-
-
-            return _fetchMask;
+            SocialEdge.Log.LogInformation("Initialize empty cache");
+            return true;
         }
-        
-    }
+
+        private bool ValidateCachePublicData()
+        {
+            _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
+            _fetchMask |= _publicData != null ? FetchBits.PUBLIC_DATA : 0;
+            SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
+            return _publicData != null;
+        }
+
+        private bool ValidateCacheInbox()
+        {
+            ValidateCacheMongoDocIds();
+             var inboxT = InboxModel.Get(_mongoDocIds["inbox"].ToString());
+            _inboxId = inboxT.Result != null ? _mongoDocIds["inbox"].ToString() : null;
+            _inbox = inboxT != null ? inboxT.Result["inboxData"].AsBsonDocument :null;
+            _fetchMask |= _inbox != null ? FetchBits.CHAT : 0;
+            SocialEdge.Log.LogInformation("Task fetch INBOX");
+            return _inbox != null;
+        }
+
+        private bool ValidateCacheChat()
+        {
+            ValidateCacheMongoDocIds();
+            var chatT = SocialEdge.DataService.GetCollection("chat").FindOneById(_mongoDocIds["chat"].ToString());
+            chatT.Wait();
+            _chat = chatT.Result != null ? chatT.Result : null;
+            _fetchMask |=  _chat != null ? FetchBits.CHAT : 0;
+            SocialEdge.Log.LogInformation("Task fetch CHAT");
+            return _chat != null;
+        }
+
+        private bool ValidateCacheFriends()
+        {
+            var friendsT = Player.GetFriendsList(_playerId);
+            friendsT.Wait();
+            _friends = friendsT.Result.Error == null ? friendsT.Result.Result.Friends : null;
+            _fetchMask |= _friends != null ? FetchBits.FRIENDS : 0;
+            SocialEdge.Log.LogInformation("Task fetch FRIENDS");
+            return _friends != null;
+        }
+
+        private bool ValidateCacheFriendProfiles()
+        {
+            var entityTokenT = ValidateCacheEntityToken();
+            entityTokenT.Wait();
+            var friends = Friends;
+            var friendsProfilesT = Player.GetFriendProfiles(_friends, _entityToken);
+            friendsProfilesT.Wait();
+            _friendsProfiles = friendsProfilesT.Result.Error == null ? friendsProfilesT.Result.Result.Profiles : null;
+            _fetchMask |= _friendsProfiles != null ? FetchBits.FRIENDS_PROFILES : 0;
+            SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILES");
+            return _friendsProfiles != null;
+        }
+
+        private bool ValidataCacheActiveInventory()
+        {
+            _activeInventory = BsonDocument.Parse(_publicDataObjs["ActiveInventory"].EscapedDataObject);
+            _fetchMask |= _activeInventory != null ? FetchBits.ACTIVE_INVENTORY : 0;
+            SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");
+            return _activeInventory != null;
+        }
+
+        public bool ValidateCacheBit(ulong fetchMask)
+        {
+            return (bool)_fetchMap[fetchMask]?.Invoke();
+        }
+
+        public bool ValidateCache(ulong fetchMask)
+        {
+            if (fetchMask == 0)
+                return true;
+
+            ulong Bit = 0x1;
+            while (Bit != (FetchBits.MAX << 1))
+            {
+                if ((Bit & fetchMask) != 0)
+                    _fetchMap[Bit]?.Invoke();
+                
+                Bit <<= 1;
+            }
+            return true;
+        }
+   }
 }

@@ -35,7 +35,7 @@ namespace SocialEdgeSDK.Server.Requests
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             _args = _context.FunctionArgument;
             _playerContext = new SocialEdgePlayer(_context);
-            var maskT = await _playerContext.ValidateCache(FetchBits.NONE);
+            _playerContext.ValidateCache(FetchBits.NONE);
         }
     }
 }

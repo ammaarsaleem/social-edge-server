@@ -28,7 +28,7 @@ namespace SocialEdgeSDK.Server.Requests
             ILogger log)
         {
             await FunctionContextInit(req, log);
-            await FnPlayerContext.ValidateCache(FetchBits.ALL);
+            FnPlayerContext.ValidateCache(FetchBits.META);
 
             //await Transactions.Grant(new Dictionary<string, int>(){{"SkinSlate", 1}}, FnPlayerContext);
 //            Inbox.Collect("ed94-7995-4925-90b8", FnPlayerContext);
