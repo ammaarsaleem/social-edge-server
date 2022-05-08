@@ -29,8 +29,8 @@ namespace SocialEdgeSDK.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            await FunctionContextInit(req, log);
-            var data = FnArgs["data"];
+            InitContext(req, log);
+            var data = Args["data"];
             var rewardType = data["rewardType"].Value;
             var economyData = SocialEdge.TitleContext.GetTitleDataProperty("Economy");
             var rewardsData = economyData["Rewards"];
@@ -57,19 +57,19 @@ namespace SocialEdgeSDK.Server.Requests
                 Random rand = new Random();
                 rewardPoints = rand.Next((int)rewardPoints["min"].Value, (int)rewardPoints["max"].Value + 1);
 
-                return await RewardChest(rewardType, rewardPoints, data, FnPlayerContext);
+                return await RewardChest(rewardType, rewardPoints, data, SocialEdgePlayer);
             }
 
             // Daily reward
             if (rewardType == "dailyReward")
             {
-                return await RewardDaily("dailyReward", (int)rewardPoints, data, FnPlayerContext);
+                return await RewardDaily("dailyReward", (int)rewardPoints, data, SocialEdgePlayer);
             }
             
             return null;
         }
 
-        private async Task<object> RewardChest(string rewardType, int amount, dynamic data, SocialEdgePlayer playerContext)
+        private async Task<object> RewardChest(string rewardType, int amount, dynamic data, SocialEdgePlayerContext playerContext)
         {
             var userData = data["userData"];
             var hotData = userData["hotData"];
@@ -104,20 +104,19 @@ namespace SocialEdgeSDK.Server.Requests
             else
             {
                 // TODO avoid unnecessary requests
-                var playerinventoryResult = await Player.GetPlayerInventory(playerContext.PlayerId);
-                var coins = playerinventoryResult.Result.VirtualCurrency["CN"];
-                var gems = playerinventoryResult.Result.VirtualCurrency["GM"];
+                var coins = playerContext.VirtualCurrency["CN"];
+                var gems = playerContext.VirtualCurrency["GM"];
                 result.Add("error", "invalidChestReward");
                 result.Add("claimRewardType", rewardType);
-                result.Add("coins", 0);// TODO
-                result.Add("gems", 0);//TODO
+                result.Add("coins", coins);
+                result.Add("gems", gems);
                 result.Add("chestUnlockTimestamp", chestUnlockTimestamp);
             }
                 
             return result;
         }
 
-        private async Task<object> RewardDaily(string rewardType, int amount, object data, SocialEdgePlayer playerContext)
+        private async Task<object> RewardDaily(string rewardType, int amount, object data, SocialEdgePlayerContext playerContext)
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
             string leagueDailyRewardMsgId = InboxModel.FindOne(playerContext.Inbox, "RewardDailyLeague");
@@ -145,9 +144,10 @@ namespace SocialEdgeSDK.Server.Requests
                     else
                     {
                         // TODO avoid unnecessary requests
+                        
                         var playerinventoryResult = await Player.GetPlayerInventory(playerContext.PlayerId);
-                        var coins = playerinventoryResult.Result.VirtualCurrency["CN"];
-                        var gems = playerinventoryResult.Result.VirtualCurrency["GM"];
+                        var coins = playerContext.VirtualCurrency["CN"];
+                        var gems = playerContext.VirtualCurrency["GM"];
                         result.Add("error", "invalidDailyReward");
                         result.Add("coins", coins);
                         result.Add("gems", gems);

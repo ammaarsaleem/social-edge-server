@@ -16,12 +16,12 @@ namespace SocialEdgeSDK.Server.Requests
     {
         private ITitleContext _titleContext;
         private IDataService _dataService;
-        private SocialEdgePlayer _playerContext;
+        private SocialEdgePlayerContext _socialEdgePlayer;
         private dynamic _args;
         private dynamic _context;
 
-        public SocialEdgePlayer FnPlayerContext { get => _playerContext; }
-        public dynamic FnArgs { get => _args; }
+        public SocialEdgePlayerContext SocialEdgePlayer { get => _socialEdgePlayer; }
+        public dynamic Args { get => _args; }
 
         public void Base(ITitleContext titleContext, IDataService dataService = null)
         {
@@ -29,13 +29,15 @@ namespace SocialEdgeSDK.Server.Requests
             _dataService = dataService;
         }
 
-        public async Task FunctionContextInit(HttpRequestMessage req, ILogger log)
+        public void InitContext(HttpRequestMessage req, ILogger log)
         {
             SocialEdge.Init(req, log, _titleContext, _dataService);
-            _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
+            var readT = req.Content.ReadAsStringAsync();
+            readT.Wait();
+            _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
             _args = _context.FunctionArgument;
-            _playerContext = new SocialEdgePlayer(_context);
-            _playerContext.ValidateCache(FetchBits.NONE);
+            _socialEdgePlayer = new SocialEdgePlayerContext(_context);
+            _socialEdgePlayer.ValidateCache(FetchBits.NONE);
         }
     }
 }

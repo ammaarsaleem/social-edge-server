@@ -27,14 +27,16 @@ namespace SocialEdgeSDK.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            await FunctionContextInit(req, log);
-            FnPlayerContext.ValidateCache(FetchBits.META);
+            InitContext(req, log);
+            SocialEdgePlayer.ValidateCache(FetchBits.META);
 
             //await Transactions.Grant(new Dictionary<string, int>(){{"SkinSlate", 1}}, FnPlayerContext);
 //            Inbox.Collect("ed94-7995-4925-90b8", FnPlayerContext);
             //InboxModel.Count(FnPlayerContext.Inbox);
             //int qty = await Transactions.GrantTrophies(1, FnPlayerContext); 
             //Inbox.Collect("ed94-7995-4925-90b8", FnPlayerContext);
+            //var coins = SocialEdgePlayer.VirtualCurrency["CN"];
+            //var gems = SocialEdgePlayer.VirtualCurrency["GM"];
 
             try
             {
@@ -45,11 +47,11 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
                 metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
                 metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
-                metaDataResponse.friends = FnPlayerContext.Friends;
-                metaDataResponse.friendsProfiles = FnPlayerContext.FriendsProfiles;
-                metaDataResponse.publicDataObjs = FnPlayerContext.PublicDataObjsJson;
-                metaDataResponse.inbox = FnPlayerContext.InboxJson;
-                metaDataResponse.chat = FnPlayerContext.ChatJson;
+                metaDataResponse.friends = SocialEdgePlayer.Friends;
+                metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
+                metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
+                metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
+                metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                 metaDataResponse.appVersionValid = true; // TODO
                 metaDataResponse.inboxCount = 2; // TODO
 

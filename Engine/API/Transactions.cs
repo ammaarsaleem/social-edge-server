@@ -14,7 +14,7 @@ namespace SocialEdgeSDK.Server.Api
 {
     public static class Transactions
     {
-        public static async Task<bool> Consume(string itemId, int qty, SocialEdgePlayer playerContext)
+        public static async Task<bool> Consume(string itemId, int qty, SocialEdgePlayerContext playerContext)
         {
             bool used = false;
         
@@ -50,7 +50,7 @@ namespace SocialEdgeSDK.Server.Api
             return used;
         }
 
-        public static async Task<bool> Add(string itemId, int qty, SocialEdgePlayer playerContext)
+        public static async Task<bool> Add(string itemId, int qty, SocialEdgePlayerContext playerContext)
         {
             bool added = false;
         
@@ -84,7 +84,7 @@ namespace SocialEdgeSDK.Server.Api
             return added;
         }
 
-        public static async Task<Dictionary<string, int>> Grant(Dictionary<string, int> rewards, SocialEdgePlayer playerContext)
+        public static async Task<Dictionary<string, int>> Grant(Dictionary<string, int> rewards, SocialEdgePlayerContext playerContext)
         {
             Dictionary<string, int> rewarded = new Dictionary<string, int>();
         
@@ -100,7 +100,7 @@ namespace SocialEdgeSDK.Server.Api
             return rewarded;
         }
 
-        public static async Task<Dictionary<string, int>> Grant(BsonDocument rewards, SocialEdgePlayer playerContext)
+        public static async Task<Dictionary<string, int>> Grant(BsonDocument rewards, SocialEdgePlayerContext playerContext)
         {
             Dictionary<string, int> rewarded = new Dictionary<string, int>();
         
@@ -116,7 +116,7 @@ namespace SocialEdgeSDK.Server.Api
             return rewarded;
         }
 
-        public static async Task<int> GrantTrophies(int qty, SocialEdgePlayer playerContext)
+        public static async Task<int> GrantTrophies(int qty, SocialEdgePlayerContext playerContext)
         {
             int trophies = (int)playerContext.PublicData["trpy"] + qty;
             playerContext.PublicData["trpy"] = trophies;

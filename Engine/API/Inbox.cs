@@ -59,7 +59,7 @@ namespace SocialEdgeSDK.Server.Api
             };
         }
 
-        public static async Task<Dictionary<string, int>> Collect(string messageId, SocialEdgePlayer playerContext)
+        public static async Task<Dictionary<string, int>> Collect(string messageId, SocialEdgePlayerContext playerContext)
         {
             var inbox = playerContext.Inbox;
             var msg = inbox["messages"].AsBsonDocument.Contains(messageId) ? inbox["messages"][messageId] : null;

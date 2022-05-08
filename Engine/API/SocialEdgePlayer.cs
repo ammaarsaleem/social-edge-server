@@ -34,7 +34,7 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong META = PUBLIC_DATA | INBOX | CHAT | FRIENDS_PROFILES | ACTIVE_INVENTORY;
     }
 
-    public class SocialEdgePlayer
+    public class SocialEdgePlayerContext
     {
         public delegate bool ValidateCacheFnType();
 
@@ -52,6 +52,8 @@ namespace SocialEdgeSDK.Server.Context
         private BsonDocument _activeInventory;
         private List<FriendInfo> _friends;
         private List<EntityProfileBody> _friendsProfiles;
+        private List<ItemInstance> _inventory;
+        private Dictionary<string, int> _virtualCurrency;
 
         public string PlayerId { get => _playerId; }
         public string EntityToken { get => _entityToken; }
@@ -64,12 +66,14 @@ namespace SocialEdgeSDK.Server.Context
         public BsonDocument Chat { get => (((_fetchMask & FetchBits.CHAT) != 0) || (ValidateCacheBit(FetchBits.CHAT))) ? _chat : null; }
         public List<FriendInfo> Friends { get => (((_fetchMask & FetchBits.FRIENDS) != 0) || (ValidateCacheBit(FetchBits.FRIENDS))) ? _friends : null; }
         public List<EntityProfileBody> FriendsProfiles { get => (((_fetchMask & FetchBits.FRIENDS_PROFILES) != 0) || (ValidateCacheBit(FetchBits.FRIENDS_PROFILES))) ? _friendsProfiles : null; }
+        public List<ItemInstance> Inventory { get => (((_fetchMask & FetchBits.INVENTORY) != 0) || (ValidateCacheBit(FetchBits.INVENTORY))) ? _inventory : null; }
+        public Dictionary<string, int> VirtualCurrency { get => (((_fetchMask & FetchBits.INVENTORY) != 0) || (ValidateCacheBit(FetchBits.INVENTORY))) ? _virtualCurrency : null; }
 
         public string PublicDataJson { get => _publicData.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
         public string InboxJson { get => _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
         public string ChatJson { get => _chat.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
 
-        public SocialEdgePlayer(dynamic context)
+        public SocialEdgePlayerContext(dynamic context)
         {
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             _entityId = context.CallerEntityProfile.Entity.Id;
@@ -83,7 +87,8 @@ namespace SocialEdgeSDK.Server.Context
                 {FetchBits.CHAT, ValidateCacheChat},
                 {FetchBits.FRIENDS, ValidateCacheFriends},
                 {FetchBits.FRIENDS_PROFILES, ValidateCacheFriendProfiles},
-                {FetchBits.ACTIVE_INVENTORY, ValidataCacheActiveInventory}
+                {FetchBits.ACTIVE_INVENTORY, ValidataCacheActiveInventory},
+                {FetchBits.INVENTORY, ValidataCacheInventory}
             };
         }
 
@@ -93,8 +98,8 @@ namespace SocialEdgeSDK.Server.Context
             {
                 BsonDocument doc = new BsonDocument()
                 {
-                    ["PublicProfileEx"] = _publicData,//.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}),
-                    ["ActiveInventory"] = _activeInventory//.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson})
+                    ["PublicProfileEx"] = _publicData,
+                    ["ActiveInventory"] = _activeInventory
                 };
                 return doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
             }
@@ -184,6 +189,17 @@ namespace SocialEdgeSDK.Server.Context
             _fetchMask |= _activeInventory != null ? FetchBits.ACTIVE_INVENTORY : 0;
             SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");
             return _activeInventory != null;
+        }
+
+        private bool ValidataCacheInventory()
+        {
+            var getPlayerInventoryT = Player.GetPlayerInventory(_playerId);
+            getPlayerInventoryT.Wait();
+            _inventory = getPlayerInventoryT.Result.Error == null ? getPlayerInventoryT.Result.Result.Inventory : null;
+            _virtualCurrency = _inventory != null ? getPlayerInventoryT.Result.Result.VirtualCurrency : null;
+            _fetchMask |= _inventory != null ? FetchBits.INVENTORY : 0;
+            SocialEdge.Log.LogInformation("Task fetch INVENTORY/VIRTUALCURRENCY");
+            return _inventory != null;
         }
 
         public bool ValidateCacheBit(ulong fetchMask)
