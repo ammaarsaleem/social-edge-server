@@ -37,7 +37,7 @@ namespace SocialEdgeSDK.Server.Requests
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
             _args = _context.FunctionArgument;
             _socialEdgePlayer = new SocialEdgePlayerContext(_context);
-            _socialEdgePlayer.ValidateCache(FetchBits.NONE);
+            _socialEdgePlayer.CacheFillBatch(CacheSegment.NONE);
         }
     }
 }
