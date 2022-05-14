@@ -3,13 +3,18 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using PlayFab;
 using PlayFab.ServerModels;
 using PlayFab.ProfilesModels;
 using PlayFab.AuthenticationModels;
-using System.Collections.Generic;
 using PlayFab.DataModels;
+using MongoDB.Bson;
+using SocialEdgeSDK.Server.Context;
+using SocialEdgeSDK.Server.Common;
+
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -77,7 +82,7 @@ namespace SocialEdgeSDK.Server.Api
             {
                 SetObject obj = new SetObject();
                 obj.ObjectName = dataItem.Name.ToString();
-                obj.DataObject = dataItem.Value.ToString();
+                obj.DataObject = dataItem.Value.ToString().Replace("\"", "");
                 dataList.Add(obj);
             }
 
@@ -119,6 +124,93 @@ namespace SocialEdgeSDK.Server.Api
             GetUserInventoryRequest request = new GetUserInventoryRequest();
             request.PlayFabId = playerId;            
             return await PlayFab.PlayFabServerAPI.GetUserInventoryAsync(request);
+        }
+
+        public static async Task<PlayFabResult<ModifyUserVirtualCurrencyResult>> AddVirtualCurrency(string playerId, int amount, string currentyType)
+        {
+            AddUserVirtualCurrencyRequest request = new AddUserVirtualCurrencyRequest();
+            request.Amount = amount;
+            request.PlayFabId = playerId;
+            request.VirtualCurrency = currentyType;
+            return await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
+        }
+
+        public static async Task<PlayFabResult<PlayFab.AdminModels.UpdateUserTitleDisplayNameResult>> UpdatePlayerDisplayName(string playerId, string displayName)
+        {
+            var request = new PlayFab.AdminModels.UpdateUserTitleDisplayNameRequest();
+            request.DisplayName = displayName;
+            request.PlayFabId = playerId;
+            return await PlayFab.PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
+        }
+
+        public static string GenerateDisplayName()
+        {
+            var displayNameAdjectiveArray = SocialEdge.TitleContext.GetTitleDataProperty("DisplayNameAdjectives")["Adjectives"].AsBsonArray;
+            var displayNameNounsArray = SocialEdge.TitleContext.GetTitleDataProperty("DisplayNameNouns")["Nouns"].AsBsonArray;
+            var randomNoun = displayNameNounsArray[(int)Math.Floor(new Random().NextDouble() * displayNameNounsArray.Count)];
+            var randomAdjective = displayNameAdjectiveArray[(int)Math.Floor((new Random()).NextDouble() * displayNameAdjectiveArray.Count)];
+            
+            return randomAdjective + "" + randomNoun;
+        }
+
+        public static string GenerateTag()
+        {
+            const string COUNTER_COLLECTION_NAME = "playertagcounter";
+            const string CHARACTER_SET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const int MIN_LENGTH = 6;
+
+            var collection = SocialEdge.DataService.GetCollection(COUNTER_COLLECTION_NAME);
+            var counterDoc =  collection.IncAll("counter", 1);
+            
+            var salt = Utils.UTCNow().ToString();
+            var hashids = new Hashids(salt, MIN_LENGTH, CHARACTER_SET);
+            var counter = (int)counterDoc.Result["counter"];
+            var tag = hashids.Encode(counter);
+
+            return tag;
+        }
+
+        private static string GenerateAvatar()
+        {
+            var vAvatars = SocialEdge.TitleContext.CatalogItems.Catalog.FindAll(s => s.Tags[0].Equals("Avatar"));
+            var randomAvatar = vAvatars[(int)(Math.Floor(new Random().NextDouble() * vAvatars.Count))];
+            //BsonDocument avatarInventoryItem = new BsonDocument() {["key"] = randomAvatar.ItemId, ["kind"] = "Avatar"};
+            return randomAvatar.ItemId.ToString();
+        }
+
+        private static string GenerateAvatarBgColor()
+        {
+            var colorCodesArray = SocialEdge.TitleContext.GetTitleDataProperty("GameSettings")["AvatarBgColors"];
+            var randomColorCode = colorCodesArray[(int)(Math.Floor(new Random().NextDouble() * colorCodesArray.Count))];
+            //BsonDocument colorCodeInventoryItem = new BsonDocument() {["key"] = randomColorCode, ["kind"] = "AvatarBgColor"};
+            return randomColorCode.ToString();
+        }    
+
+        public static void NewPlayerInit(string playerId, string entityToken, string entityId)
+        {
+            var newName = Player.GenerateDisplayName();
+            var newTag = Player.GenerateTag();
+            var playerPublicData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerPublicData"];
+            var playerData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerData"];
+            var coinsCredit = (int)SocialEdge.TitleContext.GetTitleDataProperty("Economy")["BettingIncrements"][0];
+            var avatar = GenerateAvatar();
+            var avatarBgColor = GenerateAvatarBgColor();
+
+            List<BsonValue> activeInventoryList = playerPublicData["ActiveInventory"]["invl"].ToList();
+            var activeInventoryAvatar = activeInventoryList.Find(s => s[1].Equals("Avatar"));
+            var activeInventoryBgColor = activeInventoryList.Find(s => s[1].Equals("AvatarBgColor"));
+
+            playerData["coldData"]["isInitialized"] = true;
+            playerPublicData["PublicProfileEx"]["tag"] = newTag;
+            activeInventoryAvatar["key"] = avatar;
+            activeInventoryBgColor["key"] = avatarBgColor;
+            
+            var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
+            var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
+            var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
+            var UpdatePublicDataT = UpdatePublicData(entityToken, entityId, playerPublicData);
+
+            Task.WaitAll(addVirualCurrencyT, updateDisplayNameT, UpdatePlayerDataT, UpdatePublicDataT);
         }
     }
 }

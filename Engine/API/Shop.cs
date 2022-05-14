@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using PlayFab;
 using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.Models;
+using SocialEdgeSDK.Server.Context;
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -22,25 +23,14 @@ namespace SocialEdgeSDK.Server.Api
             };
 
             var storeT =  PlayFabServerAPI.GetStoreItemsAsync(storeRequest);
-
             var catalogRequest = new GetCatalogItemsRequest
             {
                 CatalogVersion = catalogId
             };
-
-
             var catalogT =  PlayFabServerAPI.GetCatalogItemsAsync(catalogRequest);
-
             await Task.WhenAll(storeT,catalogT);
-
             var result = new GetShopResult
             {
-                // storeItems = storeT.Result?.Result?.Store,
-                // storeId = storeT.Result?.Result?.StoreId,
-                // marketingModel = storeT.Result?.Result?.MarketingData,
-                // catalogVersion = storeT.Result?.Result?.CatalogVersion,
-                // catalogItems = catalogT.Result?.Result?.Catalog
-
                 storeResult = storeT.Result.Result,
                 catalogResult = catalogT.Result.Result
             };

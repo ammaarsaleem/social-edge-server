@@ -117,8 +117,16 @@ namespace SocialEdgeSDK.Server.DataService{
             return result;
         }
 
+        public async Task<BsonDocument> IncAll(string prop, int incBy, bool upsert = false)
+        {
+            var filter = Builders<BsonDocument>.Filter.Empty;
+            var updates = Builders<BsonDocument>.Update.Inc(prop, incBy);
+            var updateOptions = new FindOneAndUpdateOptions<BsonDocument, BsonDocument>();
+            updateOptions.IsUpsert = true;
+            updateOptions.ReturnDocument = ReturnDocument.After;
+            return await _collection.FindOneAndUpdateAsync<BsonDocument>(filter, updates, updateOptions);
+        }
 
-    
         public async Task<UpdateResult> UpdateOneById<T>(string id, string prop, T val, bool upsert=false)
         {
             UpdateResult result = null;
@@ -188,6 +196,7 @@ namespace SocialEdgeSDK.Server.DataService{
 
             return result;
         }
+
         public async Task<UpdateResult> UpdateOne<T>(string filterProp, T filterVal, 
                                                 UpdateDefinition<BsonDocument> updateDefinition, 
                                                 bool upsert=false)
@@ -211,6 +220,7 @@ namespace SocialEdgeSDK.Server.DataService{
 
             return result;
         }
+
         public async Task<UpdateResult> UpdateOne(FilterDefinition<BsonDocument> filter,
                                                 UpdateDefinition<BsonDocument> updateDefinition,
                                                 bool upsert=false)

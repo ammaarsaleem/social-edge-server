@@ -12,6 +12,9 @@ using MongoDB.Driver;
 using System.Linq;
 using SocialEdgeSDK.Server.Db;
 using SocialEdgeSDK.Server.DataService;
+using SocialEdgeSDK.Server.Context;
+using System;
+using StackExchange.Redis;
 
 [assembly: FunctionsStartup(typeof(SocialEdgeSDK.Playfab.Startup))]
 
@@ -40,13 +43,13 @@ namespace SocialEdgeSDK.Playfab
                 return client;
             });
 
-            //builder.Services.AddSingleton((r) =>
-            //{
-            //    // string connString = "socialedgeserver.redis.cache.windows.net:6380,password=Gf7aTTxpvRfk+IKGqCbQwW7j+bWIKcr5B6bXAqj+ZSQ=,ssl=True,abortConnect=False";
-            //    string connString = Environment.GetEnvironmentVariable(ConfigConstants.REDIS_CONNECTION_STRING, EnvironmentVariableTarget.Process);
-            //    ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connString);
-            //    return redis;
-            //});
+            builder.Services.AddSingleton((r) =>
+            {
+                // string connString = "socialedgeserver.redis.cache.windows.net:6380,password=Gf7aTTxpvRfk+IKGqCbQwW7j+bWIKcr5B6bXAqj+ZSQ=,ssl=True,abortConnect=False";
+                string connString = Environment.GetEnvironmentVariable(ConfigConstants.REDIS_CONNECTION_STRING, EnvironmentVariableTarget.Process);
+                ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connString);
+                return redis;
+            });
 
             // builder.Services.AddSingleton((s) =>
             // {

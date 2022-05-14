@@ -15,7 +15,7 @@ namespace SocialEdgeSDK.Server.Models
     {
         public static async Task<BsonDocument> Get(string inboxId)
         {
-            return await SocialEdge.DataService.GetCollection("inbox").FindOneById(inboxId);
+            return !string.IsNullOrEmpty(inboxId) ? await SocialEdge.DataService.GetCollection("inbox").FindOneById(inboxId) : null;
         }
 
         public static async Task<DataService.UpdateResult> Set(string inboxId, BsonDocument inbox)
@@ -24,8 +24,9 @@ namespace SocialEdgeSDK.Server.Models
             return await SocialEdge.DataService.GetCollection("inbox").ReplaceOneById(inboxId, inboxData, true);
         }
 
-        public static int Count(BsonDocument inbox)
+        public static int Count(SocialEdgePlayerContext socialEdgePlayer)
         {
+            var inbox = socialEdgePlayer.Inbox;
             long now = Utils.UTCNow();
             int count = 0;
             var messages = inbox["messages"].AsBsonDocument;
@@ -39,32 +40,38 @@ namespace SocialEdgeSDK.Server.Models
             return count;
         }
 
-        public static void Add(BsonDocument inbox, BsonDocument message)
+        public static void Add(BsonDocument message, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = inbox["messages"].AsBsonDocument;
+            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
             BsonDocument msg = new BsonDocument() { [message["id"].ToString()] = message };
             messages.AddRange(msg);
+            socialEdgePlayer.SetDirtyBit(CacheSegment.INBOX);
         }
 
-        public static bool Update(BsonDocument inbox, string msgId, BsonDocument message)
+        public static bool Update(string msgId, BsonDocument message, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = inbox["messages"].AsBsonDocument;
+            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
             message["id"] = msgId;
             messages[msgId] = message;
+            socialEdgePlayer.SetDirtyBit(CacheSegment.INBOX);
             return true;
         }
 
-        public static bool Del(BsonDocument inbox, string msgId)
+        public static bool Del(string msgId, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = inbox["messages"].AsBsonDocument;
+            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
             bool isExists = messages.GetValue(msgId, null) != null;
-            if (isExists) messages.Remove(msgId);
+            if (isExists) 
+            {
+                messages.Remove(msgId);
+                socialEdgePlayer.SetDirtyBit(CacheSegment.INBOX);
+            }
             return isExists;
         }
 
-        public static string FindOne(BsonDocument inbox, string msgType)
+        public static string FindOne(string msgType, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = inbox["messages"].AsBsonDocument;
+            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
             var it = messages.GetEnumerator();
             while (it.MoveNext() && !(messages[it.Current.Name]["type"] == msgType));
             return it.Current.Name != null ? messages[it.Current.Name]["id"].ToString() : null;

@@ -22,12 +22,12 @@ namespace SocialEdgeSDK.Server.DataService
         dynamic GetTitleDataProperty(string key, dynamic dict = null);
         CatalogItem GetCatalogItem(string ItemId);
         StoreItem GetStoreItem(string ItemId);
-
     }
     public class TitleContext : ITitleContext
     {
         public string version { get; set; }
         private GetTitleDataResult _titleData;
+        private GetTitleDataResult _titleInternalData;
         private GetCatalogItemsResult _catalogItems;
         private GetStoreItemsResult _storeItems;
         private Dictionary<string, BsonDocument> _titleDataDict;
@@ -50,6 +50,12 @@ namespace SocialEdgeSDK.Server.DataService
             var titleDataTask = Title.GetTitleData();
             _titleData = titleDataTask.Result.Result;
             _titleDataDict = _titleData.Data.ToDictionary(m => m.Key, m => BsonDocument.Parse(m.Value.ToString()));
+
+            var titleInternalDataT = Title.GetTitleInternalData();
+            _titleInternalData = titleInternalDataT.Result.Result;
+            var titleInternalDataDict = _titleInternalData.Data.ToDictionary(m => m.Key, m => BsonDocument.Parse(m.Value.ToString()));
+            titleInternalDataDict.ToList().ForEach(x => _titleDataDict.Add(x.Key, x.Value));
+
             string storeId = _titleDataDict["Economy"]["StoreId"].ToString();
             string catalogId = _titleDataDict["Economy"]["CatalogId"].ToString();
             var getShopTask = Shop.GetShop(storeId, catalogId);

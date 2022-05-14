@@ -80,6 +80,7 @@ namespace SocialEdgeSDK.Server.DataService
         ///<returns>UpdateResult</returns>           
 
         Task<UpdateResult> ReplaceOneById(string id, BsonDocument val, bool upsert=false);
+        Task<BsonDocument> IncAll(string prop, int incBy, bool upsert = false);
 
         Task<UpdateResult> UpdateOneById<T>(string id, string prop, T val, bool upsert=false);
         ///<summary>Updates the matching document</summary>      

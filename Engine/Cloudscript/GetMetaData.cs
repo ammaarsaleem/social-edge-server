@@ -10,15 +10,16 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Net.Http;
-using SocialEdgeSDK.Server.Models;
-using SocialEdgeSDK.Server.DataService;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using SocialEdgeSDK.Server.Context;
+using SocialEdgeSDK.Server.Models;
+using SocialEdgeSDK.Server.DataService;
+using SocialEdgeSDK.Server.Api;
 
 namespace SocialEdgeSDK.Server.Requests
 {
-    public class GetMetaData  : FunctionContext
+    public class GetMetaData : FunctionContext
     {
         public GetMetaData(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
@@ -28,7 +29,7 @@ namespace SocialEdgeSDK.Server.Requests
             ILogger log)
         {
             InitContext(req, log);
-            SocialEdgePlayer.CacheFillBatch(CacheSegment.META);
+            //SocialEdgePlayer.CacheFill(CacheSegment.META);
 
             //await Transactions.Grant(new Dictionary<string, int>(){{"SkinSlate", 1}}, FnPlayerContext);
 //            Inbox.Collect("ed94-7995-4925-90b8", FnPlayerContext);
@@ -37,6 +38,10 @@ namespace SocialEdgeSDK.Server.Requests
             //Inbox.Collect("ed94-7995-4925-90b8", FnPlayerContext);
             //var coins = SocialEdgePlayer.VirtualCurrency["CN"];
             //var gems = SocialEdgePlayer.VirtualCurrency["GM"];
+
+           // var tData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup");
+           //Player.NewPlayerInit(SocialEdgePlayer.PlayerId, SocialEdgePlayer.EntityToken, SocialEdgePlayer.EntityId);
+
 
             try
             {
@@ -63,7 +68,7 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.liveTournaments = liveTournamentsListJson.ToString();
 
 
-
+                SocialEdgePlayer.CacheFlush();
 
                 return metaDataResponse;
             }

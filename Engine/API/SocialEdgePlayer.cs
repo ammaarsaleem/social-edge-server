@@ -25,7 +25,8 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong FRIENDS_PROFILES  = 0x10;
         public const ulong ACTIVE_INVENTORY = 0x20;
         public const ulong INVENTORY = 0x40;
-        public const ulong MAX = INVENTORY;
+        public const ulong ENTITY_TOKEN = 0x80;
+        public const ulong MAX = ENTITY_TOKEN;
 
         public const ulong META = PUBLIC_DATA | INBOX | CHAT | FRIENDS_PROFILES | ACTIVE_INVENTORY;
         public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | INVENTORY;
@@ -54,25 +55,24 @@ namespace SocialEdgeSDK.Server.Context
         private List<EntityProfileBody> _friendsProfiles;
         private List<ItemInstance> _inventory;
         private Dictionary<string, int> _virtualCurrency;
-        private Dictionary<string, int> _virtualCurrencyChange;
 
         public string PlayerId { get => _playerId; }
-        public string EntityToken { get => _entityToken; }
         public string EntityId { get => _entityId; }
         public string InboxId { get => _inboxId; }
 
-        public BsonDocument ActiveInventory { get => (((_fillMask & CacheSegment.ACTIVE_INVENTORY) != 0) || (CacheFill(CacheSegment.ACTIVE_INVENTORY))) ? _activeInventory : null; }
-        public BsonDocument PublicData { get => (((_fillMask & CacheSegment.PUBLIC_DATA) != 0) || (CacheFill(CacheSegment.PUBLIC_DATA))) ? _publicData : null; }
-        public BsonDocument Inbox { get => (((_fillMask & CacheSegment.INBOX) != 0) || (CacheFill(CacheSegment.INBOX))) ? _inbox : null; }                                                
-        public BsonDocument Chat { get => (((_fillMask & CacheSegment.CHAT) != 0) || (CacheFill(CacheSegment.CHAT))) ? _chat : null; }
-        public List<FriendInfo> Friends { get => (((_fillMask & CacheSegment.FRIENDS) != 0) || (CacheFill(CacheSegment.FRIENDS))) ? _friends : null; }
-        public List<EntityProfileBody> FriendsProfiles { get => (((_fillMask & CacheSegment.FRIENDS_PROFILES) != 0) || (CacheFill(CacheSegment.FRIENDS_PROFILES))) ? _friendsProfiles : null; }
-        public List<ItemInstance> Inventory { get => (((_fillMask & CacheSegment.INVENTORY) != 0) || (CacheFill(CacheSegment.INVENTORY))) ? _inventory : null; }
-        public Dictionary<string, int> VirtualCurrency { get => (((_fillMask & CacheSegment.INVENTORY) != 0) || (CacheFill(CacheSegment.INVENTORY))) ? _virtualCurrency : null; }
+        public string EntityToken { get => (((_fillMask & CacheSegment.ENTITY_TOKEN) != 0) || (CacheFillSegment(CacheSegment.ENTITY_TOKEN))) ? _entityToken : null; }
+        public BsonDocument ActiveInventory { get => (((_fillMask & CacheSegment.ACTIVE_INVENTORY) != 0) || (CacheFillSegment(CacheSegment.ACTIVE_INVENTORY))) ? _activeInventory : null; }
+        public BsonDocument PublicData { get => (((_fillMask & CacheSegment.PUBLIC_DATA) != 0) || (CacheFillSegment(CacheSegment.PUBLIC_DATA))) ? _publicData : null; }
+        public BsonDocument Inbox { get => (((_fillMask & CacheSegment.INBOX) != 0) || (CacheFillSegment(CacheSegment.INBOX))) ? _inbox : null; }                                                
+        public BsonDocument Chat { get => (((_fillMask & CacheSegment.CHAT) != 0) || (CacheFillSegment(CacheSegment.CHAT))) ? _chat : null; }
+        public List<FriendInfo> Friends { get => (((_fillMask & CacheSegment.FRIENDS) != 0) || (CacheFillSegment(CacheSegment.FRIENDS))) ? _friends : null; }
+        public List<EntityProfileBody> FriendsProfiles { get => (((_fillMask & CacheSegment.FRIENDS_PROFILES) != 0) || (CacheFillSegment(CacheSegment.FRIENDS_PROFILES))) ? _friendsProfiles : null; }
+        public List<ItemInstance> Inventory { get => (((_fillMask & CacheSegment.INVENTORY) != 0) || (CacheFillSegment(CacheSegment.INVENTORY))) ? _inventory : null; }
+        public Dictionary<string, int> VirtualCurrency { get => (((_fillMask & CacheSegment.INVENTORY) != 0) || (CacheFillSegment(CacheSegment.INVENTORY))) ? _virtualCurrency : null; }
 
-        public string PublicDataJson { get => _publicData.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
-        public string InboxJson { get => _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
-        public string ChatJson { get => _chat.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}); }
+        public string PublicDataJson { get => PublicData != null ? _publicData.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
+        public string InboxJson { get => Inbox != null ? _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
+        public string ChatJson { get => Chat != null ? _chat.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
 
         public bool SetDirtyBit(ulong dirtyMask)
         {
@@ -100,7 +100,8 @@ namespace SocialEdgeSDK.Server.Context
                 {CacheSegment.FRIENDS, CacheFillFriends},
                 {CacheSegment.FRIENDS_PROFILES, CacheFillFriendProfiles},
                 {CacheSegment.ACTIVE_INVENTORY, CacheFillActiveInventory},
-                {CacheSegment.INVENTORY, CacheFillInventory}
+                {CacheSegment.INVENTORY, CacheFillInventory},
+                {CacheSegment.ENTITY_TOKEN, CacheFillEntityToken}
             };
 
             _writeMap = new Dictionary<ulong, CacheFnType>()
@@ -120,10 +121,11 @@ namespace SocialEdgeSDK.Server.Context
         { 
             get 
             {
+                // Leave out DBIds private information for security
                 BsonDocument doc = new BsonDocument()
                 {
-                    ["PublicProfileEx"] = _publicData,
-                    ["ActiveInventory"] = _activeInventory
+                    ["PublicProfileEx"] = PublicData,
+                    ["ActiveInventory"] = ActiveInventory
                 };
                 return doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
             }
@@ -133,27 +135,25 @@ namespace SocialEdgeSDK.Server.Context
         {
             if (_mongoDocIds == null)
             {
-                _mongoDocIds = BsonDocument.Parse(_publicDataObjs["DBIds"].EscapedDataObject);
+                _mongoDocIds = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["DBIds"].EscapedDataObject));
                 _inboxId = _mongoDocIds["inbox"].ToString();
                 _chatId = _mongoDocIds["chat"].ToString();
             }
-        }
-
-        private bool ValidateCacheEntityToken()
-        {
-            if (_entityToken == null)
-            {
-                var resultT = Player.GetTitleEntityToken();
-                resultT.Wait();
-                _entityToken = resultT.Result.Result.EntityToken;
-            }
-            return _entityToken != null;
         }
 
         private bool CacheFillNone()
         {
             SocialEdge.Log.LogInformation("Initialize empty cache");
             return true;
+        }
+
+        private bool CacheFillEntityToken()
+        {
+            var resultT = Player.GetTitleEntityToken();
+            resultT.Wait();
+            _entityToken = resultT.Result.Result.EntityToken;
+            _fillMask |= _entityToken != null ? CacheSegment.ENTITY_TOKEN : 0;
+            return _entityToken != null;        
         }
 
         private bool CacheWriteNone()
@@ -187,7 +187,8 @@ namespace SocialEdgeSDK.Server.Context
         {
             ValidateCacheMongoDocIds();
              var inboxT = InboxModel.Get(_mongoDocIds["inbox"].ToString());
-            _inbox = inboxT.Result != null ? inboxT.Result["inboxData"].AsBsonDocument :null;
+             if (inboxT != null) inboxT.Wait();
+            _inbox = inboxT != null && inboxT.Result != null ? inboxT.Result["inboxData"].AsBsonDocument : null;
             _fillMask |= _inbox != null ? CacheSegment.CHAT : 0;
             SocialEdge.Log.LogInformation("Task fetch INBOX");
             return _inbox != null;
@@ -204,8 +205,8 @@ namespace SocialEdgeSDK.Server.Context
         {
             ValidateCacheMongoDocIds();
             var chatT = ChatModel.Get(_chatId);
-            chatT.Wait();
-            _chat = chatT.Result != null ? chatT.Result["ChatData"].AsBsonDocument : null;
+            if (chatT != null) chatT.Wait();
+            _chat = chatT != null && chatT.Result != null ? chatT.Result["ChatData"].AsBsonDocument : null;
             _fillMask |=  _chat != null ? CacheSegment.CHAT : 0;
             SocialEdge.Log.LogInformation("Task fetch CHAT");
             return _chat != null;
@@ -230,19 +231,29 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillFriendProfiles()
         {
-            var success = ValidateCacheEntityToken();
+            var validateToken = EntityToken;
             var friends = Friends;
             var friendsProfilesT = Player.GetFriendProfiles(_friends, _entityToken);
             friendsProfilesT.Wait();
             _friendsProfiles = friendsProfilesT.Result.Error == null ? friendsProfilesT.Result.Result.Profiles : null;
             _fillMask |= _friendsProfiles != null ? CacheSegment.FRIENDS_PROFILES : 0;
             SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILES");
+
+            // Remove DBIds private information for security
+            if (_friendsProfiles != null)
+            {
+                foreach(var friendProfile in _friendsProfiles)
+                {
+                    friendProfile.Objects.Remove("DBIds");
+                }
+            }
+
             return _friendsProfiles != null;
         }
 
         private bool CacheFillActiveInventory()
         {
-            _activeInventory = BsonDocument.Parse(_publicDataObjs["ActiveInventory"].EscapedDataObject);
+            _activeInventory = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["ActiveInventory"].EscapedDataObject));
             _fillMask |= _activeInventory != null ? CacheSegment.ACTIVE_INVENTORY : 0;
             SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");
             return _activeInventory != null;
@@ -259,12 +270,12 @@ namespace SocialEdgeSDK.Server.Context
             return _inventory != null;
         }
 
-        public bool CacheFill(ulong fetchMask)
+        public bool CacheFillSegment(ulong fetchMask)
         {
             return (bool)_fillMap[fetchMask]?.Invoke();
         }
 
-        public bool CacheFillBatch(ulong fetchMask)
+        public bool CacheFill(ulong fetchMask)
         {
             if (fetchMask == 0)
                 return true;
@@ -280,7 +291,7 @@ namespace SocialEdgeSDK.Server.Context
             return true;
         }
 
-        public bool CacheWriteBatch()
+        public bool CacheFlush()
         {
             if (_dirtyMask == 0)
                 return true;

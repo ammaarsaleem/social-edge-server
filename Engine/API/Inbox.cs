@@ -59,30 +59,29 @@ namespace SocialEdgeSDK.Server.Api
             };
         }
 
-        public static async Task<Dictionary<string, int>> Collect(string messageId, SocialEdgePlayerContext playerContext)
+        public static async Task<Dictionary<string, int>> Collect(string messageId, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var inbox = playerContext.Inbox;
+            var inbox = socialEdgePlayer.Inbox;
             var msg = inbox["messages"].AsBsonDocument.Contains(messageId) ? inbox["messages"][messageId] : null;
             if (msg == null)
             {
                 return null;
             }
 
-            var granted = await Transactions.Grant(msg["reward"].AsBsonDocument, playerContext);
+            var granted = await Transactions.Grant(msg["reward"].AsBsonDocument, socialEdgePlayer);
 
             if (msg["isDaily"] == true)
             {
-                var league = playerContext.PublicData["leag"];
+                var league = socialEdgePlayer.PublicData["leag"];
                 msg["reward"] = Leagues.GetDailyReward(league.ToString());
                 msg["startTime"] = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
                 msg["time"] = msg["startTime"];
-                await InboxModel.Set(playerContext.InboxId, playerContext.Inbox);
+                socialEdgePlayer.SetDirtyBit(CacheSegment.INBOX);
             }
             else if (msg.AsBsonDocument.Contains("tournamentId") == true)
             {
                 // TODO Tournaments.deleteTournament(sparkPlayer, msg.tournamentId);
-                 InboxModel.Del(playerContext.Inbox, messageId);
-                await InboxModel.Set(playerContext.InboxId, playerContext.Inbox);
+                InboxModel.Del(messageId, socialEdgePlayer);
             }
 
             return granted;

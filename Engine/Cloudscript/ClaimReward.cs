@@ -116,27 +116,27 @@ namespace SocialEdgeSDK.Server.Requests
             return result;
         }
 
-        private async Task<object> RewardDaily(string rewardType, int amount, object data, SocialEdgePlayerContext playerContext)
+        private async Task<object> RewardDaily(string rewardType, int amount, object data, SocialEdgePlayerContext socialEdgePlayer)
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
-            string leagueDailyRewardMsgId = InboxModel.FindOne(playerContext.Inbox, "RewardDailyLeague");
+            string leagueDailyRewardMsgId = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
 
             if (leagueDailyRewardMsgId != null)
             {
-                var inbox = playerContext.Inbox;
+                var inbox = socialEdgePlayer.Inbox;
                 if (inbox["messages"].AsBsonDocument.Contains(leagueDailyRewardMsgId))
                 {
                     var msg = inbox["messages"][leagueDailyRewardMsgId];
                     var startTime = Convert.ToInt64(msg["startTime"]);
                     if (false && Utils.UTCNow() >= startTime)
                     {
-                        msg["tartTime"] = Utils.EndOfDay(DateTime.Now);
+                        msg["startTime"] = Utils.EndOfDay(DateTime.Now);
                         msg["time"] = msg["startTime"];
-                        await InboxModel.Set(playerContext.InboxId, playerContext.Inbox);
+                        await InboxModel.Set(socialEdgePlayer.InboxId, socialEdgePlayer.Inbox);
             
-                        var reward = Leagues.GetDailyReward(playerContext.PublicData["leag"].ToString());
+                        var reward = Leagues.GetDailyReward(socialEdgePlayer.PublicData["leag"].ToString());
                         var doubleReward = new BsonDocument() { ["gems"] = (int)reward["gems"] * 2, ["coins"] = (int)reward["coins"] * 2 };
-                        var granted = await Transactions.Grant(doubleReward, playerContext);
+                        var granted = await Transactions.Grant(doubleReward, socialEdgePlayer);
             
                         result.Add("claimRewardType", rewardType);
                         result.Add("reward", granted);
@@ -145,9 +145,9 @@ namespace SocialEdgeSDK.Server.Requests
                     {
                         // TODO avoid unnecessary requests
                         
-                        var playerinventoryResult = await Player.GetPlayerInventory(playerContext.PlayerId);
-                        var coins = playerContext.VirtualCurrency["CN"];
-                        var gems = playerContext.VirtualCurrency["GM"];
+                        var playerinventoryResult = await Player.GetPlayerInventory(socialEdgePlayer.PlayerId);
+                        var coins = socialEdgePlayer.VirtualCurrency["CN"];
+                        var gems = socialEdgePlayer.VirtualCurrency["GM"];
                         result.Add("error", "invalidDailyReward");
                         result.Add("coins", coins);
                         result.Add("gems", gems);
