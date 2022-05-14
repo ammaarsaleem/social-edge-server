@@ -12,11 +12,14 @@ using Microsoft.Extensions.Logging;
 using SocialEdgeSDK.Server.Requests;
 using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Context;
+using SocialEdgeSDK.Server.DataService;
 
 namespace SocialEdgeSDK.Playfab
 {
     public class Playstream_OnPlayerCreated : FunctionContext
     {
+        public Playstream_OnPlayerCreated(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
+
         [FunctionName("Playstream_OnPlayerCreated")]
         public async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequestMessage req,
