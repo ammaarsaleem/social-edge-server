@@ -101,6 +101,9 @@ namespace SocialEdgeSDK.Server.Context
             _entityId = context.PlayStreamEventEnvelope.EntityId;
             _publicDataObjs = null;
 
+            string msg = Newtonsoft.Json.JsonConvert.SerializeObject(context.PlayStreamEventEnvelope);
+            SocialEdge.Log.LogInformation("SocialEdgePlayerContext()=>" + msg);
+
             SocialEdgePlayerContextInit();
         }
 
@@ -164,10 +167,10 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillEntityToken()
         {
+            // Title entity token
             var resultT = Player.GetTitleEntityToken();
             resultT.Wait();
             _entityToken = resultT.Result.Result.EntityToken;
-            _entityId = resultT.Result.Result.Entity.Id;
             _fillMask |= _entityToken != null ? CacheSegment.ENTITY_TOKEN : 0;
             SocialEdge.Log.LogInformation("Task fetch ENTITY_TOKEN");
             return _entityToken != null;        
