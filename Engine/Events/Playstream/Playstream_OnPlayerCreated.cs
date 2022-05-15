@@ -33,19 +33,18 @@ namespace SocialEdgeSDK.Playfab
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            SocialEdge.Init(req, log, TITLECONTEXT, DATASERVICE);
+            //SocialEdge.Init(req, log, TITLECONTEXT, DATASERVICE);
             //string json = Newtonsoft.Json.JsonConvert.SerializeObject(TITLECONTEXT.TitleData.Data);
             //log.LogInformation(json);
-
-            var readT = req.Content.ReadAsStringAsync();
-            readT.Wait();
-            var _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
-            log.LogInformation(readT.Result.ToString());
-            //_args = _context.FunctionArgument;
-            //_socialEdgePlayer = new SocialEdgePlayerContext(_context);
+            //var readT = req.Content.ReadAsStringAsync();
+            //readT.Wait();
+            //var _context = Newtonsoft.Json.JsonConvert.DeserializeObject<PlayerPlayStreamFunctionExecutionContext<dynamic>>(readT.Result);
+            //var _args = _context.FunctionArgument;
+            //var _socialEdgePlayer = new SocialEdgePlayerContext(_context);
             //_socialEdgePlayer.CacheFill(CacheSegment.NONE);
+            //log.LogInformation(readT.Result.ToString());
 
-            //InitContext(req, log);
+            InitContext<PlayerPlayStreamFunctionExecutionContext<dynamic>>(req, log);
             //Player.NewPlayerInit(SocialEdgePlayer.PlayerId, SocialEdgePlayer.EntityToken, SocialEdgePlayer.EntityId);
             //SocialEdge.Log.LogInformation("New Player Init: " + SocialEdgePlayer.PlayerId);
             return new HttpResponseMessage(HttpStatusCode.OK);

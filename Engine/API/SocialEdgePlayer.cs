@@ -12,6 +12,7 @@ using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Models;
+using PlayFab.Samples;
 
 namespace SocialEdgeSDK.Server.Context
 {
@@ -85,12 +86,26 @@ namespace SocialEdgeSDK.Server.Context
             return true;
         }
 
-        public SocialEdgePlayerContext(dynamic context)
+        public SocialEdgePlayerContext(FunctionExecutionContext<dynamic> context)
         {
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             _entityId = context.CallerEntityProfile.Entity.Id;
             _publicDataObjs = context.CallerEntityProfile.Objects;
 
+            SocialEdgePlayerContextInit();
+        }
+
+        public SocialEdgePlayerContext(PlayerPlayStreamFunctionExecutionContext<dynamic> context)
+        {
+            _playerId = context.PlayerProfile.PlayerId;
+            _entityId = context.PlayStreamEventEnvelope.EntityId;
+            _publicDataObjs = null;
+
+            SocialEdgePlayerContextInit();
+        }
+
+        private void SocialEdgePlayerContextInit()
+        {
             _fillMap = new Dictionary<ulong, CacheFnType>()
             {
                 {CacheSegment.NONE, CacheFillNone},
@@ -178,7 +193,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheWritePublicData()
         {
-            var updatePublicDataT = Player.UpdatePublicData(_entityToken, _entityId, new BsonDocument(){ ["PublicProfileEx"] = _publicData });
+            var updatePublicDataT = Player.UpdatePublicData(EntityToken, _entityId, new BsonDocument(){ ["PublicProfileEx"] = _publicData });
             updatePublicDataT.Wait();
             return updatePublicDataT.Result.Error != null;
         }
@@ -231,9 +246,8 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillFriendProfiles()
         {
-            var validateToken = EntityToken;
             var friends = Friends;
-            var friendsProfilesT = Player.GetFriendProfiles(_friends, _entityToken);
+            var friendsProfilesT = Player.GetFriendProfiles(_friends, EntityToken);
             friendsProfilesT.Wait();
             _friendsProfiles = friendsProfilesT.Result.Error == null ? friendsProfilesT.Result.Result.Profiles : null;
             _fillMask |= _friendsProfiles != null ? CacheSegment.FRIENDS_PROFILES : 0;

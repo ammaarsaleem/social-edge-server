@@ -5,17 +5,18 @@
 
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Net.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Net.Http;
+using PlayFab.ServerModels;
+using PlayFab.Samples;
+using MongoDB.Bson;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
-using MongoDB.Bson;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Api;
-using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
@@ -29,7 +30,7 @@ namespace SocialEdgeSDK.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            InitContext(req, log);
+            InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
             var rewardType = data["rewardType"].Value;
             var economyData = SocialEdge.TitleContext.GetTitleDataProperty("Economy");

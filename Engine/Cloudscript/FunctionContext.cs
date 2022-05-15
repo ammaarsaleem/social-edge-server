@@ -6,7 +6,6 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
-using PlayFab.Samples;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.DataService;
 
@@ -29,12 +28,12 @@ namespace SocialEdgeSDK.Server.Requests
             _dataService = dataService;
         }
 
-        public void InitContext(HttpRequestMessage req, ILogger log)
+        public void InitContext<FunctionContextT>(HttpRequestMessage req, ILogger log)
         {
             SocialEdge.Init(req, log, _titleContext, _dataService);
             var readT = req.Content.ReadAsStringAsync();
             readT.Wait();
-            _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
+            _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionContextT>(readT.Result);
             _args = _context.FunctionArgument;
             _socialEdgePlayer = new SocialEdgePlayerContext(_context);
             _socialEdgePlayer.CacheFill(CacheSegment.NONE);

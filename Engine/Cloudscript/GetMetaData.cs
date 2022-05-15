@@ -16,6 +16,7 @@ using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Api;
+using PlayFab.Samples;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -28,7 +29,7 @@ namespace SocialEdgeSDK.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            InitContext(req, log);
+            InitContext<FunctionExecutionContext<dynamic>>(req, log);
             //SocialEdgePlayer.CacheFill(CacheSegment.META);
 
             //await Transactions.Grant(new Dictionary<string, int>(){{"SkinSlate", 1}}, FnPlayerContext);
