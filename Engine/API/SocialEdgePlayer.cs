@@ -27,7 +27,8 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong ACTIVE_INVENTORY = 0x20;
         public const ulong INVENTORY = 0x40;
         public const ulong ENTITY_TOKEN = 0x80;
-        public const ulong MAX = ENTITY_TOKEN;
+        public const ulong ENTITY_ID = 0x100;
+        public const ulong MAX = ENTITY_ID;
 
         public const ulong META = PUBLIC_DATA | INBOX | CHAT | FRIENDS_PROFILES | ACTIVE_INVENTORY;
         public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | INVENTORY;
@@ -35,6 +36,15 @@ namespace SocialEdgeSDK.Server.Context
 
     public class SocialEdgePlayerContext
     {
+        private enum ContextType
+        {
+            FUNCTION_EXECUTION_API,
+            PLAYER_PLAYSTREAM,
+            ENTITY_PLAYSTREAM,
+            SCHEDULED_TASK
+        }
+
+        private ContextType _contextType;
         private ulong _fillMask;
         private ulong _dirtyMask;
         private delegate bool CacheFnType();
@@ -58,9 +68,9 @@ namespace SocialEdgeSDK.Server.Context
         private Dictionary<string, int> _virtualCurrency;
 
         public string PlayerId { get => _playerId; }
-        public string EntityId { get => _entityId; }
         public string InboxId { get => _inboxId; }
 
+        public string EntityId { get => (((_fillMask & CacheSegment.ENTITY_ID) != 0) || (CacheFillSegment(CacheSegment.ENTITY_ID))) ? _entityId : null; }
         public string EntityToken { get => (((_fillMask & CacheSegment.ENTITY_TOKEN) != 0) || (CacheFillSegment(CacheSegment.ENTITY_TOKEN))) ? _entityToken : null; }
         public BsonDocument ActiveInventory { get => (((_fillMask & CacheSegment.ACTIVE_INVENTORY) != 0) || (CacheFillSegment(CacheSegment.ACTIVE_INVENTORY))) ? _activeInventory : null; }
         public BsonDocument PublicData { get => (((_fillMask & CacheSegment.PUBLIC_DATA) != 0) || (CacheFillSegment(CacheSegment.PUBLIC_DATA))) ? _publicData : null; }
@@ -88,23 +98,24 @@ namespace SocialEdgeSDK.Server.Context
 
         public SocialEdgePlayerContext(FunctionExecutionContext<dynamic> context)
         {
+            _contextType = ContextType.FUNCTION_EXECUTION_API;
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             _entityId = context.CallerEntityProfile.Entity.Id;
             _publicDataObjs = context.CallerEntityProfile.Objects;
-
+            _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
             SocialEdgePlayerContextInit();
         }
 
         public SocialEdgePlayerContext(PlayerPlayStreamFunctionExecutionContext<dynamic> context)
         {
+            _contextType = ContextType.PLAYER_PLAYSTREAM;
             _playerId = context.PlayerProfile.PlayerId;
-            _entityId = context.PlayStreamEventEnvelope.EntityId;
+            _entityId = null;
             _publicDataObjs = null;
+            SocialEdgePlayerContextInit();
 
             string msg = Newtonsoft.Json.JsonConvert.SerializeObject(context.PlayStreamEventEnvelope);
             SocialEdge.Log.LogInformation("SocialEdgePlayerContext()=>" + msg);
-
-            SocialEdgePlayerContextInit();
         }
 
         private void SocialEdgePlayerContextInit()
@@ -176,6 +187,17 @@ namespace SocialEdgeSDK.Server.Context
             return _entityToken != null;        
         }
 
+       private bool CacheFillEntityId()
+        {
+            // Title entity id (title_player_account)
+            var resultT = Player.GetUserAccountInfo(_playerId);
+            resultT.Wait();
+            _entityId = resultT.Result.Result.UserInfo.TitleInfo.TitlePlayerAccount.Id;
+            _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
+            SocialEdge.Log.LogInformation("Task fetch ENTITY_ID");
+            return _entityId != null;        
+        }
+
         private bool CacheWriteNone()
         {
             SocialEdge.Log.LogInformation("Ignore cache write");
@@ -198,7 +220,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheWritePublicData()
         {
-            var updatePublicDataT = Player.UpdatePublicData(EntityToken, _entityId, new BsonDocument(){ ["PublicProfileEx"] = _publicData });
+            var updatePublicDataT = Player.UpdatePublicData(EntityToken, EntityId, new BsonDocument(){ ["PublicProfileEx"] = _publicData });
             updatePublicDataT.Wait();
             return updatePublicDataT.Result.Error != null;
         }

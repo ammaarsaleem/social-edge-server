@@ -143,6 +143,13 @@ namespace SocialEdgeSDK.Server.Api
             return await PlayFab.PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
         }
 
+        public static async Task<PlayFabResult<GetUserAccountInfoResult>> GetUserAccountInfo(string playerId)
+        {
+            GetUserAccountInfoRequest request = new GetUserAccountInfoRequest();
+            request.PlayFabId = playerId;
+            return await PlayFab.PlayFabServerAPI.GetUserAccountInfoAsync(request); 
+        }
+
         public static string GenerateDisplayName()
         {
             var displayNameAdjectiveArray = SocialEdge.TitleContext.GetTitleDataProperty("DisplayNameAdjectives")["Adjectives"].AsBsonArray;
