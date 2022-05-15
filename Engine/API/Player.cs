@@ -42,6 +42,7 @@ namespace SocialEdgeSDK.Server.Api
 
             return await PlayFabServerAPI.GetFriendsListAsync(request);
         }
+
         public static async Task<PlayFabResult<GetEntityProfilesResponse>> GetFriendProfiles(List<FriendInfo> friends, string etoken)
         {
             List<PlayFab.ProfilesModels.EntityKey> entities = new List<PlayFab.ProfilesModels.EntityKey>();
@@ -58,11 +59,13 @@ namespace SocialEdgeSDK.Server.Api
 
             return await PlayFabProfilesAPI.GetProfilesAsync(request);
         }
+
         public static async Task<PlayFabResult<GetEntityTokenResponse>> GetTitleEntityToken()
         {
             var request = new GetEntityTokenRequest();
             return await PlayFab.PlayFabAuthenticationAPI.GetEntityTokenAsync(request);
         }
+
         public static async Task<PlayFabResult<GetObjectsResponse>> GetPublicData(string entityToken, string entityId)
         {
             PlayFab.DataModels.GetObjectsRequest request = new PlayFab.DataModels.GetObjectsRequest();
@@ -75,6 +78,7 @@ namespace SocialEdgeSDK.Server.Api
 
             return await PlayFabDataAPI.GetObjectsAsync(request);
         }
+
         public static async Task<PlayFabResult<SetObjectsResponse>> UpdatePublicData(string entityToken, string entityId, dynamic dataDict)
         {
             List<SetObject> dataList =  new List<SetObject>();
@@ -82,7 +86,7 @@ namespace SocialEdgeSDK.Server.Api
             {
                 SetObject obj = new SetObject();
                 obj.ObjectName = dataItem.Name.ToString();
-                obj.DataObject = dataItem.Value.ToString().Replace("\"", "");
+                obj.DataObject = dataItem.Value.ToString();//.Replace("\"", "");
                 dataList.Add(obj);
             }
 
@@ -96,6 +100,7 @@ namespace SocialEdgeSDK.Server.Api
 
             return await PlayFabDataAPI.SetObjectsAsync(request);
         }
+
         public static async Task<PlayFabResult<GetUserDataResult>> GetPlayerData(string playerId, List<string> keys)
         {
             PlayFab.ServerModels.GetUserDataRequest request = new PlayFab.ServerModels.GetUserDataRequest();
@@ -103,7 +108,8 @@ namespace SocialEdgeSDK.Server.Api
             request.Keys = keys;
 
             return await PlayFab.PlayFabServerAPI.GetUserReadOnlyDataAsync(request);
-        }        
+        } 
+
         public static async Task<PlayFabResult<UpdateUserDataResult>> UpdatePlayerData(string playerId, dynamic dataDict)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
