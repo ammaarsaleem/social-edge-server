@@ -13,6 +13,7 @@ using SocialEdgeSDK.Server.Requests;
 using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.DataService;
+using PlayFab.Samples;
 
 namespace SocialEdgeSDK.Playfab
 {
@@ -33,12 +34,16 @@ namespace SocialEdgeSDK.Playfab
             ILogger log)
         {
             SocialEdge.Init(req, log, TITLECONTEXT, DATASERVICE);
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(TITLECONTEXT.TitleData.Data);
-            log.LogInformation(json);
+            //string json = Newtonsoft.Json.JsonConvert.SerializeObject(TITLECONTEXT.TitleData.Data);
+            //log.LogInformation(json);
 
-            //var readT = req.Content.ReadAsStringAsync();
-            //readT.Wait();
-            //_context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
+            var readT = req.Content.ReadAsStringAsync();
+            readT.Wait();
+            if (readT.Result != null)
+            {
+                log.LogInformation(readT.Result.ToString());
+            }
+            //var _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
             //_args = _context.FunctionArgument;
             //_socialEdgePlayer = new SocialEdgePlayerContext(_context);
             //_socialEdgePlayer.CacheFill(CacheSegment.NONE);
