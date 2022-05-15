@@ -130,7 +130,8 @@ namespace SocialEdgeSDK.Server.Context
                 {CacheSegment.FRIENDS_PROFILES, CacheFillFriendProfiles},
                 {CacheSegment.ACTIVE_INVENTORY, CacheFillActiveInventory},
                 {CacheSegment.INVENTORY, CacheFillInventory},
-                {CacheSegment.ENTITY_TOKEN, CacheFillEntityToken}
+                {CacheSegment.ENTITY_TOKEN, CacheFillEntityToken},
+                {CacheSegment.ENTITY_ID, CacheFillEntityId}
             };
 
             _writeMap = new Dictionary<ulong, CacheFnType>()
