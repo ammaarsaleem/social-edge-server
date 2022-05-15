@@ -39,11 +39,8 @@ namespace SocialEdgeSDK.Playfab
 
             var readT = req.Content.ReadAsStringAsync();
             readT.Wait();
-            if (readT.Result != null)
-            {
-                log.LogInformation(readT.Result.ToString());
-            }
-            //var _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
+            var _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
+            log.LogInformation(readT.Result.ToString());
             //_args = _context.FunctionArgument;
             //_socialEdgePlayer = new SocialEdgePlayerContext(_context);
             //_socialEdgePlayer.CacheFill(CacheSegment.NONE);
