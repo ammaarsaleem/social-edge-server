@@ -33,6 +33,8 @@ namespace SocialEdgeSDK.Playfab
             ILogger log)
         {
             SocialEdge.Init(req, log, TITLECONTEXT, DATASERVICE);
+            log.LogInformation(TITLECONTEXT.TitleData.ToString());
+
             //var readT = req.Content.ReadAsStringAsync();
             //readT.Wait();
             //_context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(readT.Result);
