@@ -25,9 +25,9 @@ namespace SocialEdgeSDK.Playfab
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            InitContext(req, log);
-            Player.NewPlayerInit(SocialEdgePlayer.PlayerId, SocialEdgePlayer.EntityToken, SocialEdgePlayer.EntityId);
-            SocialEdge.Log.LogInformation("New Player Init: " + SocialEdgePlayer.PlayerId);
+            //InitContext(req, log);
+            //Player.NewPlayerInit(SocialEdgePlayer.PlayerId, SocialEdgePlayer.EntityToken, SocialEdgePlayer.EntityId);
+            //SocialEdge.Log.LogInformation("New Player Init: " + SocialEdgePlayer.PlayerId);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
