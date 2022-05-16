@@ -116,9 +116,6 @@ namespace SocialEdgeSDK.Server.Context
             _entityId = null;
             _publicDataObjs = null;
             SocialEdgePlayerContextInit();
-
-            string msg = Newtonsoft.Json.JsonConvert.SerializeObject(context.PlayStreamEventEnvelope);
-            SocialEdge.Log.LogInformation("SocialEdgePlayerContext()=>" + msg);
         }
 
         private void SocialEdgePlayerContextInit()
