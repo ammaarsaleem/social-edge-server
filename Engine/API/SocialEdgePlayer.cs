@@ -28,7 +28,8 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong INVENTORY = 0x40;
         public const ulong ENTITY_TOKEN = 0x80;
         public const ulong ENTITY_ID = 0x100;
-        public const ulong MAX = ENTITY_ID;
+        public const ulong COMBINED_INFO = 0x200;
+        public const ulong MAX = COMBINED_INFO;
 
         public const ulong META = PUBLIC_DATA | INBOX | CHAT | FRIENDS_PROFILES | ACTIVE_INVENTORY;
         public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | INVENTORY;
@@ -66,10 +67,12 @@ namespace SocialEdgeSDK.Server.Context
         private List<EntityProfileBody> _friendsProfiles;
         private List<ItemInstance> _inventory;
         private Dictionary<string, int> _virtualCurrency;
+        private GetPlayerCombinedInfoResultPayload _combinedInfo;
 
         public string PlayerId { get => _playerId; }
         public string InboxId { get => _inboxId; }
 
+        public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CacheSegment.COMBINED_INFO) != 0) || (CacheFillSegment(CacheSegment.COMBINED_INFO))) ? _combinedInfo : null; }
         public string EntityId { get => (((_fillMask & CacheSegment.ENTITY_ID) != 0) || (CacheFillSegment(CacheSegment.ENTITY_ID))) ? _entityId : null; }
         public string EntityToken { get => (((_fillMask & CacheSegment.ENTITY_TOKEN) != 0) || (CacheFillSegment(CacheSegment.ENTITY_TOKEN))) ? _entityToken : null; }
         public BsonDocument ActiveInventory { get => (((_fillMask & CacheSegment.ACTIVE_INVENTORY) != 0) || (CacheFillSegment(CacheSegment.ACTIVE_INVENTORY))) ? _activeInventory : null; }
@@ -131,7 +134,8 @@ namespace SocialEdgeSDK.Server.Context
                 {CacheSegment.ACTIVE_INVENTORY, CacheFillActiveInventory},
                 {CacheSegment.INVENTORY, CacheFillInventory},
                 {CacheSegment.ENTITY_TOKEN, CacheFillEntityToken},
-                {CacheSegment.ENTITY_ID, CacheFillEntityId}
+                {CacheSegment.ENTITY_ID, CacheFillEntityId},
+                {CacheSegment.COMBINED_INFO, CacheFillCombinedInfo}
             };
 
             _writeMap = new Dictionary<ulong, CacheFnType>()
@@ -191,12 +195,22 @@ namespace SocialEdgeSDK.Server.Context
        private bool CacheFillEntityId()
         {
             // Title entity id (title_player_account)
-            var resultT = Player.GetUserAccountInfo(_playerId);
+            var resultT = Player.GetAccountInfo(_playerId);
             resultT.Wait();
             _entityId = resultT.Result.Result.UserInfo.TitleInfo.TitlePlayerAccount.Id;
             _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
             SocialEdge.Log.LogInformation("Task fetch ENTITY_ID");
             return _entityId != null;        
+        }
+
+        private bool CacheFillCombinedInfo()
+        {
+            var resulT = Player.GetCombinedInfo(_playerId);
+            resulT.Wait();
+            _combinedInfo = resulT.Result.Result.InfoResultPayload;
+            _fillMask |= _combinedInfo != null ? CacheSegment.COMBINED_INFO : 0;
+            SocialEdge.Log.LogInformation("Task fetch COMBINED_INFO");
+            return _combinedInfo != null;
         }
 
         private bool CacheWriteNone()

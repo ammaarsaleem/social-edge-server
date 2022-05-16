@@ -10,6 +10,7 @@ using PlayFab.ProfilesModels;
 namespace SocialEdgeSDK.Server.Models{
     public class GetMetaDataResult
     {
+        public GetPlayerCombinedInfoResultPayload playerCombinedInfoResultPayload;
         public string publicDataObjs;
         public string liveTournaments;
         public string chat;

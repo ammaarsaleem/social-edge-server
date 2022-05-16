@@ -15,7 +15,6 @@ using MongoDB.Bson.IO;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
-using SocialEdgeSDK.Server.Api;
 using PlayFab.Samples;
 
 namespace SocialEdgeSDK.Server.Requests
@@ -30,19 +29,9 @@ namespace SocialEdgeSDK.Server.Requests
             ILogger log)
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
-            //SocialEdgePlayer.CacheFill(CacheSegment.META);
-
-            //await Transactions.Grant(new Dictionary<string, int>(){{"SkinSlate", 1}}, FnPlayerContext);
-//            Inbox.Collect("ed94-7995-4925-90b8", FnPlayerContext);
-            //InboxModel.Count(FnPlayerContext.Inbox);
-            //int qty = await Transactions.GrantTrophies(1, FnPlayerContext); 
-            //Inbox.Collect("ed94-7995-4925-90b8", FnPlayerContext);
-            //var coins = SocialEdgePlayer.VirtualCurrency["CN"];
-            //var gems = SocialEdgePlayer.VirtualCurrency["GM"];
-
-           // var tData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup");
-           //Player.NewPlayerInit(SocialEdgePlayer.PlayerId, SocialEdgePlayer.EntityToken, SocialEdgePlayer.EntityId);
-
+            SocialEdgePlayer.CacheFill(CacheSegment.META);
+            BsonDocument args = BsonDocument.Parse(Args);
+            var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
 
             try
             {
@@ -59,7 +48,12 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
                 metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                 metaDataResponse.appVersionValid = true; // TODO
-                metaDataResponse.inboxCount = 2; // TODO
+                metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
+
+                if (isNewlyCreated == true)
+                {
+                    metaDataResponse.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
+                }
 
                 // TODO
                 var liveTournamentsJson = liveTournamentsT["tournament"].ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
@@ -68,9 +62,7 @@ namespace SocialEdgeSDK.Server.Requests
                 var liveTournamentsListJson = liveTournamentsList.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
                 metaDataResponse.liveTournaments = liveTournamentsListJson.ToString();
 
-
                 SocialEdgePlayer.CacheFlush();
-
                 return metaDataResponse;
             }
             catch (Exception e)

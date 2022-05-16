@@ -27,6 +27,8 @@ namespace SocialEdgeSDK.Server.Models
         public static int Count(SocialEdgePlayerContext socialEdgePlayer)
         {
             var inbox = socialEdgePlayer.Inbox;
+            if (inbox == null) return 0;
+            
             long now = Utils.UTCNow();
             int count = 0;
             var messages = inbox["messages"].AsBsonDocument;

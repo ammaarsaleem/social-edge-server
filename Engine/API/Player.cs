@@ -149,11 +149,33 @@ namespace SocialEdgeSDK.Server.Api
             return await PlayFab.PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
         }
 
-        public static async Task<PlayFabResult<GetUserAccountInfoResult>> GetUserAccountInfo(string playerId)
+        public static async Task<PlayFabResult<GetUserAccountInfoResult>> GetAccountInfo(string playerId)
         {
             GetUserAccountInfoRequest request = new GetUserAccountInfoRequest();
             request.PlayFabId = playerId;
             return await PlayFab.PlayFabServerAPI.GetUserAccountInfoAsync(request); 
+        }
+
+        public static async Task<PlayFabResult<GetPlayerCombinedInfoResult>> GetCombinedInfo(string playerId)
+        {
+            GetPlayerCombinedInfoRequest request = new GetPlayerCombinedInfoRequest();
+            request.PlayFabId = playerId;
+            request.InfoRequestParameters = new GetPlayerCombinedInfoRequestParams();
+            request.InfoRequestParameters.GetPlayerProfile = true;
+            request.InfoRequestParameters.GetUserReadOnlyData = true;
+            request.InfoRequestParameters.GetPlayerStatistics = true;
+            request.InfoRequestParameters.GetUserInventory = true;
+            request.InfoRequestParameters.GetUserVirtualCurrency = true;
+            request.InfoRequestParameters.GetUserAccountInfo = true;
+            request.InfoRequestParameters.ProfileConstraints = new PlayerProfileViewConstraints();
+            request.InfoRequestParameters.ProfileConstraints.ShowLocations = true;
+            request.InfoRequestParameters.ProfileConstraints.ShowAvatarUrl = true;
+            request.InfoRequestParameters.ProfileConstraints.ShowBannedUntil = true;
+            request.InfoRequestParameters.ProfileConstraints.ShowCreated = true;
+            request.InfoRequestParameters.ProfileConstraints.ShowDisplayName = true;
+            request.InfoRequestParameters.ProfileConstraints.ShowLastLogin = true;
+
+            return await PlayFab.PlayFabServerAPI.GetPlayerCombinedInfoAsync(request);
         }
 
         public static string GenerateDisplayName()
@@ -218,12 +240,12 @@ namespace SocialEdgeSDK.Server.Api
             activeInventoryAvatar["key"] = avatar;
             activeInventoryBgColor["key"] = avatarBgColor;
             
+            var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
             var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
-            var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var UpdatePublicDataT = UpdatePublicData(entityToken, entityId, playerPublicData);
 
-            Task.WaitAll(addVirualCurrencyT, updateDisplayNameT, UpdatePlayerDataT, UpdatePublicDataT);
+            Task.WaitAll(UpdatePlayerDataT, addVirualCurrencyT, updateDisplayNameT, UpdatePublicDataT);
         }
     }
 }
