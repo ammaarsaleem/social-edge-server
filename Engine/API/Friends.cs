@@ -87,34 +87,34 @@ namespace SocialEdgeSDK.Server.Api
             const int DRAW_IDX = 2;
             const int FRIENDLY_IDX = 3;
 
-            const int TAG_STATS_IX = 3;
+            const int TAG_STATS_IDX = 3;
 
             FriendInfo friend = socialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
-            string[] stats = friend.Tags[TAG_STATS_IX].Split(',');
+            string[] stats = friend.Tags[TAG_STATS_IDX].Split(',');
 
             // win
             if (resultCode == RESULT_CODE_WIN)
             {
                 string update = (Int32.Parse(stats[WIN_IDX]) + 1).ToString();
-                friend.Tags[TAG_STATS_IX] =  update + "," + stats[LOSE_IDX] + "," + stats[DRAW_IDX] + "," + stats[FRIENDLY_IDX];
+                friend.Tags[TAG_STATS_IDX] =  update + "," + stats[LOSE_IDX] + "," + stats[DRAW_IDX] + "," + stats[FRIENDLY_IDX];
             }
             // lose
             else if (resultCode == RESULT_CODE_LOSE)
             {
                 string update = (Int32.Parse(stats[LOSE_IDX]) + 1).ToString();
-                friend.Tags[TAG_STATS_IX] = stats[WIN_IDX] + "," + update + "," + stats[DRAW_IDX] + "," + stats[FRIENDLY_IDX];
+                friend.Tags[TAG_STATS_IDX] = stats[WIN_IDX] + "," + update + "," + stats[DRAW_IDX] + "," + stats[FRIENDLY_IDX];
             }
             // draw
             else if (resultCode == RESULT_CODE_DRAW)
             {
                 string update = (Int32.Parse(stats[DRAW_IDX]) + 1).ToString();
-                friend.Tags[TAG_STATS_IX] = stats[WIN_IDX] + "," + stats[LOSE_IDX] + "," + update + "," + stats[FRIENDLY_IDX];
+                friend.Tags[TAG_STATS_IDX] = stats[WIN_IDX] + "," + stats[LOSE_IDX] + "," + update + "," + stats[FRIENDLY_IDX];
             }
             // friendly
             else if (resultCode == RESULT_CODE_FRIENDLY)
             {
                 string update = (Int32.Parse(stats[FRIENDLY_IDX]) + 1).ToString();
-                friend.Tags[TAG_STATS_IX] = stats[WIN_IDX] + "," + stats[LOSE_IDX] + "," + stats[DRAW_IDX] + "," + update;
+                friend.Tags[TAG_STATS_IDX] = stats[WIN_IDX] + "," + stats[LOSE_IDX] + "," + stats[DRAW_IDX] + "," + update;
             }
             
             return Friends.SetFriendTags(friendId, friend.Tags, socialEdgePlayer.PlayerId);

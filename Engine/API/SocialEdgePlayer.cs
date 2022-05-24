@@ -183,9 +183,9 @@ namespace SocialEdgeSDK.Server.Context
             // Title entity token
             var resultT = Player.GetTitleEntityToken();
             resultT.Wait();
-            _entityToken = resultT.Result.Result.EntityToken;
+            _entityToken = resultT.Result.Error == null ? resultT.Result.Result.EntityToken : null;
             _fillMask |= _entityToken != null ? CacheSegment.ENTITY_TOKEN : 0;
-            SocialEdge.Log.LogInformation("Task fetch ENTITY_TOKEN");
+            SocialEdge.Log.LogInformation("Task fetch ENTITY_TOKEN" + (_entityToken != null ? "(success)" : "(failure)"));
             return _entityToken != null;        
         }
 
