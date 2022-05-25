@@ -86,47 +86,53 @@ namespace SocialEdgeSDK.Server.Api
 
             return granted;
         }
+
+        public static void SetupLeaguePromotion(string qualifiedLeagueId, bool promoted, SocialEdgePlayerContext socialEdgePlayer)
+        {
+            var league = Leagues.GetLeague(qualifiedLeagueId);
+            
+            // Add promotion reward
+            if (promoted)
+            {
+                BsonDocument msgInfo = new BsonDocument()
+                {
+                    ["type"] = "RewardLeaguePromotion",
+                    ["league"] = league["name"].ToString(),
+                    ["reward"] = new BsonDocument() { ["gems"] = (int)league["qualification"]["reward"]["gems"]}
+                };
+
+                var message = Create(msgInfo);
+                InboxModel.Add(message, socialEdgePlayer);
+            }
+
+            // Update league rewards
+            var leagueDailyRewardMsgId = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
+            var inboxT = InboxModel.Get(socialEdgePlayer.InboxId);
+            inboxT.Wait();
+            var inbox = inboxT.Result;
+            var msg = inbox["messages"][leagueDailyRewardMsgId];
+            var leageuDailyRewardMsgInfo = new BsonDocument()
+            {
+                ["type"] = "RewardDailyLeague",
+                ["isDaily"] = true,
+                ["league"] = league["name"].ToString(),
+                ["reward"] = new BsonDocument()
+                    {
+                        ["gems"] = (int)league["dailyReward"]["gems"],
+                        ["coins"] = (int)league["dailyReward"]["coins"]
+                    }
+                ["startTime"] = msg["startTime"],
+                ["time"] = msg["startTime"]
+            };
+
+            var leagueDailyRewardMessage = Inbox.Create(leageuDailyRewardMsgInfo);
+            InboxModel.Update(leagueDailyRewardMsgId, leageuDailyRewardMsgInfo, socialEdgePlayer);
+        }
     }
 }
 
 /*
 var Inbox = (function () {
-
-    
-    var setupLeaguePromotion = function(sparkPlayer, qualifiedLeagueId, promoted) {
-        var league = Leagues.getLeague(qualifiedLeagueId);
-        
-        //Add promotion reward
-        if(promoted) {
-            var msgInfo = {
-                type: "RewardLeaguePromotion",
-                league: league.name,
-                reward: {
-                    gems: league.qualification.reward.gems
-                }
-            }
-            var message = Inbox.create(sparkPlayer, msgInfo);
-            InboxModel.add(sparkPlayer, message);
-        }
-        
-        // Update league rewards
-        var leagueDailyRewardMsgId = Inbox.find(sparkPlayer, "RewardDailyLeague");
-        var inbox = InboxModel.get(sparkPlayer);
-        var msg = inbox.messages[leagueDailyRewardMsgId];
-        var leageuDailyRewardMsgInfo = {
-            type: "RewardDailyLeague",
-            isDaily: true,
-            league: league.name,
-            reward: {
-                gems: league.dailyReward.gems,
-                coins: league.dailyReward.coins 
-            },
-            startTime: msg.startTime,
-            time: msg.startTime
-        }
-        var leagueDailyRewardMessage = Inbox.create(sparkPlayer, leageuDailyRewardMsgInfo);
-        Inbox.update(sparkPlayer, leagueDailyRewardMsgId, leagueDailyRewardMessage);
-    }
     
     var _getMessageByType = function(sparkPlayer, msgType) {
         var inboxData = InboxModel.get(sparkPlayer);
@@ -221,22 +227,6 @@ var Inbox = (function () {
         }
     }
 
-    var _getDefaultMessage = function () {
-        return {
-            id: 0,
-            type: '',
-            isDaily: false,
-            heading: '',
-            body: '',
-            time: moment.utc().valueOf(),
-            reward: {},
-            trophies: 0,
-            rank: 0,
-            chestType: '',
-            tournamentType: '',
-            league: '',
-            startTime: moment.utc().valueOf()
-        }
     };
 
 */
