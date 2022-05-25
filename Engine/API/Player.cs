@@ -14,7 +14,7 @@ using PlayFab.DataModels;
 using MongoDB.Bson;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Common;
-
+using SocialEdgeSDK.Server.Models;
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -239,6 +239,9 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicData["PublicProfileEx"]["tag"] = newTag;
             activeInventoryAvatar["key"] = avatar;
             activeInventoryBgColor["key"] = avatarBgColor;
+
+            string chatDocumentId = InboxModel.Create();
+            playerPublicData["DBIds"] = "\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"";
             
             var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");

@@ -18,6 +18,21 @@ namespace SocialEdgeSDK.Server.Models
             return !string.IsNullOrEmpty(inboxId) ? await SocialEdge.DataService.GetCollection("inbox").FindOneById(inboxId) : null;
         }
 
+        public static string Create()
+        {
+            var collection = SocialEdge.DataService.GetCollection("inbox");
+            BsonDocument container = new BsonDocument()
+            {
+                ["inboxData"] = new BsonDocument()
+                {
+                    ["messages"] = {}
+                }
+            };
+
+            collection.InsertOne(container);
+            return container.Contains("_id") ? container["_id"].ToString() : null;
+        }
+
         public static async Task<DataService.UpdateResult> Set(string inboxId, BsonDocument inbox)
         {  
             BsonDocument inboxData = new BsonDocument() { ["inboxData"] = inbox };

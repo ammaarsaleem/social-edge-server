@@ -12,7 +12,8 @@ namespace SocialEdgeSDK.Server.DataService{
 
    public class Collection : ICollection
    {
-       private readonly IMongoCollection<BsonDocument> _collection;
+        private readonly IMongoCollection<BsonDocument> _collection;
+
         public Collection(IMongoDatabase database, string collectionName)
         {
             _collection = database.GetCollection<BsonDocument>(collectionName);  
@@ -358,7 +359,8 @@ namespace SocialEdgeSDK.Server.DataService{
         {
             try
             {
-                await _collection.InsertOneAsync(document);
+                var T = _collection.InsertOneAsync(document);
+                T.Wait();
                 return true;
             }
             catch(Exception e)

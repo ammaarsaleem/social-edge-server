@@ -25,7 +25,7 @@ namespace SocialEdgeSDK.Server.Api
             return Math.Clamp(i, 0, leagueSettings.ElementCount - 1);
         }
         
-        public static JToken GetLeague(string leagueId)
+        public static BsonDocument GetLeague(string leagueId)
         {
             return SocialEdge.TitleContext.GetTitleDataProperty("Leagues")[leagueId];
         }
