@@ -25,7 +25,10 @@ namespace SocialEdgeSDK.Server.Models
             {
                 ["inboxData"] = new BsonDocument()
                 {
-                    ["messages"] = {}
+                    ["messages"] = new BsonDocument()
+                    {
+                        
+                    }
                 }
             };
 
