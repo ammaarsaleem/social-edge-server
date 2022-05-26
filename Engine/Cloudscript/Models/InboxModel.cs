@@ -18,7 +18,7 @@ namespace SocialEdgeSDK.Server.Models
             return !string.IsNullOrEmpty(inboxId) ? await SocialEdge.DataService.GetCollection("inbox").FindOneById(inboxId) : null;
         }
 
-        public static string Create()
+        public static string Init()
         {
             var collection = SocialEdge.DataService.GetCollection("inbox");
             BsonDocument container = new BsonDocument()
@@ -97,10 +97,10 @@ namespace SocialEdgeSDK.Server.Models
             return it.Current.Name != null ? messages[it.Current.Name]["id"].ToString() : null;
         }
 
-        public static List<string> FindAll(BsonDocument inbox, string msgType)
+        public static List<string> FindAll(string msgType, SocialEdgePlayerContext socialEdgePlayer)
         {
+            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
             List<string> list = new List<string>();
-            var messages = inbox["messages"].AsBsonDocument;
             var it = messages.GetEnumerator();
             while (it.MoveNext())
             {

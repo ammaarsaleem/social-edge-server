@@ -240,7 +240,7 @@ namespace SocialEdgeSDK.Server.Api
             activeInventoryAvatar["key"] = avatar;
             activeInventoryBgColor["key"] = avatarBgColor;
 
-            string chatDocumentId = InboxModel.Create();
+            string chatDocumentId = InboxModel.Init();
             playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
             
             var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);

@@ -128,6 +128,30 @@ namespace SocialEdgeSDK.Server.Api
             var leagueDailyRewardMessage = Inbox.Create(leageuDailyRewardMsgInfo);
             InboxModel.Update(leagueDailyRewardMsgId, leageuDailyRewardMsgInfo, socialEdgePlayer);
         }
+
+        public static void Validate(SocialEdgePlayerContext socialEdgePlayer)
+        {
+            var msgInfo = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
+            if (msgInfo == null)
+            {
+                var leagueId = socialEdgePlayer.PublicData["leag"].ToString();
+                var reward = Leagues.GetDailyReward(leagueId);
+                BsonDocument newMsgInfo = new BsonDocument()
+                {
+                    ["type"] = "RewardDailyLeague",
+                    ["league"] = Leagues.GetLeague(leagueId)["name"],
+                    ["isDaily"] = true,
+                    ["reward"] = new BsonDocument()
+                    {
+                        ["coins"] = reward["coins"],
+                        ["gems"] = reward["gems"]
+                    }
+                };
+
+                var message = Inbox.Create(newMsgInfo);
+                InboxModel.Add(message, socialEdgePlayer);
+            }
+        }
     }
 }
 

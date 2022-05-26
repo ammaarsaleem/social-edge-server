@@ -16,6 +16,7 @@ using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
 using PlayFab.Samples;
+using SocialEdgeSDK.Server.Api;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -32,6 +33,7 @@ namespace SocialEdgeSDK.Server.Requests
             SocialEdgePlayer.CacheFill(CacheSegment.META);
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
+            Inbox.Validate(SocialEdgePlayer);
 
             try
             {

@@ -243,7 +243,7 @@ namespace SocialEdgeSDK.Server.Context
              var inboxT = InboxModel.Get(_mongoDocIds["inbox"].ToString());
              if (inboxT != null) inboxT.Wait();
             _inbox = inboxT != null && inboxT.Result != null ? inboxT.Result["inboxData"].AsBsonDocument : null;
-            _fillMask |= _inbox != null ? CacheSegment.CHAT : 0;
+            _fillMask |= _inbox != null ? CacheSegment.INBOX : 0;
             SocialEdge.Log.LogInformation("Task fetch INBOX");
             return _inbox != null;
         }
@@ -252,6 +252,7 @@ namespace SocialEdgeSDK.Server.Context
         {
             var inboxT = InboxModel.Set(_inboxId, _inbox);
             inboxT.Wait();
+            SocialEdge.Log.LogInformation("Task flush INBOX");
             return inboxT.Result.ModifiedCount != 0;
         }
 
