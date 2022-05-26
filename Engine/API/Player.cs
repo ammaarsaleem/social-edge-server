@@ -241,7 +241,7 @@ namespace SocialEdgeSDK.Server.Api
             activeInventoryBgColor["key"] = avatarBgColor;
 
             string chatDocumentId = InboxModel.Create();
-            playerPublicData["DBIds"] = "\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"";
+            playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
             
             var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
