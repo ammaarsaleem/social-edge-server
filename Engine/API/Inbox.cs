@@ -15,9 +15,9 @@ namespace SocialEdgeSDK.Server.Api
 {
     public static class Inbox
     {
-        public static BsonDocument Create(BsonDocument messageInfo)
+        public static BsonDocument CreateMessage(BsonDocument messageInfo)
         {
-            BsonDocument message = _getDefaultMessage();
+            BsonDocument message = GetDefaultMessage();
 
             message["id"] = Guid.NewGuid().ToString();
             message["type"] = messageInfo["type"];
@@ -39,7 +39,7 @@ namespace SocialEdgeSDK.Server.Api
             return message;
         }
 
-        private static BsonDocument _getDefaultMessage()
+        private static BsonDocument GetDefaultMessage()
         {
             return new BsonDocument() {
 
@@ -101,16 +101,13 @@ namespace SocialEdgeSDK.Server.Api
                     ["reward"] = new BsonDocument() { ["gems"] = (int)league["qualification"]["reward"]["gems"]}
                 };
 
-                var message = Create(msgInfo);
+                var message = CreateMessage(msgInfo);
                 InboxModel.Add(message, socialEdgePlayer);
             }
 
             // Update league rewards
             var leagueDailyRewardMsgId = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
-            var inboxT = InboxModel.Get(socialEdgePlayer.InboxId);
-            inboxT.Wait();
-            var inbox = inboxT.Result;
-            var msg = inbox["messages"][leagueDailyRewardMsgId];
+            var msg = socialEdgePlayer.Inbox["messages"][leagueDailyRewardMsgId];
             var leageuDailyRewardMsgInfo = new BsonDocument()
             {
                 ["type"] = "RewardDailyLeague",
@@ -125,11 +122,11 @@ namespace SocialEdgeSDK.Server.Api
                 ["time"] = msg["startTime"]
             };
 
-            var leagueDailyRewardMessage = Inbox.Create(leageuDailyRewardMsgInfo);
+            var leagueDailyRewardMessage = Inbox.CreateMessage(leageuDailyRewardMsgInfo);
             InboxModel.Update(leagueDailyRewardMsgId, leageuDailyRewardMsgInfo, socialEdgePlayer);
         }
 
-        public static void Validate(SocialEdgePlayerContext socialEdgePlayer)
+        private static void ValidateDailyReward(SocialEdgePlayerContext socialEdgePlayer)
         {
             var msgInfo = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
             if (msgInfo == null)
@@ -139,7 +136,7 @@ namespace SocialEdgeSDK.Server.Api
                 BsonDocument newMsgInfo = new BsonDocument()
                 {
                     ["type"] = "RewardDailyLeague",
-                    ["league"] = Leagues.GetLeague(leagueId)["name"],
+                    ["league"] = Leagues.GetLeague(leagueId)["name"].ToString(),
                     ["isDaily"] = true,
                     ["reward"] = new BsonDocument()
                     {
@@ -148,109 +145,36 @@ namespace SocialEdgeSDK.Server.Api
                     }
                 };
 
-                var message = Inbox.Create(newMsgInfo);
+                var message = Inbox.CreateMessage(newMsgInfo);
                 InboxModel.Add(message, socialEdgePlayer);
             }
         }
+
+        private static void RemoveExpired(SocialEdgePlayerContext socialEdgePlayer)
+        {
+            var inbox = socialEdgePlayer.Inbox;            
+            long now = Utils.UTCNow();
+            var messages = inbox["messages"].AsBsonDocument;
+            List<string> delIds = new List<string>();
+            foreach (string key in messages.Names)
+            {
+                var msg = messages[key].AsBsonDocument;
+                if (msg.Contains("expireAt") && Convert.ToInt64(msg["expireAt"].ToString()) <= now)
+                {
+                    delIds.Add(msg["id"].ToString());
+                }
+            }
+
+            foreach(string id in delIds)
+            {
+                InboxModel.Del(id, socialEdgePlayer);
+            }
+        }
+
+        public static void Validate(SocialEdgePlayerContext socialEdgePlayer)
+        {
+            RemoveExpired(socialEdgePlayer);
+            ValidateDailyReward(socialEdgePlayer);
+        }
     }
 }
-
-/*
-var Inbox = (function () {
-    
-    var _getMessageByType = function(sparkPlayer, msgType) {
-        var inboxData = InboxModel.get(sparkPlayer);
-        var keys = Object.keys(inboxData.messages);
-        var found = false;
-        var i = 0;
-        while (!found && i < keys.length) {
-            found = inboxData.messages[keys[i]].type == msgType;
-            if (!found) i++;
-        }
-        
-        return found ? inboxData.messages[keys[i]] : null;
-    };
-
-    var validate = function(sparkPlayer) {
-        var playerData = PlayerModel.get(sparkPlayer);
-        
-        // Daily league reward
-        var msgInfo = _getMessageByType(sparkPlayer, 'RewardDailyLeague');
-        if (msgInfo == null) {
-            var reward = Leagues.getDailyReward(playerData.pub.league);
-            
-            var newMsgInfo = {
-                type: "RewardDailyLeague",
-                league: Leagues.getLeague(playerData.pub.league).name,
-                isDaily: true,
-                reward : {
-                    coins: reward.coins,
-                    gems: reward.gems
-                }
-            };
-
-            var message = Inbox.create(sparkPlayer, newMsgInfo);
-            InboxModel.add(sparkPlayer, message);
-        }
-        else // if(msgInfo.reward.coins == undefined) 
-         {
-            msgInfo.reward = Leagues.getDailyReward(playerData.pub.league);
-            Inbox.update(sparkPlayer, msgInfo.id, msgInfo);
-        }
-        
-        // Daily subscription reward
-        var msgId = Inbox.find(sparkPlayer, 'RewardDailySubscription');
-        // var isSubscriber = PlayerModel.isSubscriber(playerData);
-        // if (isSubscriber == true && msgId == null) {
-        //     var subscriptionRewardsSet = Spark.getProperties().getPropertySet("SubscriptionRewardsSet");
-        //     var subscriptionRewardsProperty = subscriptionRewardsSet["subscriptionRewardsProperty"];
-        //     var reward = Leagues.getDailyReward(playerData.pub.league);
-        //     var msgInfo = {
-        //         type: "RewardDailySubscription",
-        //         isDaily: true,
-        //         reward : {
-        //             SpecialItemTicket: subscriptionRewardsProperty.dailyReward.tickets 
-        //         }
-        //     };
-        //     var message = Inbox.create(sparkPlayer, msgInfo);
-        //     InboxModel.add(sparkPlayer, message);            
-        // }
-        // else 
-        if (msgId != null) {
-            InboxModel.del(sparkPlayer, msgId);
-        }
-
-        validateChampionshipRewardMessages(sparkPlayer);
-    };
-    
-    
-    var validateChampionshipRewardMessages = function (sparkPlayer)
-    {
-        var tournamentRewardMessages = findAll(sparkPlayer, 'RewardTournamentEnd');
-        for (var i = 0; i < tournamentRewardMessages.length; i++) {
-            // Removing tournament reward messages other than weekly championship
-            var removeMsg = false;
-            if (tournamentRewardMessages[i].tournamentType !== 'Weekly' && tournamentRewardMessages[i].tournamentType !== 'Daily') {
-                removeMsg = true;
-            }
-
-            // Removing expired championship reward messages
-            if (!removeMsg) {
-                if (tournamentRewardMessages[i].hasOwnProperty('expireAt')) {
-                    var currentTime = moment.utc().valueOf();
-                    var timeLeft = tournamentRewardMessages[i].expireAt - currentTime;
-                    if (timeLeft <= 0) {
-                        removeMsg = true;
-                    }
-                }
-            }
-
-            if (removeMsg) {
-                InboxModel.del(sparkPlayer, tournamentRewardMessages[i].id);
-            }
-        }
-    }
-
-    };
-
-*/

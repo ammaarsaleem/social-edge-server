@@ -21,17 +21,7 @@ namespace SocialEdgeSDK.Server.Models
         public static string Init()
         {
             var collection = SocialEdge.DataService.GetCollection("inbox");
-            BsonDocument container = new BsonDocument()
-            {
-                ["inboxData"] = new BsonDocument()
-                {
-                    ["messages"] = new BsonDocument()
-                    {
-                        
-                    }
-                }
-            };
-
+            BsonDocument container = new BsonDocument() { ["inboxData"] = new BsonDocument() { ["messages"] = new BsonDocument(){} } };
             collection.InsertOne(container);
             return container.Contains("_id") ? container["_id"].ToString() : null;
         }
@@ -54,7 +44,7 @@ namespace SocialEdgeSDK.Server.Models
             {
                 var msg = messages[key].AsBsonDocument;
                 //SocialEdgeEnvironment.Log.LogInformation(msg.ToString());
-                count += (msg["startTime"] == null || now >= msg["startTime"]) ? 1 : 0;
+                count += (msg.Contains("startTime") == false || now >= msg["startTime"]) ? 1 : 0;
             }
 
             return count;
