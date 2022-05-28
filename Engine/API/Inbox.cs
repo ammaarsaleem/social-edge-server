@@ -49,7 +49,7 @@ namespace SocialEdgeSDK.Server.Api
                 ["heading"] = "",
                 ["body"] = "",
                 ["time"] = Utils.UTCNow(),
-                ["reward"] = new BsonDocument(),
+                ["reward"] = new BsonDocument() {},
                 ["trophies"] = 0,
                 ["rank"] = 0,
                 ["chestType"] = "",
