@@ -25,7 +25,7 @@ namespace SocialEdgeSDK.Server.Requests
     {
         public int count;
         public string inbox;
-        public object collect;
+        public Dictionary<string, int> collect;
         public string messageId;
     }
 
@@ -51,7 +51,7 @@ namespace SocialEdgeSDK.Server.Requests
             else if (op == "collect")
             {
                 result.messageId = data["messageId"].ToString();
-                result.collect = Inbox.Collect(data["messageId"].ToString(), SocialEdgePlayer);
+                result.collect = await Inbox.Collect(data["messageId"].ToString(), SocialEdgePlayer);
             }
 
             result.count = InboxModel.Count(SocialEdgePlayer);
