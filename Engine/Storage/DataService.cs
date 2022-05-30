@@ -3,9 +3,11 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System;
 using SocialEdgeSDK.Server.Context;
 using MongoDB.Driver;
 using StackExchange.Redis;
+using Azure.Storage.Blobs;
 
 namespace SocialEdgeSDK.Server.DataService
 {
@@ -20,10 +22,14 @@ namespace SocialEdgeSDK.Server.DataService
         private readonly ConnectionMultiplexer _redis;
         private readonly IDatabase _cacheDb;
         #endregion
+
+        public readonly BlobContainerClient _blobContainerClient;
+
         ICollection _collection;
         ICache _cache;
+        IBlobStorage _blobStorage;
 
-        public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn)
+        public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn, BlobContainerClient blobConn)
         {
             _dbClient = mongoClient;
             string dbName = ConfigConstants.DATABASE;
@@ -31,6 +37,7 @@ namespace SocialEdgeSDK.Server.DataService
 
             _redis = redisConn;
             _cacheDb = _redis.GetDatabase();
+            _blobContainerClient = blobConn;
         }
 
         public ICollection GetCollection(string name)
@@ -41,6 +48,12 @@ namespace SocialEdgeSDK.Server.DataService
                 return _collection;
             }
             return null;
+        }
+
+        public IBlobStorage GetBlobStorage()
+        {
+            _blobStorage = new BlobStorage(_blobContainerClient);
+            return _blobStorage;
         }
 
         public ICache GetCache()

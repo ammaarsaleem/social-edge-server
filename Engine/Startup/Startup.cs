@@ -12,9 +12,8 @@ using MongoDB.Driver;
 using System.Linq;
 using SocialEdgeSDK.Server.Db;
 using SocialEdgeSDK.Server.DataService;
-using SocialEdgeSDK.Server.Context;
-using System;
 using StackExchange.Redis;
+using Azure.Storage.Blobs;
 
 [assembly: FunctionsStartup(typeof(SocialEdgeSDK.Playfab.Startup))]
 
@@ -59,6 +58,14 @@ namespace SocialEdgeSDK.Playfab
             //     IDataService dataService = new DataService(client, redis);
             //     return dataService;
             // });
+
+            builder.Services.AddSingleton((t) =>
+            {
+                string connString = "DefaultEndpointsProtocol=https;AccountName=storageaccountchess812e;AccountKey=Y4gMwGaJVvdin1xywKyyLVCUbiN0zy6WAg3NW9owPD+l7TPdj/i5dJKr+MRlCEhVGOO3LhcjBKbmMcTZYWxQnQ==;EndpointSuffix=core.windows.net";
+                string connContainer = "playerprofile";
+                var containerClient = new BlobContainerClient(connString, connContainer);
+                return containerClient;
+            });
 
             builder.Services.AddSingleton<ICache,Cache>();
             builder.Services.AddSingleton<IDbHelper,DbHelper>();

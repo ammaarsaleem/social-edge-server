@@ -11,36 +11,38 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
-using SocialEdgeSDK.Server.Context;
 using PlayFab.Samples;
 using PlayFab.AdminModels;
 using PlayFab;
+using SocialEdgeSDK.Server.Context;
+using SocialEdgeSDK.Server.Models;
+using SocialEdgeSDK.Server.DataService;
+using SocialEdgeSDK.Server.Api;
+
 
 namespace SocialEdgeSDK.Server.Requests
 {
-    public class UploadPicture
+    public class UploadPicture : FunctionContext
     {
+         public UploadPicture(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
+
         [FunctionName("UploadPicture")]
         public async Task<bool> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
             bool uploaded = false;
-            SocialEdge.Init(req);
-            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
-            dynamic args = context.FunctionArgument;
+            InitContext<FunctionExecutionContext<dynamic>>(req, log);
+
             try
             {
-                string key = args["key"].ToString();
-                string contentType = args["contentType"].ToString();
-                byte[] content = args["content"];
+                string key = Args["key"].ToString();
+                string contentType = Args["contentType"].ToString();
+                byte[] content = Args["content"].ToObject<byte[]>();
                 if(!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(contentType))
                 {
-                    PlayFabResult<GetContentUploadUrlResult> uploadUrlResult = await GetUploadUrl(key,contentType);
-                    if(uploadUrlResult.Error==null && !string.IsNullOrEmpty(uploadUrlResult.Result.URL))
-                    {
-                        uploaded = await PutFile(uploadUrlResult.Result.URL, content, contentType);
-                    }
+                    var blobStorage = SocialEdge.DataService.GetBlobStorage();
+                    await blobStorage.Save(key, content);
                 }
 
                 return uploaded;
@@ -48,37 +50,6 @@ namespace SocialEdgeSDK.Server.Requests
             catch (Exception e)
             {
                 throw e;
-            }
-        }
-
-        private async Task<PlayFabResult<GetContentUploadUrlResult>> GetUploadUrl(string key, string contentType)
-        {
-            var request = new PlayFab.AdminModels.GetContentUploadUrlRequest
-            {
-                ContentType = contentType,
-                Key = key
-            };
-
-            PlayFabResult<GetContentUploadUrlResult> result= await PlayFabAdminAPI.GetContentUploadUrlAsync(request);
-            return result;
-            
-        }
-
-        private async Task<bool> PutFile(string presignedUrl, byte[] content, string contentType)
-        {
-            try{
-                using(HttpClient client = new HttpClient())
-                {
-                    HttpContent hc = new ByteArrayContent(content);
-                    hc.Headers.ContentType= new MediaTypeHeaderValue("binary/octet-stream");
-                
-                    await client.PutAsync(new Uri(presignedUrl), hc);
-                }
-                return true;
-            }
-            catch(Exception e)
-            {
-                return false;
             }
         }
     }

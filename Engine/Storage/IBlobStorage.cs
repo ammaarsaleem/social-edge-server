@@ -3,12 +3,12 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System.Threading.Tasks;
+
 namespace SocialEdgeSDK.Server.DataService
 {
-    public interface IDataService
+    public interface IBlobStorage
     {
-        ICollection GetCollection(string name);
-        ICache GetCache();
-        IBlobStorage GetBlobStorage();
+        Task<bool> Save(string fileName, byte[] stream);
     }
 }

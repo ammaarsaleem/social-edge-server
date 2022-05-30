@@ -15,8 +15,8 @@ using MongoDB.Bson.IO;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
-using PlayFab.Samples;
 using SocialEdgeSDK.Server.Api;
+using PlayFab.Samples;
 
 namespace SocialEdgeSDK.Server.Requests
 {
