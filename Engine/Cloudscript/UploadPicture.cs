@@ -43,7 +43,12 @@ namespace SocialEdgeSDK.Server.Requests
                 {
                     var blobStorage = SocialEdge.DataService.GetBlobStorage();
                     await blobStorage.Save(key, content);
+
+                    // test
+                    var uri = blobStorage.GetServiceSasUriForBlob(key, 2);
+                    var uriStr = uri.ToString();
                 }
+
 
                 return uploaded;
             }

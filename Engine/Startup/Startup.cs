@@ -63,6 +63,8 @@ namespace SocialEdgeSDK.Playfab
             {
                 string connString = "DefaultEndpointsProtocol=https;AccountName=storageaccountchess812e;AccountKey=Y4gMwGaJVvdin1xywKyyLVCUbiN0zy6WAg3NW9owPD+l7TPdj/i5dJKr+MRlCEhVGOO3LhcjBKbmMcTZYWxQnQ==;EndpointSuffix=core.windows.net";
                 string connContainer = "playerprofile";
+                //string connString = "DefaultEndpointsProtocol=https;AccountName=chessstarsblobstorage;AccountKey=9UE+ONgiQuIt9/vrUQtN2VUuDGSkMiLEi6qLlpNL8koLMHo4d68xmTMx4T/CMiiuNj7143VCawev+AStDkzjTw==;EndpointSuffix=core.windows.net";
+                //string connContainer = "profilepics";
                 var containerClient = new BlobContainerClient(connString, connContainer);
                 return containerClient;
             });
