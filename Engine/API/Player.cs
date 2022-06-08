@@ -36,6 +36,7 @@ namespace SocialEdgeSDK.Server.Api
                     ShowLastLogin = true,
                     ShowLocations = true,
                     ShowTotalValueToDateInUsd = true,
+                    ShowStatistics = true,
                     ShowOrigination = true
                 }
             };
@@ -123,6 +124,21 @@ namespace SocialEdgeSDK.Server.Api
             request.Data = data;
 
             return await PlayFab.PlayFabServerAPI.UpdateUserReadOnlyDataAsync(request);
+        }
+
+        public static async Task<PlayFabResult<UpdatePlayerStatisticsResult>> UpdatePlayerStatistics(string playerId, string key, int value)
+        {
+            List<StatisticUpdate> list = new List<StatisticUpdate>();
+            StatisticUpdate entry = new StatisticUpdate();
+            entry.StatisticName = key;
+            entry.Value = value;
+            list.Add(entry);
+
+            UpdatePlayerStatisticsRequest request = new UpdatePlayerStatisticsRequest();
+            request.PlayFabId = playerId;
+            request.Statistics = list;
+
+            return await PlayFab.PlayFabServerAPI.UpdatePlayerStatisticsAsync(request);
         }
 
         public static async Task<PlayFabResult<GetUserInventoryResult>> GetPlayerInventory(string playerId)
