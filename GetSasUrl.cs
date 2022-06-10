@@ -18,28 +18,29 @@ using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Api;
+using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
 {
     public class GetSasUrl : FunctionContext
     {
-        IDataService _dataService;
-        public GetSasUrl(ITitleContext titleContext, IDataService dataService) { _dataService=dataService; Base(titleContext, dataService); }
+       // IDataService _dataService;
+        public GetSasUrl(ITitleContext titleContext, IDataService dataService) {Base(titleContext, dataService); }
 
         [FunctionName("GetSasUrl")]
         public String Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
-               // InitContext<FunctionExecutionContext<dynamic>>(req, log);
+                InitContext<FunctionExecutionContext<dynamic>>(req, log);
 
                 try
                 {
-                    string key = "profilepic7X3Z84";//Args["key"].ToString();
-                    var blobStorage = _dataService.GetBlobStorage();
+                    string key = "pic_" + Guid.NewGuid().ToString();
+                    var blobStorage = SocialEdge.DataService.GetBlobStorage();
 
                     // test
-                    var uri = blobStorage.GetServiceSasUriForBlob(key, 2);
+                    var uri = blobStorage.GetServiceSasUriForBlob(key, 10);
                     var uriStr = uri.ToString();
                     return uriStr;
 
