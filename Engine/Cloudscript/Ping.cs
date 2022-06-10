@@ -32,7 +32,7 @@ namespace SocialEdgeSDK.Server.Requests
             // log.LogInformation("C# HTTP trigger function processed a request.");
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             PingResult result = new PingResult();
-            result.clientSendTimestamp = (long)Args["clientSendTimestamp"].Value;
+            result.clientSendTimestamp = (long)Args["data"]["clientSendTimestamp"].Value;
             result.serverReceiptTimestamp = Utils.UTCNow();
             return result;
         }
