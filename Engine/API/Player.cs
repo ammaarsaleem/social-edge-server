@@ -165,6 +165,16 @@ namespace SocialEdgeSDK.Server.Api
             return await PlayFab.PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
         }
 
+        public static bool UpdatePlayerAvatarData(string playerId, string avatarData)
+        {
+            var request = new PlayFab.ServerModels.UpdateAvatarUrlRequest();
+            request.PlayFabId = playerId;
+            request.ImageUrl = avatarData;
+            var requestT = PlayFab.PlayFabServerAPI.UpdateAvatarUrlAsync(request);
+            requestT.Wait();
+            return requestT.Result.Error == null;
+        }
+
         public static async Task<PlayFabResult<GetUserAccountInfoResult>> GetAccountInfo(string playerId)
         {
             GetUserAccountInfoRequest request = new GetUserAccountInfoRequest();
@@ -258,7 +268,9 @@ namespace SocialEdgeSDK.Server.Api
 
             string chatDocumentId = InboxModel.Init();
             playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
-            
+
+            String avatarInfo =  avatar + "," + avatarBgColor + "," + "XXX" + "," + "0";
+            UpdatePlayerAvatarData(playerId, avatarInfo);            
             var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
             var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
@@ -266,5 +278,14 @@ namespace SocialEdgeSDK.Server.Api
 
             Task.WaitAll(UpdatePlayerDataT, addVirualCurrencyT, updateDisplayNameT, UpdatePublicDataT);
         }
+
+        public static bool UpdatePlayerAvatarInfo(SocialEdgePlayerContext socialEdgePlayer, String value, int index)
+        {
+            string[] avatarInfo = socialEdgePlayer.AvatarInfo.Split(',');
+            avatarInfo[index] = value;
+            string newInfo = String.Join(",",avatarInfo);
+           return  UpdatePlayerAvatarData(socialEdgePlayer.PlayerId, newInfo);
+        }
+
     }
 }

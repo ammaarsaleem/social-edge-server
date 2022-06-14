@@ -33,14 +33,21 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
                 InitContext<FunctionExecutionContext<dynamic>>(req, log);
+                var data = Args["data"];
+                bool uploadFlag = data["uploadFlag"].Value;
+                String fileName  = data["fileName"].Value;
 
                 try
                 {
-                    string key = "pic_" + Guid.NewGuid().ToString();
                     var blobStorage = SocialEdge.DataService.GetBlobStorage();
 
-                    // test
-                    var uri = blobStorage.GetServiceSasUriForBlob(key, 10);
+                    if(uploadFlag == true)
+                    {
+                        fileName = "pic_" + Guid.NewGuid().ToString();
+                        Player.UpdatePlayerAvatarInfo(SocialEdgePlayer, fileName, 2);
+                    }
+                    
+                    var uri = blobStorage.GetServiceSasUriForBlob(fileName, 10);
                     var uriStr = uri.ToString();
                     return uriStr;
 

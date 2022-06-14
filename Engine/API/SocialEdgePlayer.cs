@@ -55,6 +55,7 @@ namespace SocialEdgeSDK.Server.Context
         private string _playerId;
         private string _entityToken;
         private string _entityId;
+         private string _avatarInfo;
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private BsonDocument _mongoDocIds;
         private BsonDocument _inbox;
@@ -70,6 +71,7 @@ namespace SocialEdgeSDK.Server.Context
         private GetPlayerCombinedInfoResultPayload _combinedInfo;
 
         public string PlayerId { get => _playerId; }
+        public string AvatarInfo { get => _avatarInfo; }
         public string InboxId { get => _inboxId; }
 
         public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CacheSegment.COMBINED_INFO) != 0) || (CacheFillSegment(CacheSegment.COMBINED_INFO))) ? _combinedInfo : null; }
@@ -104,6 +106,7 @@ namespace SocialEdgeSDK.Server.Context
             _contextType = ContextType.FUNCTION_EXECUTION_API;
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             _entityId = context.CallerEntityProfile.Entity.Id;
+            _avatarInfo = context.CallerEntityProfile.AvatarUrl;
             _publicDataObjs = context.CallerEntityProfile.Objects;
             _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
             SocialEdgePlayerContextInit();
