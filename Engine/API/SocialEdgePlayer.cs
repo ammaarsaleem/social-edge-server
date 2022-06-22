@@ -221,6 +221,11 @@ namespace SocialEdgeSDK.Server.Context
             return true;
         }
 
+        public BsonValue GetPlayerData(string key, string segment = null)
+        {
+            return segment != null ? PlayerData[segment][key] : (PlayerData.LastAccessKey != null ? PlayerData[PlayerData.LastAccessKey][key] : null);
+        }
+
         private bool CacheFillNone()
         {
             SocialEdge.Log.LogInformation("Initialize empty cache");
