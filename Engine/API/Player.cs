@@ -20,6 +20,27 @@ namespace SocialEdgeSDK.Server.Api
 {
     public static class Player
     {
+        public static async Task<PlayFabResult<GetPlayerProfileResult>> GetPlayerProfile(string playerId)
+        {
+            var request = new GetPlayerProfileRequest();
+            request.PlayFabId = playerId;
+            request.ProfileConstraints = new PlayerProfileViewConstraints()
+            {
+                ShowAvatarUrl = true,
+                ShowLinkedAccounts = true,
+                ShowBannedUntil = true,
+                ShowCreated = true,
+                ShowDisplayName = true,
+                ShowLastLogin = true,
+                ShowLocations = true,
+                ShowTotalValueToDateInUsd = true,
+                ShowStatistics = true,
+                ShowOrigination = true
+            };
+
+            return await PlayFabServerAPI.GetPlayerProfileAsync(request);
+        }
+
         public static async Task<PlayFabResult<GetFriendsListResult>> GetFriendsList(string playerId)
         {
             var request = new GetFriendsListRequest

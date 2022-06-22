@@ -16,20 +16,48 @@ using PlayFab.Samples;
 
 namespace SocialEdgeSDK.Server.Context
 {
+    public class PlayerDataSegment : BsonDocument
+    {
+        private SocialEdgePlayerContext _socialEdgePlayer;
+        public new BsonDocument this[string key] => Get(key);
+        private Dictionary<string, bool> _dirty;
+        private string _fillKey;
+        private string _lastAccessKey;
+
+        internal string FillKey { get => _fillKey; }
+        internal string LastAccessKey { get => _lastAccessKey; }
+        public PlayerDataSegment(SocialEdgePlayerContext socialEdgePlayer) { _socialEdgePlayer = socialEdgePlayer; _dirty = new Dictionary<string, bool>(); }
+        public void SetDirty(string key) { _dirty.Add(key, true); }
+        public bool IsDirty(string key) { return _dirty.ContainsKey(key); }
+
+        private BsonDocument Get(string key)
+        {
+            _lastAccessKey = key;
+
+            if (this.Contains(key))
+                return base[key].ToBsonDocument();
+
+            _fillKey = key;
+            bool filled = _socialEdgePlayer.CacheFillSegment(CacheSegment.PLAYER_DATA); 
+            return filled ? base[key].ToBsonDocument() : null;
+        }
+    }
+
     public static class CacheSegment
     {
-        public const ulong NONE = 0;
-        public const ulong PUBLIC_DATA = 0x1;
-        public const ulong INBOX = 0x2;
-        public const ulong CHAT = 0x4;
-        public const ulong FRIENDS = 0x8;
-        public const ulong FRIENDS_PROFILES  = 0x10;
-        public const ulong ACTIVE_INVENTORY = 0x20;
-        public const ulong INVENTORY = 0x40;
-        public const ulong ENTITY_TOKEN = 0x80;
-        public const ulong ENTITY_ID = 0x100;
-        public const ulong COMBINED_INFO = 0x200;
-        public const ulong MAX = COMBINED_INFO;
+        public const ulong NONE =               0x0000;
+        public const ulong PUBLIC_DATA =        0x0001;
+        public const ulong INBOX =              0x0002;
+        public const ulong CHAT =               0x0004;
+        public const ulong FRIENDS =            0x0008;
+        public const ulong FRIENDS_PROFILES  =  0x0010;
+        public const ulong ACTIVE_INVENTORY =   0x0020;
+        public const ulong INVENTORY =          0x0040;
+        public const ulong ENTITY_TOKEN =       0x0080;
+        public const ulong ENTITY_ID =          0x0100;
+        public const ulong COMBINED_INFO =      0x0200;
+        public const ulong PLAYER_DATA =        0x0400;
+        public const ulong MAX = PLAYER_DATA;
 
         public const ulong META = PUBLIC_DATA | INBOX | CHAT | FRIENDS_PROFILES | ACTIVE_INVENTORY;
         public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | INVENTORY;
@@ -69,11 +97,13 @@ namespace SocialEdgeSDK.Server.Context
         private List<ItemInstance> _inventory;
         private Dictionary<string, int> _virtualCurrency;
         private GetPlayerCombinedInfoResultPayload _combinedInfo;
+        private PlayerDataSegment _playerData;
 
         public string PlayerId { get => _playerId; }
         public string AvatarInfo { get => _avatarInfo; }
         public string InboxId { get => _inboxId; }
 
+        public PlayerDataSegment PlayerData { get => _playerData; }
         public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CacheSegment.COMBINED_INFO) != 0) || (CacheFillSegment(CacheSegment.COMBINED_INFO))) ? _combinedInfo : null; }
         public string EntityId { get => (((_fillMask & CacheSegment.ENTITY_ID) != 0) || (CacheFillSegment(CacheSegment.ENTITY_ID))) ? _entityId : null; }
         public string EntityToken { get => (((_fillMask & CacheSegment.ENTITY_TOKEN) != 0) || (CacheFillSegment(CacheSegment.ENTITY_TOKEN))) ? _entityToken : null; }
@@ -109,6 +139,7 @@ namespace SocialEdgeSDK.Server.Context
             _avatarInfo = context.CallerEntityProfile.AvatarUrl;
             _publicDataObjs = context.CallerEntityProfile.Objects;
             _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
+            _playerData =  new PlayerDataSegment(this);
             SocialEdgePlayerContextInit();
         }
 
@@ -118,6 +149,7 @@ namespace SocialEdgeSDK.Server.Context
             _playerId = context.PlayerProfile.PlayerId;
             _entityId = null;
             _publicDataObjs = null;
+            _playerData =  new PlayerDataSegment(this);
             SocialEdgePlayerContextInit();
         }
 
@@ -135,7 +167,8 @@ namespace SocialEdgeSDK.Server.Context
                 {CacheSegment.INVENTORY, CacheFillInventory},
                 {CacheSegment.ENTITY_TOKEN, CacheFillEntityToken},
                 {CacheSegment.ENTITY_ID, CacheFillEntityId},
-                {CacheSegment.COMBINED_INFO, CacheFillCombinedInfo}
+                {CacheSegment.COMBINED_INFO, CacheFillCombinedInfo},
+                {CacheSegment.PLAYER_DATA, CacheFillPlayerData}
             };
 
             _writeMap = new Dictionary<ulong, CacheFnType>()
@@ -147,7 +180,8 @@ namespace SocialEdgeSDK.Server.Context
                 {CacheSegment.FRIENDS, CacheWriteReadOnlyError},
                 {CacheSegment.FRIENDS_PROFILES, CacheWriteReadOnlyError},
                 {CacheSegment.ACTIVE_INVENTORY, CacheWriteReadOnlyError},
-                {CacheSegment.INVENTORY, CacheWriteReadOnlyError}
+                {CacheSegment.INVENTORY, CacheWriteReadOnlyError},
+                {CacheSegment.PLAYER_DATA, CacheWritePlayerData}
             };
         }
 
@@ -156,11 +190,7 @@ namespace SocialEdgeSDK.Server.Context
             get 
             {
                 // Leave out DBIds private information for security
-                BsonDocument doc = new BsonDocument()
-                {
-                    ["PublicProfileEx"] = PublicData,
-                    ["ActiveInventory"] = ActiveInventory
-                };
+                BsonDocument doc = new BsonDocument() { ["PublicProfileEx"] = PublicData, ["ActiveInventory"] = ActiveInventory };
                 return doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
             }
         }
@@ -173,6 +203,22 @@ namespace SocialEdgeSDK.Server.Context
                 _inboxId = _mongoDocIds["inbox"].ToString();
                 _chatId = _mongoDocIds["chat"].ToString();
             }
+        }
+
+        public bool SetPlayerData(string key, dynamic value, string segment = null)
+        {
+            if (segment != null)
+            {
+                var seg = PlayerData[segment];
+            }
+
+            if (string.IsNullOrEmpty(PlayerData.LastAccessKey))
+                return false;
+
+            PlayerData[PlayerData.LastAccessKey][key] = value;
+            PlayerData.SetDirty(PlayerData.LastAccessKey);
+            SetDirtyBit(CacheSegment.PLAYER_DATA);
+            return true;
         }
 
         private bool CacheFillNone()
@@ -208,6 +254,13 @@ namespace SocialEdgeSDK.Server.Context
             var resulT = Player.GetCombinedInfo(_playerId);
             resulT.Wait();
             _combinedInfo = resulT.Result.Result.InfoResultPayload;
+            if (_combinedInfo != null && _combinedInfo.UserReadOnlyData != null)
+            {
+                foreach(KeyValuePair<string, UserDataRecord> item in _combinedInfo.UserReadOnlyData)
+                {
+                    _playerData.Add(item.Key, BsonDocument.Parse(item.Value.Value));
+                }
+            }
             _fillMask |= _combinedInfo != null ? CacheSegment.COMBINED_INFO : 0;
             SocialEdge.Log.LogInformation("Task fetch COMBINED_INFO");
             return _combinedInfo != null;
@@ -238,6 +291,36 @@ namespace SocialEdgeSDK.Server.Context
             var updatePublicDataT = Player.UpdatePublicData(EntityToken, EntityId, new BsonDocument(){ ["PublicProfileEx"] = _publicData });
             updatePublicDataT.Wait();
             return updatePublicDataT.Result.Error != null;
+        }
+
+        private bool CacheFillPlayerData()
+        {
+            var playerDataT = Player.GetPlayerData(_playerId, new List<string>() {_playerData.FillKey});
+            playerDataT.Wait();
+            if (playerDataT.Result.Error == null)
+            {
+                foreach(KeyValuePair<string, UserDataRecord> item in playerDataT.Result.Result.Data)
+                {
+                    _playerData.Add(item.Key, BsonDocument.Parse(item.Value.Value));
+                }
+            }
+            _fillMask |= _playerData.ElementCount > 0 ? CacheSegment.PLAYER_DATA : 0;
+            SocialEdge.Log.LogInformation("Task fetch PLAYER_DATA[" + _playerData.FillKey + "]");
+            return _playerData.Contains(_playerData.FillKey);
+        }
+
+        private bool CacheWritePlayerData()
+        {
+            BsonDocument writeData = new BsonDocument();
+            foreach(var data in PlayerData)
+            {
+                if (PlayerData.IsDirty(data.Name))
+                    writeData.Add(data.Name, data.Value);
+            }
+            var playerDataT = Player.UpdatePlayerData(_playerId, writeData);
+            playerDataT.Wait();
+            SocialEdge.Log.LogInformation("Task flush PLAYER_DATA");
+            return playerDataT.Result.Error != null;
         }
 
         private bool CacheFillInbox()
