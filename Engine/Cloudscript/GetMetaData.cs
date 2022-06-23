@@ -38,7 +38,7 @@ namespace SocialEdgeSDK.Server.Requests
             try
             {
                 // Prepare client response
-                BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection("liveTournaments").FindOneById("625feb0f0cf3edd2a788b4be");
+                BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection("liveTournaments").FindOneById("62b435e786859fe679e7b946");
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
                 metaDataResponse.shop = new GetShopResult();
                 metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
