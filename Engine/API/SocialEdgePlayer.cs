@@ -27,7 +27,7 @@ namespace SocialEdgeSDK.Server.Context
         internal string FillKey { get => _fillKey; }
         internal string LastAccessKey { get => _lastAccessKey; }
         public PlayerDataSegment(SocialEdgePlayerContext socialEdgePlayer) { _socialEdgePlayer = socialEdgePlayer; _dirty = new Dictionary<string, bool>(); }
-        public void SetDirty(string key) { _dirty.Add(key, true); }
+        public void SetDirty(string key) { if (!_dirty.ContainsKey(key)) _dirty.Add(key, true); }
         public bool IsDirty(string key) { return _dirty.ContainsKey(key); }
 
         private BsonDocument Get(string key)
