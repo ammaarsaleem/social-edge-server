@@ -17,6 +17,8 @@ using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Api;
 using PlayFab.Samples;
+using Azure.Storage.Blobs;
+
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -51,6 +53,7 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                 metaDataResponse.appVersionValid = true; // TODO
                 metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
+                metaDataResponse.contentData = GetContentList();
 
                 if (isNewlyCreated == true)
                 {
@@ -72,5 +75,36 @@ namespace SocialEdgeSDK.Server.Requests
                 throw e;
             }
         }
+
+        public string GetContentList()
+        {
+            string result = null;
+            BlobContainerClient containerClient = SocialEdge.DataService.GetContainerClient(Constants.Constant.CONTAINER_DLC);
+            var blobs = containerClient.GetBlobs();
+
+            if(blobs != null)
+            {
+                Dictionary<string, BsonDocument> data = new Dictionary<string, BsonDocument>();
+                
+                foreach (var item in blobs)
+                {
+                    BsonDocument dataItem =  new BsonDocument() {
+                        ["shortCode"] = item.Name,
+                        ["size"] = item.Properties.ContentLength,
+                        ["modifiedOn"] = item.Properties.LastModified.ToString()
+                    };
+
+                    if(!data.ContainsKey(item.Name)){
+                        data.Add(item.Name, dataItem);
+                    }
+                }
+
+                var blobsListJson = data.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
+                result = blobsListJson.ToString();
+            }
+
+            SocialEdge.Log.LogInformation("GetContentList RESULT : " + result);
+            return result;
+        }       
     }  
 }

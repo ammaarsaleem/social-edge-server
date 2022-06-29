@@ -33,24 +33,31 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
                 InitContext<FunctionExecutionContext<dynamic>>(req, log);
+
                 var data = Args["data"];
-                bool uploadFlag = data["uploadFlag"].Value;
+                String op = data["op"].Value;
                 String fileName  = data["fileName"].Value;
 
                 try
                 {
-                    var blobStorage = SocialEdge.DataService.GetBlobStorage();
+                    string containerName = Constants.Constant.CONTAINER_PLAYER_PROFILE;
 
-                    if(uploadFlag == true)
-                    {
-                        fileName = "pic_" + Guid.NewGuid().ToString();
+                    if(op == "skinDownload"){
+                        
+                        containerName = Constants.Constant.CONTAINER_DLC;
+                    }
+                    else if(op == "picUpload"){
+
+                        fileName = "pic-" + Guid.NewGuid().ToString();
                         Player.UpdatePlayerAvatarInfo(SocialEdgePlayer, fileName, 2);
                     }
-                    
+                 
+                    var blobStorage = SocialEdge.DataService.GetBlobStorage(containerName);
                     var uri = blobStorage.GetServiceSasUriForBlob(fileName, 10);
                     var uriStr = uri.ToString();
+                    
+                    log.LogInformation("GetSasUrl : " + uriStr);
                     return uriStr;
-
                 }
                 catch (Exception e)
                 {
