@@ -102,15 +102,14 @@ namespace SocialEdgeSDK.Server.Requests
 
             if(blobs != null)
             {
-                Dictionary<string, BsonDocument> data = new Dictionary<string, BsonDocument>();
+                Dictionary<string, ContentResult> data = new Dictionary<string, ContentResult>();
                 
                 foreach (var item in blobs)
                 {
-                    BsonDocument dataItem =  new BsonDocument() {
-                        ["shortCode"] = item.Name,
-                        ["size"] = item.Properties.ContentLength,
-                        ["modifiedOn"] = item.Properties.LastModified.ToString()
-                    };
+                    ContentResult dataItem =  new ContentResult(); 
+                    dataItem.shortCode = item.Name;
+                    dataItem.size = item.Properties.ContentLength.Value;
+                    dataItem.modifiedOn = item.Properties.LastModified.Value.ToUnixTimeMilliseconds();                    
 
                     if(!data.ContainsKey(item.Name)){
                         data.Add(item.Name, dataItem);
