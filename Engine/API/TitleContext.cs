@@ -40,7 +40,7 @@ namespace SocialEdgeSDK.Server.DataService
 
         public TitleContext()
         {
-           // FetchTitleContext();
+            FetchTitleContext();
         }
 
         private void FetchTitleContext()
