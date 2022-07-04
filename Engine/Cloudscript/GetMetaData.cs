@@ -31,14 +31,29 @@ namespace SocialEdgeSDK.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
+            log.LogInformation("I am here 1");
+
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
+
+            log.LogInformation("I am here 2");
+
             SocialEdgePlayer.CacheFill(CacheSegment.META);
+
+            log.LogInformation("I am here 3");
+
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
+            log.LogInformation("I am here 4");
+
             Inbox.Validate(SocialEdgePlayer);
+
+            log.LogInformation("I am here 5");
+
 
             try
             {
+                log.LogInformation("I am here 6");
+
                 // Prepare client response
                 BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection("liveTournaments").FindOneById("62b435e786859fe679e7b946");
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
@@ -54,6 +69,9 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.appVersionValid = true; // TODO
                 metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 metaDataResponse.contentData = GetContentList();
+
+                log.LogInformation("I am here 7");
+
 
                 if (isNewlyCreated == true)
                 {
