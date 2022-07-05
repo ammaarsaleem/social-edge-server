@@ -62,9 +62,9 @@ namespace SocialEdgeSDK.Server.Requests
 
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
-                metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
-                // metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
-                // metaDataResponse.chat = SocialEdgePlayer.ChatJson;
+                //metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
+                 metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
+                 metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                  metaDataResponse.appVersionValid = true; // TODO
                 // metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 metaDataResponse.contentData = GetContentList();
