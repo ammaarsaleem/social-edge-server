@@ -31,12 +31,20 @@ namespace SocialEdgeSDK.Server.Requests
         public void InitContext<FunctionContextT>(HttpRequestMessage req, ILogger log)
         {
             SocialEdge.Init(req, log, _titleContext, _dataService);
+            log.LogInformation(" SocialEdge.Init done");
+
             var readT = req.Content.ReadAsStringAsync();
             readT.Wait();
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionContextT>(readT.Result);
             _args = _context.FunctionArgument;
             _socialEdgePlayer = new SocialEdgePlayerContext(_context);
+
+            log.LogInformation(" _socialEdgePlayer Init done" + _socialEdgePlayer.ToString());
+
             _socialEdgePlayer.CacheFill(CacheSegment.NONE);
+
+            log.LogInformation(" _socialEdgePlayer CacheFill called");
+
         }
     }
 }

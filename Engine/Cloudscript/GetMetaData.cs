@@ -37,7 +37,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             log.LogInformation("I am here 2");
 
-            SocialEdgePlayer.CacheFill(CacheSegment.META);
+            //SocialEdgePlayer.CacheFill(CacheSegment.META);
 
             log.LogInformation("I am here 3");
 
@@ -45,7 +45,7 @@ namespace SocialEdgeSDK.Server.Requests
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
             log.LogInformation("I am here 4");
 
-            Inbox.Validate(SocialEdgePlayer);
+           // Inbox.Validate(SocialEdgePlayer);
 
             log.LogInformation("I am here 5");
 
@@ -61,6 +61,8 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
                 metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
                 metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
+                log.LogInformation("I am here 7");
+
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
                 metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
@@ -70,7 +72,7 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 metaDataResponse.contentData = GetContentList();
 
-                log.LogInformation("I am here 7");
+                log.LogInformation("I am here 8");
 
 
                 if (isNewlyCreated == true)
