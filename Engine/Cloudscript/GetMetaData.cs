@@ -60,16 +60,16 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
                 metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
                 metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
-                log.LogInformation("I am here 7 . . . . " + metaDataResponse.titleData.ToString());
+                log.LogInformation("I am here 7 . . . . " + metaDataResponse.ToString());
 
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
-                metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
-                metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
-                metaDataResponse.chat = SocialEdgePlayer.ChatJson;
-                metaDataResponse.appVersionValid = true; // TODO
-                metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
-                metaDataResponse.contentData = GetContentList();
+               // metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
+                // metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
+                // metaDataResponse.chat = SocialEdgePlayer.ChatJson;
+                 metaDataResponse.appVersionValid = true; // TODO
+                // metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
+               // metaDataResponse.contentData = GetContentList();
 
                 log.LogInformation("I am here 8");
 
@@ -79,12 +79,17 @@ namespace SocialEdgeSDK.Server.Requests
                     metaDataResponse.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
                 }
 
+                log.LogInformation("I am here 9");
+
                 // TODO
                 var liveTournamentsJson = liveTournamentsT["tournament"].ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
                 List<string> liveTournamentsList = new List<string>();
                 liveTournamentsList.Add(liveTournamentsJson);
                 var liveTournamentsListJson = liveTournamentsList.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
                 metaDataResponse.liveTournaments = liveTournamentsListJson.ToString();
+
+                log.LogInformation("I am here 10");
+
 
                 SocialEdgePlayer.CacheFlush();
                 return metaDataResponse;
