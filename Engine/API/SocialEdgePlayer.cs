@@ -193,8 +193,9 @@ namespace SocialEdgeSDK.Server.Context
             get 
             {
                 // Leave out DBIds private information for security
-                BsonDocument doc = new BsonDocument() { ["PublicProfileEx"] = PublicData, ["ActiveInventory"] = ActiveInventory };
-                return doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
+                BsonDocument doc = new BsonDocument() { ["PublicProfileEx"] = PublicData, ["ActiveInventory"] = ActiveInventory };            
+                //string temp = doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
+                return "test"; //doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
             }
         }
 
