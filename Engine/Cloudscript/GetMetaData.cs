@@ -44,13 +44,11 @@ namespace SocialEdgeSDK.Server.Requests
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
             log.LogInformation("I am here 4");
 
-            Inbox.Validate(SocialEdgePlayer);
-
-            log.LogInformation("I am here 5");
-
 
             try
             {
+                Inbox.Validate(SocialEdgePlayer);
+
                 log.LogInformation("I am here 6");
 
                 // Prepare client response
