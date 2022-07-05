@@ -36,7 +36,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             log.LogInformation("I am here 2");
 
-            SocialEdgePlayer.CacheFill(CacheSegment.META);
+            //SocialEdgePlayer.CacheFill(CacheSegment.META);
 
             log.LogInformation("I am here new 3 . ." + SocialEdgePlayer.AvatarInfo.ToString());
 
