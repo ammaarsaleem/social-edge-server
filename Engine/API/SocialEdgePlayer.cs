@@ -140,6 +140,8 @@ namespace SocialEdgeSDK.Server.Context
             _publicDataObjs = context.CallerEntityProfile.Objects;
             _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
             _playerData =  new PlayerDataSegment(this);
+            SocialEdge.Log.LogInformation("SocialEdgePlayerContext _publicDataObjs 1 . . . " + _publicDataObjs.ToString());
+
             SocialEdgePlayerContextInit();
         }
 
@@ -150,6 +152,7 @@ namespace SocialEdgeSDK.Server.Context
             _entityId = null;
             _publicDataObjs = null;
             _playerData =  new PlayerDataSegment(this);
+            SocialEdge.Log.LogInformation("SocialEdgePlayerContext _playerData 2 . . . " + _playerData.ToString());
             SocialEdgePlayerContextInit();
         }
 
