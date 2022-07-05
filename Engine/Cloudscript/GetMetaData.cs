@@ -48,9 +48,7 @@ namespace SocialEdgeSDK.Server.Requests
             try
             {
                 //Inbox.Validate(SocialEdgePlayer);
-
-                log.LogInformation("I am here 6");
-
+                
                 // Prepare client response
                 BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection("liveTournaments").FindOneById("62b435e786859fe679e7b946");
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
@@ -62,7 +60,7 @@ namespace SocialEdgeSDK.Server.Requests
 
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
-                //metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
+                metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
                 // metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
                 // metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                  metaDataResponse.appVersionValid = true; // TODO
