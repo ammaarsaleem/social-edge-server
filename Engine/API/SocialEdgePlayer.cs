@@ -289,10 +289,14 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillPublicData()
         {
-            if(_publicDataObjs == null){
-                SocialEdge.Log.LogInformation("ERROR: _publicDataObjs is NULLLLLL !");
-            }
+            SocialEdge.Log.LogInformation("_publicDataObjs  : : : !" + _publicDataObjs["PublicProfileEx"].EscapedDataObject.ToString());
+
             _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
+
+              if(_publicData == null){
+                SocialEdge.Log.LogInformation("ERROR: _publicData  : : : !" + _publicData.ToString());
+            }
+
             _fillMask |= _publicData != null ? CacheSegment.PUBLIC_DATA : 0;
             SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
             return _publicData != null;
