@@ -289,6 +289,8 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillPublicData()
         {
+            SocialEdge.Log.LogInformation("CacheFillPublicData called **************** ");
+
             SocialEdge.Log.LogInformation("_publicDataObjs  : : : !" + _publicDataObjs["PublicProfileEx"].EscapedDataObject.ToString());
 
             _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
