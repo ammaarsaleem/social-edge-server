@@ -289,7 +289,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillPublicData()
         {
-            SocialEdge.Log.LogInformation("CacheFillPublicData called ****************** ");
+            SocialEdge.Log.LogInformation("CacheFillPublicData called ******************12 ");
 
             SocialEdge.Log.LogInformation("_publicDataObjs  : : : !" + _publicDataObjs["PublicProfileEx"].EscapedDataObject.ToString());
 
