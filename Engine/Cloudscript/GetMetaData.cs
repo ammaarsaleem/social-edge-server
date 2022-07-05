@@ -19,7 +19,6 @@ using SocialEdgeSDK.Server.Api;
 using PlayFab.Samples;
 using Azure.Storage.Blobs;
 
-
 namespace SocialEdgeSDK.Server.Requests
 {
     public class GetMetaData : FunctionContext
@@ -39,7 +38,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             //SocialEdgePlayer.CacheFill(CacheSegment.META);
 
-            log.LogInformation("I am here 3");
+            log.LogInformation("I am here new 3 . ." + SocialEdgePlayer.AvatarInfo.ToString());
 
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
@@ -61,7 +60,7 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
                 metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
                 metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
-                log.LogInformation("I am here 7");
+                log.LogInformation("I am here 7 . . . . " + metaDataResponse.titleData.ToString());
 
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
