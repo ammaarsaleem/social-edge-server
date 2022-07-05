@@ -47,7 +47,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             try
             {
-                Inbox.Validate(SocialEdgePlayer);
+                //Inbox.Validate(SocialEdgePlayer);
 
                 log.LogInformation("I am here 6");
 
