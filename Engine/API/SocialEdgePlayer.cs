@@ -140,7 +140,7 @@ namespace SocialEdgeSDK.Server.Context
             _publicDataObjs = context.CallerEntityProfile.Objects;
             _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
             _playerData =  new PlayerDataSegment(this);
-            SocialEdge.Log.LogInformation("SocialEdgePlayerContext _publicDataObjs 1 . . . " + _publicDataObjs.ToString());
+            SocialEdge.Log.LogInformation("SocialEdgePlayerContext _publicDataObjs count . . . " + _publicDataObjs.Keys.Count);
 
             SocialEdgePlayerContextInit();
         }
@@ -289,6 +289,9 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillPublicData()
         {
+            if(_publicDataObjs == null){
+                SocialEdge.Log.LogInformation("ERROR: _publicDataObjs is NULLLLLL !");
+            }
             _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
             _fillMask |= _publicData != null ? CacheSegment.PUBLIC_DATA : 0;
             SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
