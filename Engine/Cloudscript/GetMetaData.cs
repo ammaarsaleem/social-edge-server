@@ -44,7 +44,7 @@ namespace SocialEdgeSDK.Server.Requests
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
             log.LogInformation("I am here 4");
 
-           // Inbox.Validate(SocialEdgePlayer);
+            Inbox.Validate(SocialEdgePlayer);
 
             log.LogInformation("I am here 5");
 
@@ -62,8 +62,8 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
                 log.LogInformation("I am here 7 . . . . " + metaDataResponse.ToString());
 
-                //metaDataResponse.friends = SocialEdgePlayer.Friends;
-                //metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
+                metaDataResponse.friends = SocialEdgePlayer.Friends;
+                metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
                // metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
                 // metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
                 // metaDataResponse.chat = SocialEdgePlayer.ChatJson;
