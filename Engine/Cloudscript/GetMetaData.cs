@@ -47,16 +47,16 @@ namespace SocialEdgeSDK.Server.Requests
 
             try
             {
-                //Inbox.Validate(SocialEdgePlayer);
+                Inbox.Validate(SocialEdgePlayer);
 
                 log.LogInformation("I am here 6");
 
                 // Prepare client response
                 BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection("liveTournaments").FindOneById("62b435e786859fe679e7b946");
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
-                metaDataResponse.shop = new GetShopResult();
-                metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
-                metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
+                //etaDataResponse.shop = new GetShopResult();
+              //  metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
+                //metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
                 metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
                 log.LogInformation("I am here 7 . . . . " + metaDataResponse.ToString());
 
