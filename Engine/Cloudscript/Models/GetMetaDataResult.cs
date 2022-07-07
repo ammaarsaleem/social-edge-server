@@ -24,6 +24,8 @@ namespace SocialEdgeSDK.Server.Models
         public List<EntityProfileBody> friendsProfiles;
 
         public bool appVersionValid;
+        public string contentData;
+
         
     }
 }

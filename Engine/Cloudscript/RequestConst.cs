@@ -7,6 +7,10 @@ namespace SocialEdgeSDK.Server.Constants
 {
     public static partial class Constant
     {
+        //cootanier Name strings
+        public const string CONTAINER_PLAYER_PROFILE = "playerprofile";
+        public const string CONTAINER_DLC = "dlc";
+
         public const string PLAYER_SETTINGS = "PlayerSettings";
         public const string IS_PLAYER_INIT = "IsInitialized";
         public const string ACTIVE_CHALLENGES = "ActiveChallenges";

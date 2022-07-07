@@ -22,8 +22,7 @@ namespace SocialEdgeSDK.Server.DataService
         private readonly ConnectionMultiplexer _redis;
         private readonly IDatabase _cacheDb;
         #endregion
-
-        public readonly BlobContainerClient _blobContainerClient;
+        public readonly BlobServiceClient _blobServerClient;
 
         //ICollection _collection;
         ICache _cache;
@@ -34,15 +33,16 @@ namespace SocialEdgeSDK.Server.DataService
             return _database;
         }
 
-        public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn, BlobContainerClient blobConn)
+
+        public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn, BlobServiceClient serviceClient)
         {
             _dbClient = mongoClient;
             string dbName = ConfigConstants.DATABASE;
             _database = _dbClient.GetDatabase(dbName);
-
             _redis = redisConn;
             _cacheDb = _redis.GetDatabase();
-            _blobContainerClient = blobConn;
+
+            _blobServerClient = serviceClient;
         }
 
         public ICollection<T> GetCollection<T>(string name)
@@ -55,10 +55,17 @@ namespace SocialEdgeSDK.Server.DataService
             return null;
         }
 
-        public IBlobStorage GetBlobStorage()
-        {
-            _blobStorage = new BlobStorage(_blobContainerClient);
+        public IBlobStorage GetBlobStorage(string containerName)
+        {   
+            BlobContainerClient containerClient = _blobServerClient.GetBlobContainerClient(containerName);
+            _blobStorage = new BlobStorage(containerClient);
             return _blobStorage;
+        }
+
+        public BlobContainerClient GetContainerClient(string containerName)
+        {
+             BlobContainerClient containerClient = _blobServerClient.GetBlobContainerClient(containerName);
+            return containerClient;
         }
 
         public ICache GetCache()

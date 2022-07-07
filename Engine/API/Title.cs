@@ -14,14 +14,14 @@ namespace SocialEdgeSDK.Server.Api
         public static async Task<PlayFabResult<GetTitleDataResult>> GetTitleData()
         {   
             var request = new GetTitleDataRequest();
-            var result = await PlayFabServerAPI.GetTitleDataAsync(new GetTitleDataRequest());
+            var result = await PlayFabServerAPI.GetTitleDataAsync(request);
             return result;
         }
         
         public static async Task<PlayFabResult<GetTitleDataResult>> GetTitleInternalData()
         {   
             var request = new GetTitleDataRequest();
-            var result = await PlayFabServerAPI.GetTitleInternalDataAsync(new GetTitleDataRequest());
+            var result = await PlayFabServerAPI.GetTitleInternalDataAsync(request);
             return result;
         }
     }

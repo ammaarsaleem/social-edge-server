@@ -1,8 +1,8 @@
 {
   "IsEncrypted": false,
   "Values": {
-    
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=storageaccountchess812e;AccountKey=Y4gMwGaJVvdin1xywKyyLVCUbiN0zy6WAg3NW9owPD+l7TPdj/i5dJKr+MRlCEhVGOO3LhcjBKbmMcTZYWxQnQ==;EndpointSuffix=core.windows.net",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "PLAYFAB_TITLE_ID": "9F379",
     "PLAYFAB_DEV_SECRET_KEY": "UY9Q9JPUXMWAJMERW7GPO6DZ4H1C6R8UI1JIJBCOTKMAKHUSKP",

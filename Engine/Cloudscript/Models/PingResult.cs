@@ -9,4 +9,11 @@ namespace SocialEdgeSDK.Server.Models{
         public long serverReceiptTimestamp;
         public long clientSendTimestamp;
     }
+
+    public class ContentResult
+    {
+        public string shortCode;
+        public long size;
+        public long modifiedOn;
+    }
 }

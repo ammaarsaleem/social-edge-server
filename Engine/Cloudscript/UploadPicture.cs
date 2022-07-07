@@ -41,7 +41,7 @@ namespace SocialEdgeSDK.Server.Requests
                 byte[] content = Args["content"].ToObject<byte[]>();
                 if(!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(contentType))
                 {
-                    var blobStorage = SocialEdge.DataService.GetBlobStorage();
+                    var blobStorage = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_PLAYER_PROFILE);
                     await blobStorage.Save(key, content);
 
                     // test
