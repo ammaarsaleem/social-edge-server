@@ -204,6 +204,7 @@ namespace SocialEdgeSDK.Server.Context
             if (_mongoDocIds == null)
             {
                 _mongoDocIds = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["DBIds"].EscapedDataObject));
+                //_mongoDocIds = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["DBIds"].DataObject.ToString()));
                 _inboxId = _mongoDocIds["inbox"].ToString();
                 _chatId = _mongoDocIds["chat"].ToString();
             }
@@ -288,17 +289,10 @@ namespace SocialEdgeSDK.Server.Context
         }
 
         private bool CacheFillPublicData()
-        {
-            SocialEdge.Log.LogInformation("CacheFillPublicData called ******************123 ");
-
-            SocialEdge.Log.LogInformation("_publicDataObjs  : : : !" + _publicDataObjs["PublicProfileEx"].EscapedDataObject.ToString());
-
+        {    
             _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
-
-              if(_publicData == null){
-                SocialEdge.Log.LogInformation("ERROR: _publicData  : : : !" + _publicData.ToString());
-            }
-
+            //_publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].DataObject.ToString()));
+            SocialEdge.Log.LogInformation("_publicData1  : : : !" + _publicData);
             _fillMask |= _publicData != null ? CacheSegment.PUBLIC_DATA : 0;
             SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
             return _publicData != null;
@@ -412,6 +406,7 @@ namespace SocialEdgeSDK.Server.Context
         private bool CacheFillActiveInventory()
         {
             _activeInventory = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["ActiveInventory"].EscapedDataObject));
+            //_activeInventory = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["ActiveInventory"].DataObject.ToString()));
             _fillMask |= _activeInventory != null ? CacheSegment.ACTIVE_INVENTORY : 0;
             SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");
             return _activeInventory != null;

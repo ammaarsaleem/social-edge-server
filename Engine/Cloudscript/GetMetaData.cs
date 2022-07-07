@@ -30,63 +30,40 @@ namespace SocialEdgeSDK.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            log.LogInformation("I am here 1");
-
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
-
-            log.LogInformation("I am here 2");
-
-            //SocialEdgePlayer.CacheFill(CacheSegment.META);
-
-            log.LogInformation("I am here new 3 . ." + SocialEdgePlayer.AvatarInfo.ToString());
-
+            SocialEdgePlayer.CacheFill(CacheSegment.META);
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
-            log.LogInformation("I am here 4");
-
+            Inbox.Validate(SocialEdgePlayer);
 
             try
             {
-                //Inbox.Validate(SocialEdgePlayer);
-                
                 // Prepare client response
                 BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection("liveTournaments").FindOneById("62b435e786859fe679e7b946");
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
-                //etaDataResponse.shop = new GetShopResult();
-              //  metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
-                //metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
+                metaDataResponse.shop = new GetShopResult();
+                metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
+                metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
                 metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
-                log.LogInformation("I am here 7 . . . . " + metaDataResponse.ToString());
-
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
                 metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
-                // metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
-                // metaDataResponse.chat = SocialEdgePlayer.ChatJson;
-                 metaDataResponse.appVersionValid = true; // TODO
-                // metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
+                metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
+                metaDataResponse.chat = SocialEdgePlayer.ChatJson;
+                metaDataResponse.appVersionValid = true; // TODO
+                metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 metaDataResponse.contentData = GetContentList();
-
-                log.LogInformation("I am here 8");
-
 
                 if (isNewlyCreated == true)
                 {
                     metaDataResponse.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
                 }
-
-                log.LogInformation("I am here 9");
-
                 // TODO
                 var liveTournamentsJson = liveTournamentsT["tournament"].ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
                 List<string> liveTournamentsList = new List<string>();
                 liveTournamentsList.Add(liveTournamentsJson);
                 var liveTournamentsListJson = liveTournamentsList.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
                 metaDataResponse.liveTournaments = liveTournamentsListJson.ToString();
-
-                log.LogInformation("I am here 10");
-
-
                 SocialEdgePlayer.CacheFlush();
                 return metaDataResponse;
             }
