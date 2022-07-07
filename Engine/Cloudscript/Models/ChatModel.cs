@@ -16,13 +16,13 @@ namespace SocialEdgeSDK.Server.Models
     {
         public static async Task<BsonDocument> Get(string chatId)
         {
-            return !string.IsNullOrEmpty(chatId) ? await SocialEdge.DataService.GetCollection("chat").FindOneById(chatId) : null;
+            return !string.IsNullOrEmpty(chatId) ? await SocialEdge.DataService.GetCollection<BsonDocument>("chat").FindOneById(chatId) : null;
         }
 
         public static async Task<DataService.UpdateResult> Set(string chatId, BsonDocument chat)
         {  
             BsonDocument inboxData = new BsonDocument() { ["ChatData"] = chat };
-            return await SocialEdge.DataService.GetCollection("chat").ReplaceOneById(chatId, inboxData, true);
+            return await SocialEdge.DataService.GetCollection<BsonDocument>("chat").ReplaceOneById(chatId, inboxData, true);
         }
    }
 }

@@ -15,12 +15,12 @@ namespace SocialEdgeSDK.Server.Models
     {
         public static async Task<BsonDocument> Get(string inboxId)
         {
-            return !string.IsNullOrEmpty(inboxId) ? await SocialEdge.DataService.GetCollection("inbox").FindOneById(inboxId) : null;
+            return !string.IsNullOrEmpty(inboxId) ? await SocialEdge.DataService.GetCollection<BsonDocument>("inbox").FindOneById(inboxId) : null;
         }
 
         public static string Init()
         {
-            var collection = SocialEdge.DataService.GetCollection("inbox");
+            var collection = SocialEdge.DataService.GetCollection<BsonDocument>("inbox");
             BsonDocument container = new BsonDocument() { ["inboxData"] = new BsonDocument() { ["messages"] = new BsonDocument(){} } };
             collection.InsertOne(container);
             return container.Contains("_id") ? container["_id"].ToString() : null;
@@ -29,7 +29,7 @@ namespace SocialEdgeSDK.Server.Models
         public static async Task<DataService.UpdateResult> Set(string inboxId, BsonDocument inbox)
         {  
             BsonDocument inboxData = new BsonDocument() { ["inboxData"] = inbox };
-            return await SocialEdge.DataService.GetCollection("inbox").ReplaceOneById(inboxId, inboxData, true);
+            return await SocialEdge.DataService.GetCollection<BsonDocument>("inbox").ReplaceOneById(inboxId, inboxData, true);
         }
 
         public static int Count(SocialEdgePlayerContext socialEdgePlayer)
@@ -55,7 +55,7 @@ namespace SocialEdgeSDK.Server.Models
             var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
             BsonDocument msg = new BsonDocument() { [message["id"].ToString()] = message };
             messages.AddRange(msg);
-            socialEdgePlayer.SetDirtyBit(CacheSegment.INBOX);
+            socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
         }
 
         public static bool Update(string msgId, BsonDocument message, SocialEdgePlayerContext socialEdgePlayer)
@@ -63,7 +63,7 @@ namespace SocialEdgeSDK.Server.Models
             var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
             message["id"] = msgId;
             messages[msgId] = message;
-            socialEdgePlayer.SetDirtyBit(CacheSegment.INBOX);
+            socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
             return true;
         }
 
@@ -74,7 +74,7 @@ namespace SocialEdgeSDK.Server.Models
             if (isExists) 
             {
                 messages.Remove(msgId);
-                socialEdgePlayer.SetDirtyBit(CacheSegment.INBOX);
+                socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
             }
             return isExists;
         }

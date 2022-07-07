@@ -1,0 +1,49 @@
+// MongoDB Playground
+// To disable this template go to Settings | MongoDB | Use Default Template For Playground.
+// Make sure you are connected to enable completions and to be able to run a playground.
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+// Select the database to use.
+use('default');
+
+// The drop() command destroys all data from a collection.
+// Make sure you run it against the correct database and collection.
+//db.sales.drop();
+
+// Insert a few documents into the sales collection.
+
+db.inbox.deleteOne(
+{"_id": ObjectId("628f5c70607d1860ff786851")}
+);
+
+db.inbox.insertOne(
+{
+    "_id": ObjectId("628f5c70607d1860ff786851"),
+
+    "inboxData": {
+        "messages": {
+
+            "16d34b0f-7983-4829-bcf0-54c6ec07c481": {
+                "id": "16d34b0f-7983-4829-bcf0-54c6ec07c481",
+                "type": "RewardLeaguePromotion",
+                "isDaily": false,
+                "heading": "",
+                "body": "",
+                "time": 1653646855696,
+                "reward": {
+                    "gems": 30
+                },
+                "trophies": 0,
+                "rank": 0,
+                "chestType": "",
+                "tournamentType": "",
+                "league": "Rookie",
+                "startTime": 1653646855696
+            }
+        }
+    }
+}
+);
+
+
+

@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using PlayFab.ServerModels;
 using PlayFab.ProfilesModels;
 
-namespace SocialEdgeSDK.Server.Models{
+namespace SocialEdgeSDK.Server.Models
+{
     public class GetMetaDataResult
     {
+        public PlayerDataModel playerDataModel;
         public GetPlayerCombinedInfoResultPayload playerCombinedInfoResultPayload;
         public string publicDataObjs;
         public string liveTournaments;

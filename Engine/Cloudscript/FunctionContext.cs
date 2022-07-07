@@ -16,10 +16,12 @@ namespace SocialEdgeSDK.Server.Requests
         private ITitleContext _titleContext;
         private IDataService _dataService;
         private SocialEdgePlayerContext _socialEdgePlayer;
+        private SocialEdgeTournamentContext _socialEdgeTournament;
         private dynamic _args;
         private dynamic _context;
 
         public SocialEdgePlayerContext SocialEdgePlayer { get => _socialEdgePlayer; }
+        public SocialEdgeTournamentContext SocialEdgeTournament { get => _socialEdgeTournament; }
         public dynamic Args { get => _args; }
 
         public void Base(ITitleContext titleContext, IDataService dataService = null)
@@ -36,7 +38,8 @@ namespace SocialEdgeSDK.Server.Requests
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionContextT>(readT.Result);
             _args = _context.FunctionArgument;
             _socialEdgePlayer = new SocialEdgePlayerContext(_context);
-            _socialEdgePlayer.CacheFill(CacheSegment.NONE);
+            _socialEdgePlayer.CacheFill(CachePlayerDataSegments.NONE);
+            _socialEdgeTournament = new SocialEdgeTournamentContext(_context);
         }
     }
 }

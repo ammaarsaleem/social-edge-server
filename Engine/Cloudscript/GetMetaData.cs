@@ -30,15 +30,22 @@ namespace SocialEdgeSDK.Server.Requests
             ILogger log)
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
-            SocialEdgePlayer.CacheFill(CacheSegment.META);
+            SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
             Inbox.Validate(SocialEdgePlayer);
 
+            //Player.NewPlayerInit(SocialEdgePlayer);
+            //SocialEdgePlayer.CacheFlush();
+            //SocialEdgeTournament.CacheFlush(); 
+            //GetMetaDataResult metaDataResponse1 = new GetMetaDataResult();    
+            //return metaDataResponse1;
+
+
             try
             {
                 // Prepare client response
-                BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection("liveTournaments").FindOneById("62b435e786859fe679e7b946");
+                BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection<BsonDocument>("liveTournaments").FindOneById("62b435e786859fe679e7b946");
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
                 metaDataResponse.shop = new GetShopResult();
                 metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
@@ -47,6 +54,7 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
                 metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
+                metaDataResponse.playerDataModel = SocialEdgePlayer.PlayerModel.Fetch();
                 metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
                 metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                 metaDataResponse.appVersionValid = true; // TODO
@@ -65,6 +73,8 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.liveTournaments = liveTournamentsListJson.ToString();
 
                 SocialEdgePlayer.CacheFlush();
+                SocialEdgeTournament.CacheFlush();
+                
                 return metaDataResponse;
             }
             catch (Exception e)

@@ -241,7 +241,7 @@ namespace SocialEdgeSDK.Server.Api
             const string CHARACTER_SET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             const int MIN_LENGTH = 6;
 
-            var collection = SocialEdge.DataService.GetCollection(COUNTER_COLLECTION_NAME);
+            var collection = SocialEdge.DataService.GetCollection<BsonDocument>(COUNTER_COLLECTION_NAME);
             var counterDoc =  collection.IncAll("counter", 1);
             
             var salt = Utils.UTCNow().ToString();
@@ -268,8 +268,12 @@ namespace SocialEdgeSDK.Server.Api
             return randomColorCode.ToString();
         }    
 
-        public static void NewPlayerInit(string playerId, string entityToken, string entityId)
+        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer)
         {
+            string playerId = socialEdgePlayer.PlayerId;
+            string entityToken = socialEdgePlayer.EntityToken;
+            string entityId = socialEdgePlayer.EntityId;
+
             var newName = Player.GenerateDisplayName();
             var newTag = Player.GenerateTag();
             var playerPublicData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerPublicData"];
@@ -282,8 +286,20 @@ namespace SocialEdgeSDK.Server.Api
             var activeInventoryAvatar = activeInventoryList.Find(s => s[1].Equals("Avatar"));
             var activeInventoryBgColor = activeInventoryList.Find(s => s[1].Equals("AvatarBgColor"));
 
-            playerData["coldData"]["isInitialized"] = true;
-            playerPublicData["PublicProfileEx"]["tag"] = newTag;
+            socialEdgePlayer.PlayerModel.CreateDefaults();
+            socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
+            socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
+            socialEdgePlayer.PlayerModel.Info.tag = newTag;
+            socialEdgePlayer.PlayerModel.Info.eloScore = 775;
+
+            PlayerInventoryItem skinItem = new PlayerInventoryItem();
+            CatalogItem defaultSkin = SocialEdge.TitleContext.CatalogItems.Catalog.Find(s => s.ItemId == "SkinDark");
+            skinItem.kind = defaultSkin.Tags[0];
+            skinItem.key = defaultSkin.ItemId;
+            socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
+
+            //playerData["coldData"]["isInitialized"] = true;
+            //playerPublicData["PublicProfileEx"]["tag"] = newTag;
             activeInventoryAvatar["key"] = avatar;
             activeInventoryBgColor["key"] = avatarBgColor;
 

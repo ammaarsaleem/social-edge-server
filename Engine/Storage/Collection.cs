@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 namespace SocialEdgeSDK.Server.DataService{
 
-   public class Collection : ICollection
+   public class Collection<T> : ICollection<T>
    {
-        private readonly IMongoCollection<BsonDocument> _collection;
+        private readonly IMongoCollection<T> _collection;
 
         public Collection(IMongoDatabase database, string collectionName)
         {
-            _collection = database.GetCollection<BsonDocument>(collectionName);  
+            _collection = database.GetCollection<T>(collectionName);  
         }
 
         public long EstimatedDocumentCount{ get => GetEstimatedDocs();}
@@ -32,74 +32,73 @@ namespace SocialEdgeSDK.Server.DataService{
             var filter = Builders<BsonDocument>.Filter;
             return _collection.EstimatedDocumentCount();
         }
-        public async Task<BsonDocument> FindOneById(string id, ProjectionDefinition<BsonDocument> projection)
+        public async Task<U> FindOneById<U>(string id, ProjectionDefinition<T> projection)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq("_id",ObjectId.Parse(id));
-            var result = await _collection.Find(filter).Project(projection).FirstOrDefaultAsync();
+            var filter = Builders<T>.Filter.Eq("_id",ObjectId.Parse(id));
+            var result = await _collection.Find<T>(filter).Project<U>(projection).FirstOrDefaultAsync<U>();
             
             return result;
         }
 
-        public async Task<BsonDocument> FindOneById(string id)
+        public async Task<T> FindOneById(string id)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq("_id",ObjectId.Parse(id));
+            var filter = Builders<T>.Filter.Eq("_id",ObjectId.Parse(id));
             var result = await _collection.Find(filter).FirstOrDefaultAsync();
             
             return result;
         }
 
-        public async Task<BsonDocument> FindOne<T>(string prop, T val)
+        public async Task<T> FindOne<S>(string prop, S val)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
-            var result = await _collection.Find(filter).FirstOrDefaultAsync();
+            var filter = Builders<T>.Filter.Eq(prop, val);
+            var result = await _collection.Find(filter).FirstOrDefaultAsync<T>();
             return result;
         }
-        public async Task<BsonDocument> FindOne<T>(string prop, T val, ProjectionDefinition<BsonDocument> projection)        
+        public async Task<T> FindOne<S>(string prop, S val, ProjectionDefinition<T> projection)        
         {
-            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
-            var result = await _collection.Find(filter).Project(projection).FirstOrDefaultAsync();
+            var filter = Builders<T>.Filter.Eq(prop,val);
+            var result = await _collection.Find(filter).Project<T>(projection).FirstOrDefaultAsync<T>();
             return result;            
         }
-        public async Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> Filter)
+        public async Task<T> FindOne(FilterDefinition<T> Filter)
         {
-            var result = await _collection.Find(Filter).FirstOrDefaultAsync();
+            var result = await _collection.Find(Filter).FirstOrDefaultAsync<T>();
             return result;
         }
-        public async Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> Filter, 
-                                                ProjectionDefinition<BsonDocument> projection)
+        public async Task<P> FindOne<P>(FilterDefinition<T> Filter, 
+                                                ProjectionDefinition<T> projection)
         {
-            var result = await _collection.Find(Filter).Project(projection).FirstOrDefaultAsync();
+            var result = await _collection.Find(Filter).Project<P>(projection).FirstOrDefaultAsync<P>();
             return result;
         }        
-        public async Task<List<BsonDocument>> Find<T>(string prop,T val)
+        public async Task<List<T>> Find<S>(string prop,S val)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
-            var result = await _collection.Find(filter).ToListAsync();
+            var filter = Builders<T>.Filter.Eq(prop,val);
+            var result = await _collection.Find(filter).ToListAsync<T>();
             return result;
         }
-        public async Task<List<BsonDocument>> Find<T>(string prop,T val, 
-                                                    ProjectionDefinition<BsonDocument> projection)
+        public async Task<List<T>> Find<S>(string prop, S val, ProjectionDefinition<T> projection)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
-            var result = await _collection.Find(filter).Project(projection).ToListAsync();
+            var filter = Builders<T>.Filter.Eq(prop,val);
+            var result = await _collection.Find(filter).Project<T>(projection).ToListAsync<T>();
             return result;
         }        
-        public async Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter)
+        public async Task<List<T>> Find(FilterDefinition<T> Filter)
         {
-            var result = await _collection.Find(Filter).ToListAsync();
+            var result = await _collection.Find(Filter).ToListAsync<T>();
             return result;
         }
-        public async Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter,
-                                                    ProjectionDefinition<BsonDocument> projection)
+        public async Task<List<T>> Find(FilterDefinition<T> Filter,
+                                                    ProjectionDefinition<T> projection)
         {
-            var result = await _collection.Find(Filter).Project(projection).ToListAsync();
+            var result = await _collection.Find(Filter).Project<T>(projection).ToListAsync<T>();
             return result;
         }        
 
-        public async Task<UpdateResult> ReplaceOneById(string id, BsonDocument val, bool upsert=false)
+        public async Task<UpdateResult> ReplaceOneById(string id, T val, bool upsert=false)
         {
             UpdateResult result = null;
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
+            var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
             var updateOptions = new ReplaceOptions
             {
                 IsUpsert = upsert,
@@ -118,21 +117,43 @@ namespace SocialEdgeSDK.Server.DataService{
             return result;
         }
 
-        public async Task<BsonDocument> IncAll(string prop, int incBy, bool upsert = false)
-        {
-            var filter = Builders<BsonDocument>.Filter.Empty;
-            var updates = Builders<BsonDocument>.Update.Inc(prop, incBy);
-            var updateOptions = new FindOneAndUpdateOptions<BsonDocument, BsonDocument>();
-            updateOptions.IsUpsert = true;
-            updateOptions.ReturnDocument = ReturnDocument.After;
-            return await _collection.FindOneAndUpdateAsync<BsonDocument>(filter, updates, updateOptions);
-        }
-
-        public async Task<UpdateResult> UpdateOneById<T>(string id, string prop, T val, bool upsert=false)
+        public async Task<UpdateResult> ReplaceOneById(ObjectId id, T val, bool upsert=false)
         {
             UpdateResult result = null;
-            var filter = Builders<BsonDocument>.Filter.Eq("_id",ObjectId.Parse(id));
-            var updateDefinition = Builders<BsonDocument>.Update.Set(prop,val);
+            var filter = Builders<T>.Filter.Eq("_id", id);
+            var updateOptions = new ReplaceOptions
+            {
+                IsUpsert = upsert,
+                BypassDocumentValidation = true
+            };
+
+            var opResult = await _collection.ReplaceOneAsync(filter, val, updateOptions);
+            if (opResult.IsAcknowledged)
+            {
+                result = new UpdateResult
+                {
+                    MatchCount = opResult.MatchedCount,
+                    ModifiedCount = opResult.ModifiedCount
+                };
+            }
+            return result;
+        }
+
+        public async Task<T> IncAll(string prop, int incBy, bool upsert = false)
+        {
+            var filter = Builders<T>.Filter.Empty;
+            var updates = Builders<T>.Update.Inc(prop, incBy);
+            var updateOptions = new FindOneAndUpdateOptions<T, T>();
+            updateOptions.IsUpsert = true;
+            updateOptions.ReturnDocument = ReturnDocument.After;
+            return await _collection.FindOneAndUpdateAsync<T>(filter, updates, updateOptions);
+        }
+
+        public async Task<UpdateResult> UpdateOneById<S>(string id, string prop, S val, bool upsert=false)
+        {
+            UpdateResult result = null;
+            var filter = Builders<T>.Filter.Eq("_id",ObjectId.Parse(id));
+            var updateDefinition = Builders<T>.Update.Set(prop,val);
             var updateOptions = new UpdateOptions
             {
                 IsUpsert = upsert
@@ -144,18 +165,18 @@ namespace SocialEdgeSDK.Server.DataService{
                 {
                     MatchCount = opResult.MatchedCount,
                     ModifiedCount = opResult.ModifiedCount,
-                    UpsertedId = opResult.UpsertedId.ToString()
+                    UpsertedId = opResult.UpsertedId != null ? opResult.UpsertedId.ToString() : null
                 };
             }
 
             return result;
         }
 
-        public async Task<UpdateResult> UpdateOneById(string id, UpdateDefinition<BsonDocument> updateDefinition,
+        public async Task<UpdateResult> UpdateOneById(string id, UpdateDefinition<T> updateDefinition,
                                                     bool upsert=false)
         {
             UpdateResult result = null;
-            var filter = Builders<BsonDocument>.Filter.Eq("_id",ObjectId.Parse(id));
+            var filter = Builders<T>.Filter.Eq("_id",ObjectId.Parse(id));
             var updateOptions = new UpdateOptions
             {
                 IsUpsert = upsert
@@ -167,19 +188,19 @@ namespace SocialEdgeSDK.Server.DataService{
                 {
                     MatchCount = opResult.MatchedCount,
                     ModifiedCount = opResult.ModifiedCount,
-                    UpsertedId = opResult.UpsertedId.ToString()
+                    UpsertedId = opResult.UpsertedId != null ? opResult.UpsertedId.ToString() : null
                 };
             }
 
             return result;
         }
-        public async Task<UpdateResult> UpdateOne<T,V>(string filterProp, T filterVal, 
-                                        string updateProp, V updateVal,
+        public async Task<UpdateResult> UpdateOne<S,U>(string filterProp, S filterVal, 
+                                        string updateProp, U updateVal,
                                         bool upsert=false)
         {
             UpdateResult result = null;
-            var filter = Builders<BsonDocument>.Filter.Eq(filterProp,filterVal);
-            var updateDefinition = Builders<BsonDocument>.Update.Set(updateProp,updateVal);
+            var filter = Builders<T>.Filter.Eq(filterProp,filterVal);
+            var updateDefinition = Builders<T>.Update.Set(updateProp,updateVal);
             var updateOptions = new UpdateOptions
             {
                 IsUpsert = upsert
@@ -198,12 +219,12 @@ namespace SocialEdgeSDK.Server.DataService{
             return result;
         }
 
-        public async Task<UpdateResult> UpdateOne<T>(string filterProp, T filterVal, 
-                                                UpdateDefinition<BsonDocument> updateDefinition, 
+        public async Task<UpdateResult> UpdateOne<S>(string filterProp, S filterVal, 
+                                                UpdateDefinition<T> updateDefinition, 
                                                 bool upsert=false)
         {
             UpdateResult result = null;
-            var filter = Builders<BsonDocument>.Filter.Eq(filterProp,filterVal);
+            var filter = Builders<T>.Filter.Eq(filterProp,filterVal);
             var updateOptions = new UpdateOptions
             {
                 IsUpsert = upsert
@@ -222,8 +243,8 @@ namespace SocialEdgeSDK.Server.DataService{
             return result;
         }
 
-        public async Task<UpdateResult> UpdateOne(FilterDefinition<BsonDocument> filter,
-                                                UpdateDefinition<BsonDocument> updateDefinition,
+        public async Task<UpdateResult> UpdateOne(FilterDefinition<T> filter,
+                                                UpdateDefinition<T> updateDefinition,
                                                 bool upsert=false)
         {
             UpdateResult result = null;
@@ -245,15 +266,15 @@ namespace SocialEdgeSDK.Server.DataService{
             return result;
         }
 
-        public async Task<UpdateResult> UpdateMany<T,V>(string filterProp, T filterVal, string updateProp, V updateVal, bool upsert=false)
+        public async Task<UpdateResult> UpdateMany<S,U>(string filterProp, S filterVal, string updateProp, U updateVal, bool upsert=false)
         {
             UpdateResult result = null;
             var updateOptions = new UpdateOptions
             {
                 IsUpsert = upsert
             };
-            var filter = Builders<BsonDocument>.Filter.Eq(filterProp,filterVal);
-            var updateDefinition = Builders<BsonDocument>.Update.Set(updateProp,updateVal);
+            var filter = Builders<T>.Filter.Eq(filterProp,filterVal);
+            var updateDefinition = Builders<T>.Update.Set(updateProp,updateVal);
             var opResult = await _collection.UpdateManyAsync(filter,updateDefinition,updateOptions);
             if(opResult.IsAcknowledged)
             {
@@ -267,8 +288,8 @@ namespace SocialEdgeSDK.Server.DataService{
 
             return result;            
         }
-        public async Task<UpdateResult> UpdateMany<T>(string prop, T val, 
-                                                UpdateDefinition<BsonDocument> updateDefinition, 
+        public async Task<UpdateResult> UpdateMany<S>(string prop, S val, 
+                                                UpdateDefinition<T> updateDefinition, 
                                                 bool upsert=false)
         {
             UpdateResult result = null;
@@ -276,7 +297,7 @@ namespace SocialEdgeSDK.Server.DataService{
             {
                 IsUpsert = upsert
             };
-            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
+            var filter = Builders<T>.Filter.Eq(prop,val);
             var opResult = await _collection.UpdateManyAsync(filter,updateDefinition,updateOptions);
             if(opResult.IsAcknowledged)
             {
@@ -290,8 +311,8 @@ namespace SocialEdgeSDK.Server.DataService{
 
             return result;
         }
-        public async Task<UpdateResult> UpdateMany(FilterDefinition<BsonDocument> filter,
-                                                UpdateDefinition<BsonDocument> updateDefinition,
+        public async Task<UpdateResult> UpdateMany(FilterDefinition<T> filter,
+                                                UpdateDefinition<T> updateDefinition,
                                                 bool upsert=false)
         {
             UpdateResult result = null;
@@ -314,22 +335,22 @@ namespace SocialEdgeSDK.Server.DataService{
         }
         public async Task<bool> RemoveOneById(string id)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq("_id",ObjectId.Parse(id));
+            var filter = Builders<T>.Filter.Eq("_id",ObjectId.Parse(id));
             var result = await _collection.DeleteOneAsync(filter);
             return result.IsAcknowledged;
         }
-        public async Task<bool> RemoveOne<T>(string prop, T val)
+        public async Task<bool> RemoveOne<S>(string prop, S val)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
+            var filter = Builders<T>.Filter.Eq(prop,val);
             var result = await _collection.DeleteOneAsync(filter);
             return result.IsAcknowledged;
         }
-        public async Task<bool> RemoveOne(FilterDefinition<BsonDocument> filter)
+        public async Task<bool> RemoveOne(FilterDefinition<T> filter)
         {
             var result = await _collection.DeleteOneAsync(filter);
             return result.IsAcknowledged;
         }
-        public async Task<long> RemoveMany(FilterDefinition<BsonDocument> filter)
+        public async Task<long> RemoveMany(FilterDefinition<T> filter)
         {
             var result = await _collection.DeleteOneAsync(filter);
             if(result.IsAcknowledged)
@@ -341,10 +362,10 @@ namespace SocialEdgeSDK.Server.DataService{
                 return 0;
             }
         }
-        public async Task<long> RemoveMany<T>(string prop, T val)
+        public async Task<long> RemoveMany<S>(string prop, S val)
         {
 
-            var filter = Builders<BsonDocument>.Filter.Eq(prop,val);
+            var filter = Builders<T>.Filter.Eq(prop,val);
             var result = await _collection.DeleteManyAsync(filter);
             if(result.IsAcknowledged)
             {
@@ -355,7 +376,7 @@ namespace SocialEdgeSDK.Server.DataService{
                 return 0;
             }
         }
-        public async Task<bool> InsertOne(BsonDocument document)
+        public async Task<bool> InsertOne(T document)
         {
             try
             {
@@ -368,7 +389,7 @@ namespace SocialEdgeSDK.Server.DataService{
                 throw new Exception("InsertOne(BsonDocument) failed due to "+ e.InnerException);
             }
         }
-        public async Task<bool> InsertMany(List<BsonDocument> documents)
+        public async Task<bool> InsertMany(List<T> documents)
         {
             try
             {
@@ -380,7 +401,7 @@ namespace SocialEdgeSDK.Server.DataService{
                 throw new Exception("InsertMany(BsonDocument) failed due to "+ e.InnerException);
             }
         }
-        public Task<bool> Save(BsonDocument document)
+        public Task<bool> Save(T document)
         {
             throw new NotImplementedException();
         }
@@ -388,17 +409,17 @@ namespace SocialEdgeSDK.Server.DataService{
                                              string name, TimeSpan? TTL)
         {
 
-            CreateIndexModel<BsonDocument> indexModel;
+            CreateIndexModel<T> indexModel;
             var indexKey = CreateIndexKey(key,direction);
             var options = CreateIndexOptions(name,TTL,unique);
 
             if(options==null)
             {
-                indexModel = new CreateIndexModel<BsonDocument>(indexKey);    
+                indexModel = new CreateIndexModel<T>(indexKey);    
             }
             else
             {
-                indexModel = new CreateIndexModel<BsonDocument>(indexKey,options);
+                indexModel = new CreateIndexModel<T>(indexKey,options);
             }
             var result = await _collection.Indexes.CreateOneAsync(indexModel);
             return result;            
@@ -409,32 +430,32 @@ namespace SocialEdgeSDK.Server.DataService{
                                             bool unique=false,string name=null, 
                                             TimeSpan? TTL=null)
         {
-            CreateIndexModel<BsonDocument> indexModel;
+            CreateIndexModel<T> indexModel;
             var indexKey1 = CreateIndexKey(key1,direction1);
             var indexKey2 = CreateIndexKey(key2,direction2);
 
-            var indexDefinition = Builders<BsonDocument>.IndexKeys.Combine(indexKey1,indexKey2);
+            var indexDefinition = Builders<T>.IndexKeys.Combine(indexKey1,indexKey2);
 
 
             var options = CreateIndexOptions(name,TTL,unique);
 
             if(options==null)
             {
-                indexModel = new CreateIndexModel<BsonDocument>(indexDefinition);    
+                indexModel = new CreateIndexModel<T>(indexDefinition);    
             }
             else
             {
-                indexModel = new CreateIndexModel<BsonDocument>(indexDefinition,options);
+                indexModel = new CreateIndexModel<T>(indexDefinition,options);
             }
             var result = await _collection.Indexes.CreateOneAsync(indexModel);
             return result;            
         }
 
 
-        private IndexKeysDefinition<BsonDocument> CreateIndexKey(string key, int direction)
+        private IndexKeysDefinition<T> CreateIndexKey(string key, int direction)
         {
-            var indexBuilder = Builders<BsonDocument>.IndexKeys;
-            IndexKeysDefinition<BsonDocument> indexKey;
+            var indexBuilder = Builders<T>.IndexKeys;
+            IndexKeysDefinition<T> indexKey;
             if(direction<0)
             {
                 indexKey= indexBuilder.Descending(key);

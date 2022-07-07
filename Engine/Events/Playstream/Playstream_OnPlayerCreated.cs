@@ -34,7 +34,9 @@ namespace SocialEdgeSDK.Playfab
             ILogger log)
         {
             InitContext<PlayerPlayStreamFunctionExecutionContext<dynamic>>(req, log);
-            Player.NewPlayerInit(SocialEdgePlayer.PlayerId, SocialEdgePlayer.EntityToken, SocialEdgePlayer.EntityId);
+            Player.NewPlayerInit(SocialEdgePlayer);
+
+            SocialEdgePlayer.CacheFlush();
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }

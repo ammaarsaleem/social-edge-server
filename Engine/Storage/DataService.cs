@@ -25,9 +25,14 @@ namespace SocialEdgeSDK.Server.DataService
 
         public readonly BlobContainerClient _blobContainerClient;
 
-        ICollection _collection;
+        //ICollection _collection;
         ICache _cache;
         IBlobStorage _blobStorage;
+
+        public IMongoDatabase GetDatabase()
+        {
+            return _database;
+        }
 
         public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn, BlobContainerClient blobConn)
         {
@@ -40,9 +45,9 @@ namespace SocialEdgeSDK.Server.DataService
             _blobContainerClient = blobConn;
         }
 
-        public ICollection GetCollection(string name)
+        public ICollection<T> GetCollection<T>(string name)
         {
-            _collection = new Collection(_database,name);
+            ICollection<T> _collection = new Collection<T>(_database,name);
             if(_collection!=null)
             {
                 return _collection;

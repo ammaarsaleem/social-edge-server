@@ -38,12 +38,12 @@ namespace SocialEdgeSDK.Server.Context
                 return base[key].ToBsonDocument();
 
             _fillKey = key;
-            bool filled = _socialEdgePlayer.CacheFillSegment(CacheSegment.PLAYER_DATA); 
+            bool filled = _socialEdgePlayer.CacheFillSegment(CachePlayerDataSegments.PLAYER_DATA); 
             return filled ? base[key].ToBsonDocument() : null;
         }
     }
 
-    public static class CacheSegment
+    public static class CachePlayerDataSegments
     {
         public const ulong NONE =               0x0000;
         public const ulong PUBLIC_DATA =        0x0001;
@@ -57,33 +57,19 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong ENTITY_ID =          0x0100;
         public const ulong COMBINED_INFO =      0x0200;
         public const ulong PLAYER_DATA =        0x0400;
-        public const ulong MAX = PLAYER_DATA;
+        public const ulong PLAYER_MODEL =       0x0800;
+        public const ulong MAX = PLAYER_MODEL;
 
         public const ulong META = PUBLIC_DATA | INBOX | CHAT | FRIENDS_PROFILES | ACTIVE_INVENTORY;
         public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | INVENTORY;
     }
 
-    public class SocialEdgePlayerContext
+    public class SocialEdgePlayerContext : ContextCacheBase
     {
-        private enum ContextType
-        {
-            FUNCTION_EXECUTION_API,
-            PLAYER_PLAYSTREAM,
-            ENTITY_PLAYSTREAM,
-            SCHEDULED_TASK
-        }
-
-        private ContextType _contextType;
-        private ulong _fillMask;
-        private ulong _dirtyMask;
-        private delegate bool CacheFnType();
-        private Dictionary<ulong, CacheFnType> _fillMap;
-        private Dictionary<ulong, CacheFnType> _writeMap;
-
         private string _playerId;
         private string _entityToken;
         private string _entityId;
-         private string _avatarInfo;
+        private string _avatarInfo;
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private BsonDocument _mongoDocIds;
         private BsonDocument _inbox;
@@ -98,38 +84,33 @@ namespace SocialEdgeSDK.Server.Context
         private Dictionary<string, int> _virtualCurrency;
         private GetPlayerCombinedInfoResultPayload _combinedInfo;
         private PlayerDataSegment _playerData;
+        private string _playerDBId;
+        private PlayerDataModel _playerModel;
 
-        public string PlayerId { get => _playerId; }
+        public string PlayerId => _playerId;
         public string AvatarInfo { get => _avatarInfo; }
         public string InboxId { get => _inboxId; }
+        public string PlayerDBId { get => "00000000"+_playerId.ToLower(); }
+        public string PlayerIdFromObjectId(ObjectId id) { return id.ToString().Substring(8); }
+        public string PlayerIdFromObjectId(string id) { return id.Substring(8); }
+        public PlayerDataModel PlayerModel { get => _playerModel != null ? _playerModel : _playerModel = new PlayerDataModel(this); }
 
         public PlayerDataSegment PlayerData { get => _playerData; }
-        public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CacheSegment.COMBINED_INFO) != 0) || (CacheFillSegment(CacheSegment.COMBINED_INFO))) ? _combinedInfo : null; }
-        public string EntityId { get => (((_fillMask & CacheSegment.ENTITY_ID) != 0) || (CacheFillSegment(CacheSegment.ENTITY_ID))) ? _entityId : null; }
-        public string EntityToken { get => (((_fillMask & CacheSegment.ENTITY_TOKEN) != 0) || (CacheFillSegment(CacheSegment.ENTITY_TOKEN))) ? _entityToken : null; }
-        public BsonDocument ActiveInventory { get => (((_fillMask & CacheSegment.ACTIVE_INVENTORY) != 0) || (CacheFillSegment(CacheSegment.ACTIVE_INVENTORY))) ? _activeInventory : null; }
-        public BsonDocument PublicData { get => (((_fillMask & CacheSegment.PUBLIC_DATA) != 0) || (CacheFillSegment(CacheSegment.PUBLIC_DATA))) ? _publicData : null; }
-        public BsonDocument Inbox { get => (((_fillMask & CacheSegment.INBOX) != 0) || (CacheFillSegment(CacheSegment.INBOX))) ? _inbox : null; }                                                
-        public BsonDocument Chat { get => (((_fillMask & CacheSegment.CHAT) != 0) || (CacheFillSegment(CacheSegment.CHAT))) ? _chat : null; }
-        public List<FriendInfo> Friends { get => (((_fillMask & CacheSegment.FRIENDS) != 0) || (CacheFillSegment(CacheSegment.FRIENDS))) ? _friends : null; }
-        public List<EntityProfileBody> FriendsProfiles { get => (((_fillMask & CacheSegment.FRIENDS_PROFILES) != 0) || (CacheFillSegment(CacheSegment.FRIENDS_PROFILES))) ? _friendsProfiles : null; }
-        public List<ItemInstance> Inventory { get => (((_fillMask & CacheSegment.INVENTORY) != 0) || (CacheFillSegment(CacheSegment.INVENTORY))) ? _inventory : null; }
-        public Dictionary<string, int> VirtualCurrency { get => (((_fillMask & CacheSegment.INVENTORY) != 0) || (CacheFillSegment(CacheSegment.INVENTORY))) ? _virtualCurrency : null; }
+        public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CachePlayerDataSegments.COMBINED_INFO) != 0) || (CacheFillSegment(CachePlayerDataSegments.COMBINED_INFO))) ? _combinedInfo : null; }
+        public string EntityId { get => (((_fillMask & CachePlayerDataSegments.ENTITY_ID) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_ID))) ? _entityId : null; }
+        public string EntityToken { get => (((_fillMask & CachePlayerDataSegments.ENTITY_TOKEN) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_TOKEN))) ? _entityToken : null; }
+        public BsonDocument ActiveInventory { get => (((_fillMask & CachePlayerDataSegments.ACTIVE_INVENTORY) != 0) || (CacheFillSegment(CachePlayerDataSegments.ACTIVE_INVENTORY))) ? _activeInventory : null; }
+        public BsonDocument PublicData { get => (((_fillMask & CachePlayerDataSegments.PUBLIC_DATA) != 0) || (CacheFillSegment(CachePlayerDataSegments.PUBLIC_DATA))) ? _publicData : null; }
+        public BsonDocument Inbox { get => (((_fillMask & CachePlayerDataSegments.INBOX) != 0) || (CacheFillSegment(CachePlayerDataSegments.INBOX))) ? _inbox : null; }                                                
+        public BsonDocument Chat { get => (((_fillMask & CachePlayerDataSegments.CHAT) != 0) || (CacheFillSegment(CachePlayerDataSegments.CHAT))) ? _chat : null; }
+        public List<FriendInfo> Friends { get => (((_fillMask & CachePlayerDataSegments.FRIENDS) != 0) || (CacheFillSegment(CachePlayerDataSegments.FRIENDS))) ? _friends : null; }
+        public List<EntityProfileBody> FriendsProfiles { get => (((_fillMask & CachePlayerDataSegments.FRIENDS_PROFILES) != 0) || (CacheFillSegment(CachePlayerDataSegments.FRIENDS_PROFILES))) ? _friendsProfiles : null; }
+        public List<ItemInstance> Inventory { get => (((_fillMask & CachePlayerDataSegments.INVENTORY) != 0) || (CacheFillSegment(CachePlayerDataSegments.INVENTORY))) ? _inventory : null; }
+        public Dictionary<string, int> VirtualCurrency { get => (((_fillMask & CachePlayerDataSegments.INVENTORY) != 0) || (CacheFillSegment(CachePlayerDataSegments.INVENTORY))) ? _virtualCurrency : null; }
 
         public string PublicDataJson { get => PublicData != null ? _publicData.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
         public string InboxJson { get => Inbox != null ? _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
         public string ChatJson { get => Chat != null ? _chat.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
-
-        public bool SetDirtyBit(ulong dirtyMask)
-        {
-            if ((dirtyMask & CacheSegment.READONLY) != 0)
-            {
-                SocialEdge.Log.LogInformation("Error: This Cache segment is readonly!");
-            }
-
-            _dirtyMask |= dirtyMask;
-            return true;
-        }
 
         public SocialEdgePlayerContext(FunctionExecutionContext<dynamic> context)
         {
@@ -138,7 +119,7 @@ namespace SocialEdgeSDK.Server.Context
             _entityId = context.CallerEntityProfile.Entity.Id;
             _avatarInfo = context.CallerEntityProfile.AvatarUrl;
             _publicDataObjs = context.CallerEntityProfile.Objects;
-            _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
+            _fillMask |= _entityId != null ? CachePlayerDataSegments.ENTITY_ID : 0;
             _playerData =  new PlayerDataSegment(this);
             SocialEdgePlayerContextInit();
         }
@@ -157,31 +138,32 @@ namespace SocialEdgeSDK.Server.Context
         {
             _fillMap = new Dictionary<ulong, CacheFnType>()
             {
-                {CacheSegment.NONE, CacheFillNone},
-                {CacheSegment.PUBLIC_DATA, CacheFillPublicData},
-                {CacheSegment.INBOX, CacheFillInbox},
-                {CacheSegment.CHAT, CacheFillChat},
-                {CacheSegment.FRIENDS, CacheFillFriends},
-                {CacheSegment.FRIENDS_PROFILES, CacheFillFriendProfiles},
-                {CacheSegment.ACTIVE_INVENTORY, CacheFillActiveInventory},
-                {CacheSegment.INVENTORY, CacheFillInventory},
-                {CacheSegment.ENTITY_TOKEN, CacheFillEntityToken},
-                {CacheSegment.ENTITY_ID, CacheFillEntityId},
-                {CacheSegment.COMBINED_INFO, CacheFillCombinedInfo},
-                {CacheSegment.PLAYER_DATA, CacheFillPlayerData}
+                {CachePlayerDataSegments.NONE, CacheFillNone},
+                {CachePlayerDataSegments.PUBLIC_DATA, CacheFillPublicData},
+                {CachePlayerDataSegments.INBOX, CacheFillInbox},
+                {CachePlayerDataSegments.CHAT, CacheFillChat},
+                {CachePlayerDataSegments.FRIENDS, CacheFillFriends},
+                {CachePlayerDataSegments.FRIENDS_PROFILES, CacheFillFriendProfiles},
+                {CachePlayerDataSegments.ACTIVE_INVENTORY, CacheFillActiveInventory},
+                {CachePlayerDataSegments.INVENTORY, CacheFillInventory},
+                {CachePlayerDataSegments.ENTITY_TOKEN, CacheFillEntityToken},
+                {CachePlayerDataSegments.ENTITY_ID, CacheFillEntityId},
+                {CachePlayerDataSegments.COMBINED_INFO, CacheFillCombinedInfo},
+                {CachePlayerDataSegments.PLAYER_DATA, CacheFillPlayerData}
             };
 
             _writeMap = new Dictionary<ulong, CacheFnType>()
             {
-                {CacheSegment.NONE, CacheWriteNone},
-                {CacheSegment.PUBLIC_DATA, CacheWritePublicData},
-                {CacheSegment.INBOX, CacheWriteInbox},
-                {CacheSegment.CHAT, CacheWriteChat},
-                {CacheSegment.FRIENDS, CacheWriteReadOnlyError},
-                {CacheSegment.FRIENDS_PROFILES, CacheWriteReadOnlyError},
-                {CacheSegment.ACTIVE_INVENTORY, CacheWriteReadOnlyError},
-                {CacheSegment.INVENTORY, CacheWriteReadOnlyError},
-                {CacheSegment.PLAYER_DATA, CacheWritePlayerData}
+                {CachePlayerDataSegments.NONE, CacheWriteNone},
+                {CachePlayerDataSegments.PUBLIC_DATA, CacheWritePublicData},
+                {CachePlayerDataSegments.INBOX, CacheWriteInbox},
+                {CachePlayerDataSegments.CHAT, CacheWriteChat},
+                {CachePlayerDataSegments.FRIENDS, CacheWriteReadOnlyError},
+                {CachePlayerDataSegments.FRIENDS_PROFILES, CacheWriteReadOnlyError},
+                {CachePlayerDataSegments.ACTIVE_INVENTORY, CacheWriteReadOnlyError},
+                {CachePlayerDataSegments.INVENTORY, CacheWriteReadOnlyError},
+                {CachePlayerDataSegments.PLAYER_DATA, CacheWritePlayerData},
+                {CachePlayerDataSegments.PLAYER_MODEL, CacheWritePlayerModel},
             };
         }
 
@@ -217,7 +199,7 @@ namespace SocialEdgeSDK.Server.Context
 
             PlayerData[PlayerData.LastAccessKey][key] = value;
             PlayerData.SetDirty(PlayerData.LastAccessKey);
-            SetDirtyBit(CacheSegment.PLAYER_DATA);
+            SetDirtyBit(CachePlayerDataSegments.PLAYER_DATA);
             return true;
         }
 
@@ -238,7 +220,7 @@ namespace SocialEdgeSDK.Server.Context
             var resultT = Player.GetTitleEntityToken();
             resultT.Wait();
             _entityToken = resultT.Result.Error == null ? resultT.Result.Result.EntityToken : null;
-            _fillMask |= _entityToken != null ? CacheSegment.ENTITY_TOKEN : 0;
+            _fillMask |= _entityToken != null ? CachePlayerDataSegments.ENTITY_TOKEN : 0;
             SocialEdge.Log.LogInformation("Task fetch ENTITY_TOKEN" + (_entityToken != null ? "(success)" : "(failure)"));
             return _entityToken != null;        
         }
@@ -249,7 +231,7 @@ namespace SocialEdgeSDK.Server.Context
             var resultT = Player.GetAccountInfo(_playerId);
             resultT.Wait();
             _entityId = resultT.Result.Result.UserInfo.TitleInfo.TitlePlayerAccount.Id;
-            _fillMask |= _entityId != null ? CacheSegment.ENTITY_ID : 0;
+            _fillMask |= _entityId != null ? CachePlayerDataSegments.ENTITY_ID : 0;
             SocialEdge.Log.LogInformation("Task fetch ENTITY_ID");
             return _entityId != null;        
         }
@@ -266,7 +248,7 @@ namespace SocialEdgeSDK.Server.Context
                     _playerData.Add(item.Key, BsonDocument.Parse(item.Value.Value));
                 }
             }
-            _fillMask |= _combinedInfo != null ? CacheSegment.COMBINED_INFO : 0;
+            _fillMask |= _combinedInfo != null ? CachePlayerDataSegments.COMBINED_INFO : 0;
             SocialEdge.Log.LogInformation("Task fetch COMBINED_INFO");
             return _combinedInfo != null;
         }
@@ -286,7 +268,7 @@ namespace SocialEdgeSDK.Server.Context
         private bool CacheFillPublicData()
         {
             _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
-            _fillMask |= _publicData != null ? CacheSegment.PUBLIC_DATA : 0;
+            _fillMask |= _publicData != null ? CachePlayerDataSegments.PUBLIC_DATA : 0;
             SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
             return _publicData != null;
         }
@@ -309,7 +291,7 @@ namespace SocialEdgeSDK.Server.Context
                     _playerData.Add(item.Key, BsonDocument.Parse(item.Value.Value));
                 }
             }
-            _fillMask |= _playerData.ElementCount > 0 ? CacheSegment.PLAYER_DATA : 0;
+            _fillMask |= _playerData.ElementCount > 0 ? CachePlayerDataSegments.PLAYER_DATA : 0;
             SocialEdge.Log.LogInformation("Task fetch PLAYER_DATA[" + _playerData.FillKey + "]");
             return _playerData.Contains(_playerData.FillKey);
         }
@@ -334,7 +316,7 @@ namespace SocialEdgeSDK.Server.Context
              var inboxT = InboxModel.Get(_mongoDocIds["inbox"].ToString());
              if (inboxT != null) inboxT.Wait();
             _inbox = inboxT != null && inboxT.Result != null ? inboxT.Result["inboxData"].AsBsonDocument : null;
-            _fillMask |= _inbox != null ? CacheSegment.INBOX : 0;
+            _fillMask |= _inbox != null ? CachePlayerDataSegments.INBOX : 0;
             SocialEdge.Log.LogInformation("Task fetch INBOX");
             return _inbox != null;
         }
@@ -353,7 +335,7 @@ namespace SocialEdgeSDK.Server.Context
             var chatT = ChatModel.Get(_chatId);
             if (chatT != null) chatT.Wait();
             _chat = chatT != null && chatT.Result != null ? chatT.Result["ChatData"].AsBsonDocument : null;
-            _fillMask |=  _chat != null ? CacheSegment.CHAT : 0;
+            _fillMask |=  _chat != null ? CachePlayerDataSegments.CHAT : 0;
             SocialEdge.Log.LogInformation("Task fetch CHAT");
             return _chat != null;
         }
@@ -370,7 +352,7 @@ namespace SocialEdgeSDK.Server.Context
             var friendsT = Player.GetFriendsList(_playerId);
             friendsT.Wait();
             _friends = friendsT.Result.Error == null ? friendsT.Result.Result.Friends : null;
-            _fillMask |= _friends != null ? CacheSegment.FRIENDS : 0;
+            _fillMask |= _friends != null ? CachePlayerDataSegments.FRIENDS : 0;
             SocialEdge.Log.LogInformation("Task fetch FRIENDS");
             return _friends != null;
         }
@@ -381,7 +363,7 @@ namespace SocialEdgeSDK.Server.Context
             var friendsProfilesT = Player.GetFriendProfiles(_friends, EntityToken);
             friendsProfilesT.Wait();
             _friendsProfiles = friendsProfilesT.Result.Error == null ? friendsProfilesT.Result.Result.Profiles : null;
-            _fillMask |= _friendsProfiles != null ? CacheSegment.FRIENDS_PROFILES : 0;
+            _fillMask |= _friendsProfiles != null ? CachePlayerDataSegments.FRIENDS_PROFILES : 0;
             SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILES");
 
             // Remove DBIds private information for security
@@ -399,7 +381,7 @@ namespace SocialEdgeSDK.Server.Context
         private bool CacheFillActiveInventory()
         {
             _activeInventory = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["ActiveInventory"].EscapedDataObject));
-            _fillMask |= _activeInventory != null ? CacheSegment.ACTIVE_INVENTORY : 0;
+            _fillMask |= _activeInventory != null ? CachePlayerDataSegments.ACTIVE_INVENTORY : 0;
             SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");
             return _activeInventory != null;
         }
@@ -410,46 +392,14 @@ namespace SocialEdgeSDK.Server.Context
             getPlayerInventoryT.Wait();
             _inventory = getPlayerInventoryT.Result.Error == null ? getPlayerInventoryT.Result.Result.Inventory : null;
             _virtualCurrency = _inventory != null ? getPlayerInventoryT.Result.Result.VirtualCurrency : null;
-            _fillMask |= _inventory != null ? CacheSegment.INVENTORY : 0;
+            _fillMask |= _inventory != null ? CachePlayerDataSegments.INVENTORY : 0;
             SocialEdge.Log.LogInformation("Task fetch INVENTORY/VIRTUALCURRENCY");
             return _inventory != null;
         }
 
-        public bool CacheFillSegment(ulong fetchMask)
+        private bool CacheWritePlayerModel()
         {
-            return (bool)_fillMap[fetchMask]?.Invoke();
-        }
-
-        public bool CacheFill(ulong fetchMask)
-        {
-            if (fetchMask == 0)
-                return true;
-
-            ulong bit = 0x1;
-            while (bit != (CacheSegment.MAX << 1))
-            {
-                if ((bit & fetchMask) != 0)
-                    _fillMap[bit]?.Invoke();
-                
-                bit <<= 1;
-            }
-            return true;
-        }
-
-        public bool CacheFlush()
-        {
-            if (_dirtyMask == 0)
-                return true;
-
-            ulong bit = 0x1;
-            while (bit != (CacheSegment.MAX << 1))
-            {
-                if ((bit & _dirtyMask) != 0)
-                    _writeMap[bit]?.Invoke();
-                
-                bit <<= 1;
-            }
-            return true;
+            return _playerModel != null ? _playerModel.CacheWrite() : false;
         }
    }
 }

@@ -11,7 +11,7 @@ using MongoDB.Driver;
 
 namespace SocialEdgeSDK.Server.DataService
 {
-    public interface ICollection
+    public interface ICollection<T>
     {
         ///<summary>Returns an estimate of the number of documents in the collection.</summary>      
         ///<returns>An estimate of the number of documents in the collection.</returns>        
@@ -24,54 +24,54 @@ namespace SocialEdgeSDK.Server.DataService
         ///<summary>Finds the document matching the id.</summary>      
         ///<param name="id">id of the document to match. </param>
         ///<returns>Bson document.</returns>
-        Task<BsonDocument> FindOneById(string id);
+        Task<T> FindOneById(string id);
         ///<summary>Finds the document matching the id.</summary>      
         ///<param name="id">id of the document to match. </param>
         ///<param name="projection">Projection definition </param>
         ///<returns>Projected bson document.</returns>        
-        Task<BsonDocument> FindOneById(string id, ProjectionDefinition<BsonDocument> projection);
+        Task<U> FindOneById<U>(string id, ProjectionDefinition<T> projection);
         ///<summary>Finds a document matching the the value of the property. Incase of multiple matches, 
         ///fetches the first match</summary>      
         ///<param name="prop">The property to match</param>
         ///<param name="val">The value of the property to match</param>
         ///<returns>Bson document.</returns>          
-        Task<BsonDocument> FindOne<T>(string prop, T val);
+        Task<T> FindOne<S>(string prop, S val);
         ///<summary>Finds a document matching the the value of the property. Incase of multiple matches,
         ///fetches the first match</summary>      
         ///<param name="prop">The property to match</param>
         ///<param name="val">The value of the property to match</param>
         ///<param name="projection">Projection definition</param>
         ///<returns>Projected bson document.</returns>            
-        Task<BsonDocument> FindOne<T>(string prop, T val, ProjectionDefinition<BsonDocument> projection);
+        Task<T> FindOne<S>(string prop, S val, ProjectionDefinition<T> projection);
         ///<summary>Finds document matching the filter.</summary>      
         ///<param name="filter">FilterDefinition</param>
         ///<returns>Bson document.</returns>   
-        Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> filter);
+        Task<T> FindOne(FilterDefinition<T> filter);
         ///<summary>Finds document matching the filter.</summary>      
         ///<param name="filter">Filter definition</param>
         ///<param name="projection">Projection definition</param>
         ///<returns>Projected bson document.</returns>           
-        Task<BsonDocument> FindOne(FilterDefinition<BsonDocument> filter, ProjectionDefinition<BsonDocument> projection);
+        Task<P> FindOne<P>(FilterDefinition<T> filter, ProjectionDefinition<T> projection);
         ///<summary>Finds documents matching the the value of the property.</summary>      
         ///<param name="prop">The property to match</param>
         ///<param name="val">The value of the property to match</param>
         ///<returns>List of Bson documents</returns>  
-        Task<List<BsonDocument>> Find<T>(string prop,T val);
+        Task<List<T>> Find<S>(string prop, S val);
         ///<summary>Finds documents matching the the value of the property.</summary>      
         ///<param name="prop">The property to match</param>
         ///<param name="val">The value of the property to match</param>
         ///<param name="projection">Projection definition</param>
         ///<returns>List of projected bson documents</returns>          
-        Task<List<BsonDocument>> Find<T>(string prop,T val, ProjectionDefinition<BsonDocument> projection);
+        Task<List<T>> Find<S>(string prop,S val, ProjectionDefinition<T> projection);
         ///<summary>Finds documents matching the filter.</summary>      
         ///<param name="filter">FilterDefinition</param>
         ///<returns>List of Bson documents</returns>   
-        Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter);
+        Task<List<T>> Find(FilterDefinition<T> Filter);
         ///<summary>Finds documents matching the filter.</summary>      
         ///<param name="filter">FilterDefinition</param>
         ///<param name="projection">Projection definition</param>
         ///<returns>List of projected bson documents</returns>          
-        Task<List<BsonDocument>> Find(FilterDefinition<BsonDocument> Filter, ProjectionDefinition<BsonDocument> projection);
+        Task<List<T>> Find(FilterDefinition<T> Filter, ProjectionDefinition<T> projection);
         ///<summary>Updates the matching document</summary>      
         ///<param name="id">Id of the document to update</param>
         ///<param name="prop">The property to update</param>
@@ -79,14 +79,15 @@ namespace SocialEdgeSDK.Server.DataService
         ///<param name="upsert">Upsert</param>
         ///<returns>UpdateResult</returns>           
 
-        Task<UpdateResult> ReplaceOneById(string id, BsonDocument val, bool upsert=false);
-        Task<BsonDocument> IncAll(string prop, int incBy, bool upsert = false);
+        Task<UpdateResult> ReplaceOneById(string id, T val, bool upsert=false);
+        Task<UpdateResult> ReplaceOneById(ObjectId id, T val, bool upsert=false);
+        Task<T> IncAll(string prop, int incBy, bool upsert = false);
 
-        Task<UpdateResult> UpdateOneById<T>(string id, string prop, T val, bool upsert=false);
+        Task<UpdateResult> UpdateOneById<S>(string id, string prop, S val, bool upsert=false);
         ///<summary>Updates the matching document</summary>      
         ///<param name="UpdateDefinition">Update definition</param>
         ///<returns>UpdateResult</returns>           
-        Task<UpdateResult> UpdateOneById(string id, UpdateDefinition<BsonDocument> UpdateDefinition, bool upsert=false);
+        Task<UpdateResult> UpdateOneById(string id, UpdateDefinition<T> UpdateDefinition, bool upsert=false);
         ///<summary>Updates the first matching document</summary>      
         ///<param name="filterProp">Property to match</param>
         ///<param name="filterVal">Value of property in filterProp to match</param>
@@ -94,27 +95,27 @@ namespace SocialEdgeSDK.Server.DataService
         ///<param name="updateVal">New value of updateProp</param>
         ///<param name="upsert">Upsert</param>
         ///<returns>UpdateResult</returns>             
-        Task<UpdateResult> UpdateOne<T,V>(string filterProp, T filterVal, string updateProp, V updateVal, bool upsert=false);
+        Task<UpdateResult> UpdateOne<S,U>(string filterProp, S filterVal, string updateProp, U updateVal, bool upsert=false);
        ///<summary>Updates the first matching document</summary>      
         ///<param name="filterProp">Property to match</param>
         ///<param name="filterVal">Value of property in filterProp to match</param>
         ///<param name="updateDefinition">Update definition</param>
         ///<param name="upsert">Upsert</param>
         ///<returns>UpdateResult</returns>            
-        Task<UpdateResult> UpdateOne<T>(string filterProp, T filterVal, UpdateDefinition<BsonDocument> updateDefinition, bool upsert=false);
+        Task<UpdateResult> UpdateOne<S>(string filterProp, S filterVal, UpdateDefinition<T> updateDefinition, bool upsert=false);
        ///<summary>Updates the first matching document</summary>      
         ///<param name="filter">Filter definition</param>
         ///<param name="updateDefinition">Update definition</param>
         ///<param name="upsert">Upsert</param>
         ///<returns>UpdateResult</returns>   
-        Task<UpdateResult> UpdateOne(FilterDefinition<BsonDocument> filter,UpdateDefinition<BsonDocument> updateDefinition, bool upsert=false);
+        Task<UpdateResult> UpdateOne(FilterDefinition<T> filter,UpdateDefinition<T> updateDefinition, bool upsert=false);
         ///<summary>Updates the first matching document</summary>      
         ///<param name="prop">Property to match</param>
         ///<param name="val">Value of property in filterProp to match</param>
         ///<param name="updateDefinition">Update definition</param>
         ///<param name="upsert">Upsert</param>
         ///<returns>UpdateResult</returns>            
-        Task<UpdateResult> UpdateMany<T>(string prop,T val, UpdateDefinition<BsonDocument> updateDefinition, bool upsert=false);
+        Task<UpdateResult> UpdateMany<S>(string prop,S val, UpdateDefinition<T> updateDefinition, bool upsert=false);
         ///<summary>Updates all matching documents</summary>      
         ///<param name="filterProp">Property to match</param>
         ///<param name="filterVal">Value of property in filterProp to match</param>
@@ -122,13 +123,13 @@ namespace SocialEdgeSDK.Server.DataService
         ///<param name="updateVal">New value of updateProp</param>
         ///<param name="upsert">Upsert</param>
         ///<returns>UpdateResult</returns>               
-        Task<UpdateResult> UpdateMany<T,V>(string filterProp, T filterVal, string updateProp, V updateVal, bool upsert=false);
+        Task<UpdateResult> UpdateMany<S,U>(string filterProp, S filterVal, string updateProp, U updateVal, bool upsert=false);
         ///<summary>Updates all matching documents</summary>      
         ///<param name="filter">Filter definition</param>
         ///<param name="updateDefinition">Update definition</param>
         ///<param name="upsert">Upsert</param>
         ///<returns>UpdateResult</returns>          
-        Task<UpdateResult> UpdateMany(FilterDefinition<BsonDocument> filter,UpdateDefinition<BsonDocument> updateDefinition, bool upsert=false);
+        Task<UpdateResult> UpdateMany(FilterDefinition<T> filter,UpdateDefinition<T> updateDefinition, bool upsert=false);
         ///<summary>Removes the document that matches the if</summary>      
         ///<param name="id">id of the document to remove</param>
         ///<returns>Bool indicating operation was successful or not</returns> 
@@ -137,28 +138,28 @@ namespace SocialEdgeSDK.Server.DataService
         ///<param name="prop">Property to match</param>
         ///<param name="val">Value of the property to match</param>
         ///<returns>Bool indicating operation was successful or not</returns>         
-        Task<bool> RemoveOne<T>(string prop, T val);
+        Task<bool> RemoveOne<S>(string prop, S val);
         ///<summary>Removes the document that matches the filter</summary>      
         ///<param name="filter">Filter definition</param>
         ///<returns>Bool indicating operation was successful or not</returns>  
-        Task<bool> RemoveOne(FilterDefinition<BsonDocument> filter);
+        Task<bool> RemoveOne(FilterDefinition<T> filter);
         ///<summary>Removes documents which match the value of given property</summary>      
         ///<param name="prop">Property to match</param>
         ///<param name="val">Value of the property to match</param>
         ///<returns>Bool indicating operation was successful or not</returns>           
-        Task<long> RemoveMany<T>(string prop, T val);
+        Task<long> RemoveMany<S>(string prop, S val);
         ///<summary>Removes documents which match the filter</summary>      
         ///<param name="filter">Filter definition</param>
         ///<returns>Bool indicating operation was successful or not</returns>          
-        Task<long> RemoveMany(FilterDefinition<BsonDocument> Filter);
+        Task<long> RemoveMany(FilterDefinition<T> Filter);
         ///<summary>Inserts a document</summary>      
         ///<param name="document">Bson document to insert</param>
         ///<returns>Bool indicating operation was successful or not</returns>         
-        Task<bool> InsertOne(BsonDocument document);
+        Task<bool> InsertOne(T document);
         ///<summary>Inserts multiple document</summary>      
         ///<param name="document">List of Bson documents to insert</param>
         ///<returns>Bool indicating operation was successful or not</returns>              
-        Task<bool> InsertMany(List<BsonDocument> documents);
+        Task<bool> InsertMany(List<T> documents);
         // Task<bool> Save(BsonDocument document);
         ///<summary>Creates an index</summary>      
         ///<param name="key">the field to create index on</param>

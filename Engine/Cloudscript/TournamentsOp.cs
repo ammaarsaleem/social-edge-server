@@ -25,19 +25,30 @@ namespace SocialEdgeSDK.Server.Requests
         public TournamentsOp(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
         [FunctionName("TournamentsOp")]
-        public async Task<TournamentsOpResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
+        public TournamentsOpResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
-            TournamentsOpResult friendsOpResult = new TournamentsOpResult();
+            TournamentsOpResult opResult = new TournamentsOpResult();
             var op = data["op"];
 
             if (op == "join")
             {
+                var result = Tournaments.Join(SocialEdgePlayer, SocialEdgeTournament, data["tournamentShortCode"].ToString(), (int)data["score"]);
+/*
+                if (result.hasOwnProperty('errorCode')) {
+                    Spark.setScriptData('error', result);
+                }
+                else {
+                    var playerData = PlayerModel.get(sparkPlayer);
+                    Spark.setScriptData('tournaments', playerData.priv.activeTournaments);
+                    Spark.setScriptData('tournamentId', result);
+                }
+            */
             }
-
             SocialEdgePlayer.CacheFlush();
-            return friendsOpResult;
+            
+            return opResult;
 
         }
     }

@@ -76,7 +76,7 @@ namespace SocialEdgeSDK.Server.Api
                 msg["reward"] = Leagues.GetDailyReward(league.ToString());
                 msg["startTime"] = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
                 msg["time"] = msg["startTime"];
-                socialEdgePlayer.SetDirtyBit(CacheSegment.INBOX);
+                socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
             }
             else if (msg.AsBsonDocument.Contains("tournamentId") == true)
             {

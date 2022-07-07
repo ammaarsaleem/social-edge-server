@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using SocialEdgeSDK.Server.Db;
 using SocialEdgeSDK.Server.DataService;
 // using SocialEdgeSDK.Server.Realtime;
+using MongoDB.Bson;
 namespace SocialEdgeSDK.Server.Requests
 {
     public class Test
@@ -36,8 +37,8 @@ namespace SocialEdgeSDK.Server.Requests
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
-            var collection = _dataService.GetCollection("BooksTest");
-            var res = await collection.FindOneById("1",null);
+            var collection = _dataService.GetCollection<BsonDocument>("BooksTest");
+            //var res = await collection.FindOneById("1",null);
             try
             {
             //     Realtime.PubSub.AddToGroup()

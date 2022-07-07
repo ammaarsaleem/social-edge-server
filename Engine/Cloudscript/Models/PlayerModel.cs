@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace SocialEdgeSDK.Server.Models
 {
-    public class PlayerModel
+    public class PlayerModelA
     {
         public GetPlayerCombinedInfoResultPayload combinedInfo;
         public Dictionary<string, PlayFab.ProfilesModels.EntityDataObject> customSettings;
