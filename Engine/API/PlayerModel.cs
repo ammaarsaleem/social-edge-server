@@ -33,7 +33,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long duration;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int score;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int matchesPlayedCount;
-                                                            public TournamentReward grandPrize;
+                                                            public List<TournamentReward> grandPrize;
     }
 
     public class DataModelBase

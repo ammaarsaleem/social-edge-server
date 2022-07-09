@@ -36,17 +36,9 @@ namespace SocialEdgeSDK.Server.Requests
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
             Inbox.Validate(SocialEdgePlayer);
 
-            //Player.NewPlayerInit(SocialEdgePlayer);
-            //SocialEdgePlayer.CacheFlush();
-            //SocialEdgeTournament.CacheFlush(); 
-            //GetMetaDataResult metaDataResponse1 = new GetMetaDataResult();    
-            //return metaDataResponse1;
-
-
             try
             {
                 // Prepare client response
-                BsonDocument liveTournamentsT = await SocialEdge.DataService.GetCollection<BsonDocument>("liveTournaments").FindOneById("62b435e786859fe679e7b946");
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
                 metaDataResponse.shop = new GetShopResult();
                 metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
@@ -61,17 +53,13 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.appVersionValid = true; // TODO
                 metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 metaDataResponse.contentData = GetContentList();
+                metaDataResponse.liveTournaments = SocialEdgeTournament.TournamentLiveModel.Fetch();
 
                 if (isNewlyCreated == true)
                 {
                     metaDataResponse.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
                 }
-                // TODO
-                var liveTournamentsJson = liveTournamentsT["tournament"].ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
-                List<string> liveTournamentsList = new List<string>();
-                liveTournamentsList.Add(liveTournamentsJson);
-                var liveTournamentsListJson = liveTournamentsList.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
-                metaDataResponse.liveTournaments = liveTournamentsListJson.ToString();
+
                 SocialEdgePlayer.CacheFlush();
                 SocialEdgeTournament.CacheFlush();
                 

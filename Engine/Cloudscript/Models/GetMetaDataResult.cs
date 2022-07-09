@@ -14,7 +14,7 @@ namespace SocialEdgeSDK.Server.Models
         public PlayerDataModel playerDataModel;
         public GetPlayerCombinedInfoResultPayload playerCombinedInfoResultPayload;
         public string publicDataObjs;
-        public string liveTournaments;
+        public Dictionary<string, TournamentLiveData> liveTournaments;
         public string chat;
         public int inboxCount;
         public string inbox;

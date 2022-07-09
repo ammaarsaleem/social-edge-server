@@ -90,7 +90,7 @@ namespace SocialEdgeSDK.Server.Api
                 type = tournament.type,
                 name = tournament.name,
                 rank = rank,
-                grandPrize = tournament.rewards.r0[0],
+                grandPrize = tournament.rewards["0"],
                 startTime = tournament.startTime,
                 duration = tournament.duration,
                 score = 0,

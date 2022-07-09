@@ -28,7 +28,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long lastUpdateTimeSeconds;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long secondsLeftNextUpdate;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long duration;
-                                                                public TournamentRewards rewards;
+                                                                public Dictionary<string, List<TournamentReward>> rewards;
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool concluded;
                                                                 public List<TournamentPoolEntry> entries;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int score;

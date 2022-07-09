@@ -28,7 +28,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int min;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int max;
     }
-
+/*
     public class TournamentRewards
     {
         [BsonElement("0")]  public List<TournamentReward> r0;
@@ -40,6 +40,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("6")]  public List<TournamentReward> r6;
         [BsonElement("7")]  public List<TournamentReward> r7;
     }
+*/
 
     public class TournamentLiveData
     {
@@ -48,7 +49,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string name;
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string type;
                                                             public TournamentReward grandPrize;
-                                                            public TournamentRewards rewards;
+                                                            public Dictionary<string, List<TournamentReward>> rewards;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long startTime;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long duration;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long waitTime;
@@ -122,6 +123,25 @@ namespace SocialEdgeSDK.Server.Models
             taskT.Wait();
             if (taskT.Result != null) _cache.Add(taskT.Result.tournament.shortCode.ToString(), taskT.Result.tournament);
             return taskT.Result != null ? taskT.Result.tournament.shortCode.ToString() : null;
+        }
+
+        public Dictionary<string, TournamentLiveData> Fetch()
+        {
+            var collection = SocialEdge.DataService.GetCollection<TournamentLiveDocument>(LIVE_TOURNAMENTS_COLLECTION);
+            var projection = Builders<TournamentLiveDocument>.Projection.Exclude("_id").Include("TournamentLive");
+            var filter = Builders<TournamentLiveDocument>.Filter.Empty;
+            var taskT = collection.Find(filter, projection);
+            taskT.Wait();
+            if (taskT.Result != null && taskT.Result.Count > 0)
+            {
+                foreach(var doc in taskT.Result)
+                {
+                    if (!_cache.ContainsKey(doc.tournament.shortCode))
+                        _cache.Add(doc.tournament.shortCode, doc.tournament);
+                }
+                 
+            }
+            return _cache;
         }
     }
 }
