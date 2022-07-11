@@ -303,8 +303,8 @@ namespace SocialEdgeSDK.Server.Api
             activeInventoryAvatar["key"] = avatar;
             activeInventoryBgColor["key"] = avatarBgColor;
 
-            string chatDocumentId = InboxModel.Init();
-            playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
+            InboxModel.Init(socialEdgePlayer.InboxId);
+            //playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
 
             String avatarInfo =  avatar + "," + avatarBgColor + "," + "XXX" + "," + "0";
             UpdatePlayerAvatarData(playerId, avatarInfo);            

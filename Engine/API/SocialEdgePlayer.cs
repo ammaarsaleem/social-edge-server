@@ -73,9 +73,7 @@ namespace SocialEdgeSDK.Server.Context
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private BsonDocument _mongoDocIds;
         private BsonDocument _inbox;
-        private string _inboxId;
         private BsonDocument _chat;
-        private string _chatId;
         private BsonDocument _publicData;
         private BsonDocument _activeInventory;
         private List<FriendInfo> _friends;
@@ -84,15 +82,15 @@ namespace SocialEdgeSDK.Server.Context
         private Dictionary<string, int> _virtualCurrency;
         private GetPlayerCombinedInfoResultPayload _combinedInfo;
         private PlayerDataSegment _playerData;
-        private string _playerDBId;
         private PlayerDataModel _playerModel;
 
         public string PlayerId => _playerId;
         public string AvatarInfo { get => _avatarInfo; }
-        public string InboxId { get => _inboxId; }
-        public string PlayerDBId { get => "00000000"+_playerId.ToLower(); }
-        public string PlayerIdFromObjectId(ObjectId id) { return id.ToString().Substring(8); }
-        public string PlayerIdFromObjectId(string id) { return id.Substring(8); }
+        public string InboxId { get => PlayerDBId; }
+        public string ChatId { get => PlayerDBId; }
+        public string PlayerDBId { get => _playerId.ToLower().PadLeft(24, '0'); }
+        public string PlayerIdFromObjectId(ObjectId id) { return id.ToString().TrimStart('0'); }
+        public string PlayerIdFromObjectId(string id) { return id.TrimStart('0'); }
         public PlayerDataModel PlayerModel { get => _playerModel != null ? _playerModel : _playerModel = new PlayerDataModel(this); }
 
         public PlayerDataSegment PlayerData { get => _playerData; }
@@ -172,19 +170,11 @@ namespace SocialEdgeSDK.Server.Context
             get 
             {
                 // Leave out DBIds private information for security
-                BsonDocument doc = new BsonDocument() { ["PublicProfileEx"] = PublicData, ["ActiveInventory"] = ActiveInventory };            
+                BsonDocument doc = new BsonDocument();
+                doc.Add("PublicProfileEx", PublicData != null ? PublicData : new BsonDocument());
+                doc.Add("ActiveInventory", ActiveInventory != null ? ActiveInventory : new BsonDocument());
+                                
                 return doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
-            }
-        }
-
-        private void ValidateCacheMongoDocIds()
-        {
-            if (_mongoDocIds == null)
-            {
-                _mongoDocIds = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["DBIds"].EscapedDataObject));
-                //_mongoDocIds = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["DBIds"].DataObject.ToString()));
-                _inboxId = _mongoDocIds["inbox"].ToString();
-                _chatId = _mongoDocIds["chat"].ToString();
             }
         }
 
@@ -268,6 +258,9 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillPublicData()
         {    
+            if (_publicDataObjs == null || _publicDataObjs.ContainsKey("PublicProfileEx"))
+                return false;
+
             _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
             _fillMask |= _publicData != null ? CachePlayerDataSegments.PUBLIC_DATA : 0;
             SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
@@ -313,8 +306,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillInbox()
         {
-            ValidateCacheMongoDocIds();
-             var inboxT = InboxModel.Get(_mongoDocIds["inbox"].ToString());
+             var inboxT = InboxModel.Get(InboxId);
              if (inboxT != null) inboxT.Wait();
             _inbox = inboxT != null && inboxT.Result != null ? inboxT.Result["inboxData"].AsBsonDocument : null;
             _fillMask |= _inbox != null ? CachePlayerDataSegments.INBOX : 0;
@@ -324,7 +316,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheWriteInbox()
         {
-            var inboxT = InboxModel.Set(_inboxId, _inbox);
+            var inboxT = InboxModel.Set(InboxId, _inbox);
             inboxT.Wait();
             SocialEdge.Log.LogInformation("Task flush INBOX");
             return inboxT.Result.ModifiedCount != 0;
@@ -332,8 +324,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillChat()
         {
-            ValidateCacheMongoDocIds();
-            var chatT = ChatModel.Get(_chatId);
+            var chatT = ChatModel.Get(ChatId);
             if (chatT != null) chatT.Wait();
             _chat = chatT != null && chatT.Result != null ? chatT.Result["ChatData"].AsBsonDocument : null;
             _fillMask |=  _chat != null ? CachePlayerDataSegments.CHAT : 0;
@@ -343,7 +334,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheWriteChat()
         {
-            var chatT = ChatModel.Set(_chatId, _chat);
+            var chatT = ChatModel.Set(ChatId, _chat);
             chatT.Wait();
             return chatT.Result.ModifiedCount != 0;
         }
@@ -381,6 +372,9 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillActiveInventory()
         {
+            if (_publicDataObjs == null || _publicDataObjs.ContainsKey("ActiveInventory"))
+                return false;
+
             _activeInventory = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["ActiveInventory"].EscapedDataObject));
             _fillMask |= _activeInventory != null ? CachePlayerDataSegments.ACTIVE_INVENTORY : 0;
             SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");

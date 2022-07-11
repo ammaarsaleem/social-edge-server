@@ -72,7 +72,7 @@ namespace SocialEdgeSDK.Server.Api
 
             if (msg["isDaily"] == true)
             {
-                var league = socialEdgePlayer.PublicData["leag"];
+                var league = socialEdgePlayer.PlayerModel.Info.league;
                 msg["reward"] = Leagues.GetDailyReward(league.ToString());
                 msg["startTime"] = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
                 msg["time"] = msg["startTime"];
@@ -131,7 +131,7 @@ namespace SocialEdgeSDK.Server.Api
             var msgInfo = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
             if (msgInfo == null)
             {
-                var leagueId = socialEdgePlayer.PublicData["leag"].ToString();
+                var leagueId = socialEdgePlayer.PlayerModel.Info.league.ToString();
                 var reward = Leagues.GetDailyReward(leagueId);
                 BsonDocument newMsgInfo = new BsonDocument()
                 {
@@ -152,7 +152,10 @@ namespace SocialEdgeSDK.Server.Api
 
         private static void RemoveExpired(SocialEdgePlayerContext socialEdgePlayer)
         {
-            var inbox = socialEdgePlayer.Inbox;            
+            var inbox = socialEdgePlayer.Inbox;  
+            if (inbox == null)
+                return;
+
             long now = Utils.UTCNow();
             var messages = inbox["messages"].AsBsonDocument;
             List<string> delIds = new List<string>();
