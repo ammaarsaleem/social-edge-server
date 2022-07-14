@@ -48,13 +48,13 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 // Prepare client response
                 GetMetaDataResult metaDataResponse = new GetMetaDataResult();
-                metaDataResponse.shop = new GetShopResult();
-                metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
-                metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
+                //metaDataResponse.shop = new GetShopResult();
+                //metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
+                //metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
                 metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
-                metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
+                //metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
                 metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
                 metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                 metaDataResponse.appVersionValid = true; // TODO
