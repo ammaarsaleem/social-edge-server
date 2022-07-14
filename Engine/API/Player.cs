@@ -276,15 +276,15 @@ namespace SocialEdgeSDK.Server.Api
 
             var newName = Player.GenerateDisplayName();
             var newTag = Player.GenerateTag();
-            var playerPublicData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerPublicData"];
-            var playerData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerData"];
+            //var playerPublicData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerPublicData"];
+            //var playerData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerData"];
             var coinsCredit = (int)SocialEdge.TitleContext.GetTitleDataProperty("Economy")["BettingIncrements"][0];
             var avatar = GenerateAvatar();
             var avatarBgColor = GenerateAvatarBgColor();
 
-            List<BsonValue> activeInventoryList = playerPublicData["ActiveInventory"]["invl"].ToList();
-            var activeInventoryAvatar = activeInventoryList.Find(s => s[1].Equals("Avatar"));
-            var activeInventoryBgColor = activeInventoryList.Find(s => s[1].Equals("AvatarBgColor"));
+            //List<BsonValue> activeInventoryList = playerPublicData["ActiveInventory"]["invl"].ToList();
+           // var activeInventoryAvatar = activeInventoryList.Find(s => s[1].Equals("Avatar"));
+            //var activeInventoryBgColor = activeInventoryList.Find(s => s[1].Equals("AvatarBgColor"));
 
             socialEdgePlayer.PlayerModel.CreateDefaults();
             socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
@@ -300,20 +300,22 @@ namespace SocialEdgeSDK.Server.Api
 
             //playerData["coldData"]["isInitialized"] = true;
             //playerPublicData["PublicProfileEx"]["tag"] = newTag;
-            activeInventoryAvatar["key"] = avatar;
-            activeInventoryBgColor["key"] = avatarBgColor;
+           // activeInventoryAvatar["key"] = avatar;
+            //activeInventoryBgColor["key"] = avatarBgColor;
 
             InboxModel.Init(socialEdgePlayer.InboxId);
             //playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
 
             String avatarInfo =  avatar + "," + avatarBgColor + "," + "XXX" + "," + "0";
             UpdatePlayerAvatarData(playerId, avatarInfo);            
-            var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
+            //var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
             var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
-            var UpdatePublicDataT = UpdatePublicData(entityToken, entityId, playerPublicData);
+            //var UpdatePublicDataT = UpdatePublicData(entityToken, entityId, playerPublicData);
 
-            Task.WaitAll(UpdatePlayerDataT, addVirualCurrencyT, updateDisplayNameT, UpdatePublicDataT);
+            //Task.WaitAll(UpdatePlayerDataT, addVirualCurrencyT, updateDisplayNameT, UpdatePublicDataT);
+            Task.WaitAll(addVirualCurrencyT, updateDisplayNameT);
+
         }
 
         public static bool UpdatePlayerAvatarInfo(SocialEdgePlayerContext socialEdgePlayer, String value, int index)

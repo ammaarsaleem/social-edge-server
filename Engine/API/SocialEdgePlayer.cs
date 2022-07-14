@@ -60,7 +60,7 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong PLAYER_MODEL =       0x0800;
         public const ulong MAX = PLAYER_MODEL;
 
-        public const ulong META = PUBLIC_DATA | INBOX | CHAT | FRIENDS_PROFILES | ACTIVE_INVENTORY;
+        public const ulong META = INBOX | CHAT | FRIENDS_PROFILES;
         public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | INVENTORY;
     }
 
@@ -169,12 +169,13 @@ namespace SocialEdgeSDK.Server.Context
         { 
             get 
             {
-                // Leave out DBIds private information for security
-                BsonDocument doc = new BsonDocument();
-                doc.Add("PublicProfileEx", PublicData != null ? PublicData : new BsonDocument());
-                doc.Add("ActiveInventory", ActiveInventory != null ? ActiveInventory : new BsonDocument());
+                // // Leave out DBIds private information for security
+                // BsonDocument doc = new BsonDocument();
+                // doc.Add("PublicProfileEx", PublicData != null ? PublicData : new BsonDocument());
+                // doc.Add("ActiveInventory", ActiveInventory != null ? ActiveInventory : new BsonDocument());
                                 
-                return doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
+                // return doc.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
+                return "";
             }
         }
 
@@ -259,7 +260,11 @@ namespace SocialEdgeSDK.Server.Context
         private bool CacheFillPublicData()
         {    
             if (_publicDataObjs == null || _publicDataObjs.ContainsKey("PublicProfileEx"))
+            {
+                SocialEdge.Log.LogInformation("Called CacheFillPublicData and it was NULLL : " + _publicDataObjs.ToString());
                 return false;
+            }
+                
 
             _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
             _fillMask |= _publicData != null ? CachePlayerDataSegments.PUBLIC_DATA : 0;
@@ -373,7 +378,11 @@ namespace SocialEdgeSDK.Server.Context
         private bool CacheFillActiveInventory()
         {
             if (_publicDataObjs == null || _publicDataObjs.ContainsKey("ActiveInventory"))
+            {
+                SocialEdge.Log.LogInformation("Called CacheFillActiveInventory and it was NULLL : " + _publicDataObjs.ToString());
                 return false;
+            }
+                
 
             _activeInventory = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["ActiveInventory"].EscapedDataObject));
             _fillMask |= _activeInventory != null ? CachePlayerDataSegments.ACTIVE_INVENTORY : 0;

@@ -55,6 +55,7 @@ namespace SocialEdgeSDK.Server.Requests
             }
 
             result.count = InboxModel.Count(SocialEdgePlayer);
+            SocialEdgePlayer.CacheFlush();
 
             return result;
         }
