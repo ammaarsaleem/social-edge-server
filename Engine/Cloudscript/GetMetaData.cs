@@ -31,10 +31,18 @@ namespace SocialEdgeSDK.Server.Requests
             ILogger log)
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
-            SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
+
+            // TEST : CREATE NEW PLAYER
+            //Player.NewPlayerInit(SocialEdgePlayer);
+            //SocialEdgePlayer.CacheFlush();
+            //return new GetMetaDataResult();
+            // TEST : CREATE NEW PLAYER
+
+            SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
             Inbox.Validate(SocialEdgePlayer);
+            //Tournaments.Join(SocialEdgePlayer, SocialEdgeTournament, "TournamentWeeklyChampionship", 100);
 
             try
             {
@@ -47,7 +55,6 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
                 metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
-                metaDataResponse.playerDataModel = SocialEdgePlayer.PlayerModel.Fetch();
                 metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
                 metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                 metaDataResponse.appVersionValid = true; // TODO
@@ -63,6 +70,7 @@ namespace SocialEdgeSDK.Server.Requests
                 SocialEdgePlayer.CacheFlush();
                 SocialEdgeTournament.CacheFlush();
                 
+                metaDataResponse.playerDataModel = SocialEdgePlayer.PlayerModel.Fetch();
                 return metaDataResponse;
             }
             catch (Exception e)
