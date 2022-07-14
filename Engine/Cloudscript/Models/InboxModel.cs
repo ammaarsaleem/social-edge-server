@@ -13,55 +13,57 @@ namespace SocialEdgeSDK.Server.Models
 {
     public static class InboxModel
     {
-        public static async Task<BsonDocument> Get(string inboxId)
+        public static async Task<InboxDataDocument> Get(string inboxId)
         {
-            return !string.IsNullOrEmpty(inboxId) ? await SocialEdge.DataService.GetCollection<BsonDocument>("inbox").FindOneById(inboxId) : null;
+            return !string.IsNullOrEmpty(inboxId) ? await SocialEdge.DataService.GetCollection<InboxDataDocument>("inbox").FindOneById(inboxId) : null;
         }
 
         public static string Init(string inboxId)
         {
-            var collection = SocialEdge.DataService.GetCollection<BsonDocument>("inbox");
-            BsonDocument container = new BsonDocument() {["_id"] = ObjectId.Parse(inboxId),  ["inboxData"] = new BsonDocument() {["messages"] = new BsonDocument(){} } };
-            collection.InsertOne(container);
-            return container.Contains("_id") ? container["_id"].ToString() : null;
+            var collection = SocialEdge.DataService.GetCollection<InboxDataDocument>("inbox");
+            InboxDataDocument container = new InboxDataDocument();
+            container._id = ObjectId.Parse(inboxId);
+            container._messages = new Dictionary<string, InboxDataMessage>();
+
+            var taskT = collection.InsertOne(container);
+            taskT.Wait();
+            return taskT.Result == true ? container._id.ToString() : null;
         }
 
-        public static async Task<DataService.UpdateResult> Set(string inboxId, BsonDocument inbox)
+        public static async Task<DataService.UpdateResult> Set(string inboxId, Dictionary<string, InboxDataMessage> inbox)
         {  
-            BsonDocument inboxData = new BsonDocument() { ["inboxData"] = inbox };
-            return await SocialEdge.DataService.GetCollection<BsonDocument>("inbox").ReplaceOneById(inboxId, inboxData, true);
+            var collection = SocialEdge.DataService.GetCollection<InboxDataDocument>("inbox");
+            var taskT = await collection.UpdateOneById<Dictionary<string, InboxDataMessage>>(inboxId, "InboxData", inbox, true);
+            return taskT;
         }
 
         public static int Count(SocialEdgePlayerContext socialEdgePlayer)
         {
             var inbox = socialEdgePlayer.Inbox;
-            if (inbox == null) return 0;
+            if (inbox == null) 
+                return 0;
             
             long now = Utils.UTCNow();
             int count = 0;
-            var messages = inbox["messages"].AsBsonDocument;
-            foreach (string key in messages.Names)
+            foreach (var item in inbox)
             {
-                var msg = messages[key].AsBsonDocument;
-                //SocialEdgeEnvironment.Log.LogInformation(msg.ToString());
-                count += (msg.Contains("startTime") == false || now >= msg["startTime"]) ? 1 : 0;
+                InboxDataMessage message = item.Value;
+                count += now >= message.startTime ? 1 : 0;
             }
 
             return count;
         }
 
-        public static void Add(BsonDocument message, SocialEdgePlayerContext socialEdgePlayer)
+        public static void Add(InboxDataMessage message, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
-            BsonDocument msg = new BsonDocument() { [message["id"].ToString()] = message };
-            messages.AddRange(msg);
+            socialEdgePlayer.Inbox.Add(message.msgId, message);
             socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
         }
 
-        public static bool Update(string msgId, BsonDocument message, SocialEdgePlayerContext socialEdgePlayer)
+        public static bool Update(string msgId, InboxDataMessage message, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
-            message["id"] = msgId;
+            var messages = socialEdgePlayer.Inbox;
+            message.msgId = msgId;
             messages[msgId] = message;
             socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
             return true;
@@ -69,11 +71,10 @@ namespace SocialEdgeSDK.Server.Models
 
         public static bool Del(string msgId, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
-            bool isExists = messages.GetValue(msgId, null) != null;
+            bool isExists = socialEdgePlayer.Inbox.ContainsKey(msgId);
             if (isExists) 
             {
-                messages.Remove(msgId);
+                socialEdgePlayer.Inbox.Remove(msgId);
                 socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
             }
             return isExists;
@@ -81,23 +82,21 @@ namespace SocialEdgeSDK.Server.Models
 
         public static string FindOne(string msgType, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
+            Dictionary<string, InboxDataMessage> messages = socialEdgePlayer.Inbox;
             var it = messages.GetEnumerator();
-            while (it.MoveNext() && !(messages[it.Current.Name]["type"] == msgType));
-            return it.Current.Name != null ? messages[it.Current.Name]["id"].ToString() : null;
+            while (it.MoveNext() && !(messages[it.Current.Key].type == msgType));
+            return it.Current.Key != null ? messages[it.Current.Key].msgId.ToString() : null;
         }
 
         public static List<string> FindAll(string msgType, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var messages = socialEdgePlayer.Inbox["messages"].AsBsonDocument;
+            Dictionary<string, InboxDataMessage> messages = socialEdgePlayer.Inbox;
             List<string> list = new List<string>();
             var it = messages.GetEnumerator();
             while (it.MoveNext())
             {
-                if (messages[it.Current.Name]["type"] == msgType)
-                {
-                    list.Add(it.Current.Name.ToString());
-                }
+                if (messages[it.Current.Key].type == msgType)
+                    list.Add(it.Current.Key.ToString());
             }
 
             return list;

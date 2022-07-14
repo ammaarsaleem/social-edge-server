@@ -34,6 +34,8 @@ namespace SocialEdgeSDK.Server.Requests
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
 
+            //Inbox.Validate(SocialEdgePlayer);
+            //InboxModel.Init(SocialEdgePlayer.InboxId);
             // TEST : CREATE NEW PLAYER
             //Player.NewPlayerInit(SocialEdgePlayer);
             //SocialEdgePlayer.CacheFlush();
@@ -55,7 +57,7 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.friends = SocialEdgePlayer.Friends;
                 metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
                 //metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
-                metaDataResponse.inbox = SocialEdgePlayer.InboxJson;
+                metaDataResponse.inbox = SocialEdgePlayer.Inbox;
                 metaDataResponse.chat = SocialEdgePlayer.ChatJson;
                 metaDataResponse.appVersionValid = true; // TODO
                 metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);

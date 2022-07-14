@@ -17,7 +17,7 @@ namespace SocialEdgeSDK.Server.Models
         public Dictionary<string, TournamentLiveData> liveTournaments;
         public string chat;
         public int inboxCount;
-        public string inbox;
+        public Dictionary<string, InboxDataMessage> inbox;
         public GetShopResult shop;
         public List<FriendInfo> friends;
         public GetTitleDataResult titleData;

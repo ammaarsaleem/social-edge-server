@@ -72,7 +72,7 @@ namespace SocialEdgeSDK.Server.Context
         private string _avatarInfo;
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private BsonDocument _mongoDocIds;
-        private BsonDocument _inbox;
+        private Dictionary<string, InboxDataMessage> _inbox;
         private BsonDocument _chat;
         private BsonDocument _publicData;
         private BsonDocument _activeInventory;
@@ -99,7 +99,7 @@ namespace SocialEdgeSDK.Server.Context
         public string EntityToken { get => (((_fillMask & CachePlayerDataSegments.ENTITY_TOKEN) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_TOKEN))) ? _entityToken : null; }
         public BsonDocument ActiveInventory { get => (((_fillMask & CachePlayerDataSegments.ACTIVE_INVENTORY) != 0) || (CacheFillSegment(CachePlayerDataSegments.ACTIVE_INVENTORY))) ? _activeInventory : null; }
         public BsonDocument PublicData { get => (((_fillMask & CachePlayerDataSegments.PUBLIC_DATA) != 0) || (CacheFillSegment(CachePlayerDataSegments.PUBLIC_DATA))) ? _publicData : null; }
-        public BsonDocument Inbox { get => (((_fillMask & CachePlayerDataSegments.INBOX) != 0) || (CacheFillSegment(CachePlayerDataSegments.INBOX))) ? _inbox : null; }                                                
+        public Dictionary<string, InboxDataMessage> Inbox { get => (((_fillMask & CachePlayerDataSegments.INBOX) != 0) || (CacheFillSegment(CachePlayerDataSegments.INBOX))) ? _inbox : null; }                                                
         public BsonDocument Chat { get => (((_fillMask & CachePlayerDataSegments.CHAT) != 0) || (CacheFillSegment(CachePlayerDataSegments.CHAT))) ? _chat : null; }
         public List<FriendInfo> Friends { get => (((_fillMask & CachePlayerDataSegments.FRIENDS) != 0) || (CacheFillSegment(CachePlayerDataSegments.FRIENDS))) ? _friends : null; }
         public List<EntityProfileBody> FriendsProfiles { get => (((_fillMask & CachePlayerDataSegments.FRIENDS_PROFILES) != 0) || (CacheFillSegment(CachePlayerDataSegments.FRIENDS_PROFILES))) ? _friendsProfiles : null; }
@@ -313,7 +313,7 @@ namespace SocialEdgeSDK.Server.Context
         {
              var inboxT = InboxModel.Get(InboxId);
              if (inboxT != null) inboxT.Wait();
-            _inbox = inboxT != null && inboxT.Result != null ? inboxT.Result["inboxData"].AsBsonDocument : null;
+            _inbox = inboxT != null && inboxT.Result != null ? inboxT.Result._messages : null;
             _fillMask |= _inbox != null ? CachePlayerDataSegments.INBOX : 0;
             SocialEdge.Log.LogInformation("Task fetch INBOX");
             return _inbox != null;

@@ -124,15 +124,15 @@ namespace SocialEdgeSDK.Server.Requests
 
             if (leagueDailyRewardMsgId != null)
             {
-                var inbox = socialEdgePlayer.Inbox;
-                if (inbox["messages"].AsBsonDocument.Contains(leagueDailyRewardMsgId))
+                Dictionary<string, InboxDataMessage> inbox = socialEdgePlayer.Inbox;
+                if (inbox.ContainsKey(leagueDailyRewardMsgId))
                 {
-                    var msg = inbox["messages"][leagueDailyRewardMsgId];
-                    var startTime = Convert.ToInt64(msg["startTime"]);
+                    InboxDataMessage msg = inbox[leagueDailyRewardMsgId];
+                    long startTime = msg.startTime;
                     if (false && Utils.UTCNow() >= startTime)
                     {
-                        msg["startTime"] = Utils.EndOfDay(DateTime.Now);
-                        msg["time"] = msg["startTime"];
+                        msg.startTime = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
+                        msg.time = msg.startTime;
                         await InboxModel.Set(socialEdgePlayer.InboxId, socialEdgePlayer.Inbox);
             
                         var reward = Leagues.GetDailyReward(socialEdgePlayer.PublicData["leag"].ToString());
@@ -152,7 +152,7 @@ namespace SocialEdgeSDK.Server.Requests
                         result.Add("error", "invalidDailyReward");
                         result.Add("coins", coins);
                         result.Add("gems", gems);
-                        result.Add("msgStartTime", msg["startTime"]);
+                        result.Add("msgStartTime", msg.startTime);
                     }                                   
                 }
             }

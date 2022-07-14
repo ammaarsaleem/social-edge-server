@@ -4,6 +4,7 @@
 /// Proprietary and confidential
 
 using System;
+using System.Collections.Generic;
 using SocialEdgeSDK.Server.Context;
 using Newtonsoft.Json.Linq;
 using MongoDB.Bson;
@@ -15,6 +16,17 @@ namespace SocialEdgeSDK.Server.Api
         public static BsonDocument GetDailyReward(string leagueId)
         {
             return SocialEdge.TitleContext.GetTitleDataProperty("Leagues")[leagueId]["dailyReward"];
+        }
+
+        public static Dictionary<string, int> GetDailyRewardDictionary(string leagueId)
+        {
+            Dictionary<string, int>  outDict = new Dictionary<string, int>();
+            var dict = SocialEdge.TitleContext.GetTitleDataProperty("Leagues")[leagueId]["dailyReward"];
+
+            foreach(var item in dict)
+                outDict.Add(item.Name, (int)item.Value);
+
+            return outDict;
         }
 
         public static int GetQualifiedLeageId(int trophies)

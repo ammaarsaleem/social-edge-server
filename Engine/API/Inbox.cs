@@ -6,79 +6,73 @@
 using System;
 using SocialEdgeSDK.Server.Context;
 using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Bson.Serialization.Attributes;
 using SocialEdgeSDK.Server.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SocialEdgeSDK.Server.Common;
+using SocialEdgeSDK.Server.Api;
 
-namespace SocialEdgeSDK.Server.Api
+namespace SocialEdgeSDK.Server.Models
 {
+    public class InboxDataMessage
+    {
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string msgId;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string type;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isDaily;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string heading;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string body;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long time;
+                                                                public Dictionary<string, int> reward;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int trophies;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int rank;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string chestType;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string tournamentType;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string tournamentId;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string league;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long startTime;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long expireAt;
+    }
+
+    public class InboxDataDocument
+    {
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)][BsonIgnoreIfNull]    public ObjectId _id;
+        [BsonElement("InboxData")]                                                public Dictionary<string, InboxDataMessage> _messages;
+    }
+
     public static class Inbox
     {
-        public static BsonDocument CreateMessage(BsonDocument messageInfo)
+
+        private static InboxDataMessage CreateMessage()
         {
-            BsonDocument message = GetDefaultMessage();
-
-            message["id"] = Guid.NewGuid().ToString();
-            message["type"] = messageInfo["type"];
-
-            if (messageInfo.GetValue("isDaily", null) != null) message["isDaily"] = messageInfo["isDaily"];
-            if (messageInfo.GetValue("heading", null) != null) message["heading"] = messageInfo["heading"];
-            if (messageInfo.GetValue("body", null) != null) message["body"] = messageInfo["body"];
-            if (messageInfo.GetValue("time", null) != null) message["time"] = messageInfo["time"];
-            if (messageInfo.GetValue("reward", null) != null) message["reward"] = messageInfo["reward"];
-            if (messageInfo.GetValue("trophies", null) != null) message["trophies"] = messageInfo["trophies"];
-            if (messageInfo.GetValue("rank", null) != null) message["rank"] = messageInfo["rank"];
-            if (messageInfo.GetValue("chest", null) != null) message["chestType"] = messageInfo["chest"];
-            if (messageInfo.GetValue("tournamentType", null) != null) message["tournamentType"] = messageInfo["tournamentType"];
-            if (messageInfo.GetValue("tournamentId", null) != null) message["tournamentId"] = messageInfo["tournamentId"];
-            if (messageInfo.GetValue("league", null) != null) message["league"] = messageInfo["league"];
-            if (messageInfo.GetValue("startTime", null) != null) message["startTime"] = messageInfo["startTime"];
-            if (messageInfo.GetValue("expireAt", null) != null) message["expireAt"] = messageInfo["expireAt"];
-
-            return message;
-        }
-
-        private static BsonDocument GetDefaultMessage()
-        {
-            return new BsonDocument() {
-
-                ["id"] = 0,
-                ["type"] = "",
-                ["isDaily"] = false,
-                ["heading"] = "",
-                ["body"] = "",
-                ["time"] = Utils.UTCNow(),
-                ["reward"] = new BsonDocument() {},
-                ["trophies"] = 0,
-                ["rank"] = 0,
-                ["chestType"] = "",
-                ["tournamentType"] = "",
-                ["league"] = "",
-                ["startTime"] = Utils.UTCNow()
+            return new InboxDataMessage()
+            {
+                msgId = Guid.NewGuid().ToString(),
+                time = Utils.UTCNow(),
+                reward = new Dictionary<string, int>() {},
+                startTime = Utils.UTCNow()
             };
         }
 
         public static async Task<Dictionary<string, int>> Collect(string messageId, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var inbox = socialEdgePlayer.Inbox;
-            var msg = inbox["messages"].AsBsonDocument.Contains(messageId) ? inbox["messages"][messageId] : null;
+            Dictionary<string, InboxDataMessage> inbox = socialEdgePlayer.Inbox;
+            var msg = inbox.ContainsKey(messageId) ? inbox[messageId] : null;
             if (msg == null)
-            {
                 return null;
-            }
 
-            var granted = await Transactions.Grant(msg["reward"].AsBsonDocument, socialEdgePlayer);
+            var granted = await Transactions.Grant(msg.reward, socialEdgePlayer);
 
-            if (msg["isDaily"] == true)
+            if (msg.isDaily == true)
             {
                 var league = socialEdgePlayer.PlayerModel.Info.league;
-                msg["reward"] = Leagues.GetDailyReward(league.ToString());
-                msg["startTime"] = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
-                msg["time"] = msg["startTime"];
+                msg.reward = Leagues.GetDailyRewardDictionary(league.ToString());
+                msg.startTime = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
+                msg.time = msg.startTime;
                 socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
             }
-            else if (msg.AsBsonDocument.Contains("tournamentId") == true)
+            else if (msg.tournamentId != null)
             {
                 // TODO Tournaments.deleteTournament(sparkPlayer, msg.tournamentId);
                 InboxModel.Del(messageId, socialEdgePlayer);
@@ -94,78 +88,66 @@ namespace SocialEdgeSDK.Server.Api
             // Add promotion reward
             if (promoted)
             {
-                BsonDocument msgInfo = new BsonDocument()
-                {
-                    ["type"] = "RewardLeaguePromotion",
-                    ["league"] = league["name"].ToString(),
-                    ["reward"] = new BsonDocument() { ["gems"] = (int)league["qualification"]["reward"]["gems"]}
-                };
-
-                var message = CreateMessage(msgInfo);
+                var message = CreateMessage();
+                message.type = "RewardLeaguePromotion";
+                message.league =  league[qualifiedLeagueId.ToString()].ToString();
+                message.reward = new Dictionary<string, int>() { ["gems"] = (int)league["qualification"]["reward"]["gems"]};
                 InboxModel.Add(message, socialEdgePlayer);
             }
 
             // Update league rewards
-            var leagueDailyRewardMsgId = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
-            var msg = socialEdgePlayer.Inbox["messages"][leagueDailyRewardMsgId];
-            var leageuDailyRewardMsgInfo = new BsonDocument()
-            {
-                ["type"] = "RewardDailyLeague",
-                ["isDaily"] = true,
-                ["league"] = league["name"].ToString(),
-                ["reward"] = new BsonDocument()
-                    {
-                        ["gems"] = (int)league["dailyReward"]["gems"],
-                        ["coins"] = (int)league["dailyReward"]["coins"]
-                    }
-                ["startTime"] = msg["startTime"],
-                ["time"] = msg["startTime"]
-            };
+            string leagueDailyRewardMsgId = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
+            var msg = socialEdgePlayer.Inbox[leagueDailyRewardMsgId];
+            var leageuDailyRewardMsgInfo =Inbox.CreateMessage();
+            leageuDailyRewardMsgInfo.type = "RewardDailyLeague";
+            leageuDailyRewardMsgInfo.isDaily = true;
+            leageuDailyRewardMsgInfo.league = league[socialEdgePlayer.PlayerModel.Info.league].ToString();
+            leageuDailyRewardMsgInfo.reward = new Dictionary<string, int>()
+                {
+                    ["gems"] = (int)league["dailyReward"]["gems"],
+                    ["coins"] = (int)league["dailyReward"]["coins"]
+                };
+            leageuDailyRewardMsgInfo.startTime = msg.startTime;
+            leageuDailyRewardMsgInfo.time = msg.startTime;
 
-            var leagueDailyRewardMessage = Inbox.CreateMessage(leageuDailyRewardMsgInfo);
+
             InboxModel.Update(leagueDailyRewardMsgId, leageuDailyRewardMsgInfo, socialEdgePlayer);
         }
 
         private static void ValidateDailyReward(SocialEdgePlayerContext socialEdgePlayer)
         {
-            var msgInfo = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
+            string msgInfo = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
             if (msgInfo == null)
             {
                 var leagueId = socialEdgePlayer.PlayerModel.Info.league.ToString();
                 var reward = Leagues.GetDailyReward(leagueId);
-                BsonDocument newMsgInfo = new BsonDocument()
-                {
-                    ["type"] = "RewardDailyLeague",
-                    ["league"] = Leagues.GetLeague(leagueId)["name"].ToString(),
-                    ["isDaily"] = true,
-                    ["reward"] = new BsonDocument()
+                InboxDataMessage newMsgInfo = Inbox.CreateMessage();
+                newMsgInfo.type = "RewardDailyLeague";
+                newMsgInfo.league = Leagues.GetLeague(leagueId)["name"].ToString();
+                newMsgInfo.isDaily = true;
+                newMsgInfo.reward = new Dictionary<string, int>()
                     {
-                        ["coins"] = reward["coins"],
-                        ["gems"] = reward["gems"]
-                    }
-                };
+                        ["coins"] = (int)reward["coins"],
+                        ["gems"] = (int)reward["gems"]
+                    };
 
-                var message = Inbox.CreateMessage(newMsgInfo);
-                InboxModel.Add(message, socialEdgePlayer);
+                InboxModel.Add(newMsgInfo, socialEdgePlayer);
             }
         }
 
         private static void RemoveExpired(SocialEdgePlayerContext socialEdgePlayer)
         {
-            var inbox = socialEdgePlayer.Inbox;  
+            Dictionary<string, InboxDataMessage> inbox = socialEdgePlayer.Inbox;  
             if (inbox == null)
                 return;
 
             long now = Utils.UTCNow();
-            var messages = inbox["messages"].AsBsonDocument;
             List<string> delIds = new List<string>();
-            foreach (string key in messages.Names)
+            foreach (var item in inbox)
             {
-                var msg = messages[key].AsBsonDocument;
-                if (msg.Contains("expireAt") && Convert.ToInt64(msg["expireAt"].ToString()) <= now)
-                {
-                    delIds.Add(msg["id"].ToString());
-                }
+                var msg = item.Value;
+                if (msg.expireAt != 0 && Convert.ToInt64(msg.expireAt.ToString()) <= now)
+                    delIds.Add(msg.msgId.ToString());
             }
 
             foreach(string id in delIds)
