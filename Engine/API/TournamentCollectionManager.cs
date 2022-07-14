@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Context;
@@ -135,5 +136,23 @@ namespace SocialEdgeSDK.Server.Api
             entry.joinTime = Utils.UTCNow();
             entry.playerTimeZoneSlot = socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot;
         }
+
+        public static List<TournamentEntryData> GetEntries(string collectionName, List<string> ids)
+        {
+            var collection = SocialEdge.DataService.GetDatabase().GetCollection<TournamentEntryModelDocument>(collectionName);
+            //var collection = SocialEdge.DataService.GetCollection<TournamentEntryModelDocument>(collectionName);
+            FilterDefinition<TournamentEntryModelDocument> filter = Builders<TournamentEntryModelDocument>.Filter.In<string>("_id", ids);
+
+            //var sortByJoinTime = Builders<TournamentEntryData>.Sort.Ascending("joinTime");
+            //var sortByLastActive = Builders<TournamentEntryData>.Sort.Ascending("lastActiveTime");
+            //var projection = Builders<TournamentEntryData>.Projection.Include("_id");
+
+            //if (daysLeft > 0)
+            //    pool = collection.Find(filter).Sort(sortByJoinTime).Sort(sortByLastActive).Project<TournamentPoolEntry>(projection).Limit(poolSize).ToList<TournamentPoolEntry>();
+
+            List<TournamentEntryModelDocument> list = collection.Find(filter).ToList<TournamentEntryModelDocument>();
+            return null;
+        }
+
     }
 }

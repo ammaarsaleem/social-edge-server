@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
@@ -89,7 +90,7 @@ namespace SocialEdgeSDK.Server.Models
             var collection = SocialEdge.DataService.GetCollection<TournamentEntryModelDocument>(_collectionName);
             var taskT = collection.UpdateOneById<TournamentEntryData>(_id, typeof(TournamentEntryData).Name, _entry, true);
             taskT.Wait(); 
-
+            SocialEdge.Log.LogInformation("Task flush TOURNAMENT_ENTRY");
             return taskT.Result.ModifiedCount != 0;       
         }        
     }

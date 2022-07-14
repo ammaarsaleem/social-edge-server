@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
@@ -13,11 +14,6 @@ using SocialEdgeSDK.Server.Context;
 
 namespace SocialEdgeSDK.Server.Models
 {
-    public class TournamentPoolEntry
-    {
-        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]   public string _id;
-    }
-
     public class TournamentData : DataModelBase
     {
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string shortCode;
@@ -30,7 +26,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long duration;
                                                                 public Dictionary<string, List<TournamentReward>> rewards;
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool concluded;
-                                                                public List<TournamentPoolEntry> entries;
+                                                                public List<string> entryIds;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int score;
         [BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]    public DateTime expireAt;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int tournamentCollectionIndex;
@@ -101,7 +97,7 @@ namespace SocialEdgeSDK.Server.Models
             var collection = SocialEdge.DataService.GetCollection<TournamentModelDocument>(TOURNAMENT_MODEL_COLLECTION);
             var taskT = collection.UpdateOneById<TournamentData>(_id, typeof(TournamentDataModel).Name, _tournament, true);
             taskT.Wait(); 
-
+            SocialEdge.Log.LogInformation("Task flush TOURNAMENT_MODEL");
             return taskT.Result.ModifiedCount != 0;       
         }
     }
