@@ -195,12 +195,26 @@ namespace SocialEdgeSDK.Server.Api
             requestT.Wait();
             return requestT.Result.Error == null;
         }
-
         public static async Task<PlayFabResult<GetUserAccountInfoResult>> GetAccountInfo(string playerId)
         {
             GetUserAccountInfoRequest request = new GetUserAccountInfoRequest();
             request.PlayFabId = playerId;
             return await PlayFab.PlayFabServerAPI.GetUserAccountInfoAsync(request); 
+        }
+        public static async Task<PlayFabResult<PlayFab.ClientModels.PurchaseItemResult>> PurchaseItem(string itemID, int price, string vCurrency)
+        {
+            var request = new PlayFab.ClientModels.PurchaseItemRequest();
+            request.ItemId = itemID;
+            request.Price = price;
+            request.VirtualCurrency = vCurrency;
+            return await PlayFab.PlayFabClientAPI.PurchaseItemAsync(request);
+        }
+        public static async Task<PlayFabResult<PlayFab.ServerModels.GrantItemsToUserResult>> GrantItem(string playerId, string itemId)
+        {
+            var request = new PlayFab.ServerModels.GrantItemsToUserRequest();
+            request.PlayFabId = playerId;
+            request.ItemIds = new List<string> {itemId};
+            return await PlayFab.PlayFabServerAPI.GrantItemsToUserAsync(request);
         }
 
         public static async Task<PlayFabResult<GetPlayerCombinedInfoResult>> GetCombinedInfo(string playerId)
@@ -292,11 +306,13 @@ namespace SocialEdgeSDK.Server.Api
             socialEdgePlayer.PlayerModel.Info.tag = newTag;
             socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
+            CatalogItem defaultSkin =  SocialEdge.TitleContext.GetCatalogItem("SkinDark");
             PlayerInventoryItem skinItem = new PlayerInventoryItem();
-            CatalogItem defaultSkin = SocialEdge.TitleContext.CatalogItems.Catalog.Find(s => s.ItemId == "SkinDark");
             skinItem.kind = defaultSkin.Tags[0];
             skinItem.key = defaultSkin.ItemId;
             socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
+
+            var addInventoryT = GrantItem(playerId, defaultSkin.ItemId);
 
             //playerData["coldData"]["isInitialized"] = true;
             //playerPublicData["PublicProfileEx"]["tag"] = newTag;
@@ -314,7 +330,8 @@ namespace SocialEdgeSDK.Server.Api
             //var UpdatePublicDataT = UpdatePublicData(entityToken, entityId, playerPublicData);
 
             //Task.WaitAll(UpdatePlayerDataT, addVirualCurrencyT, updateDisplayNameT, UpdatePublicDataT);
-            Task.WaitAll(addVirualCurrencyT, updateDisplayNameT);
+            //Task.WaitAll(addVirualCurrencyT, updateDisplayNameT);
+            Task.WaitAll(addVirualCurrencyT, updateDisplayNameT, addInventoryT) ;
 
         }
 
