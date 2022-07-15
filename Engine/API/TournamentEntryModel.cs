@@ -18,7 +18,7 @@ namespace SocialEdgeSDK.Server.Models
     {
         [BsonElement("eloScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _eloScore;
         [BsonElement("rnd")][BsonRepresentation(MongoDB.Bson.BsonType.Double)]              public double _rnd;
-        [BsonElement("expireAt")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]       public DateTime _expireAt;
+        [BsonElement("expireAt")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]          public long _expireAt;
         [BsonElement("score")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int _score;
         [BsonElement("retentionDay")][BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string _retentionDay;
         [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _league;
@@ -30,7 +30,7 @@ namespace SocialEdgeSDK.Server.Models
 
         [BsonIgnore] public int eloScore {get => _eloScore; set {_eloScore = value; isDirty = true;}}
         [BsonIgnore] public double rnd {get => _rnd; set {_rnd = value; isDirty = true;}}
-        [BsonIgnore] public DateTime expireAt {get => _expireAt; set {_expireAt = value; isDirty = true;}}
+        [BsonIgnore] public long expireAt {get => _expireAt; set {_expireAt = value; isDirty = true;}}
         [BsonIgnore] public int score {get => _eloScore; set {_eloScore = value; isDirty = true;}}
         [BsonIgnore] public string retentionDay {get => _retentionDay; set {_retentionDay = value; isDirty = true;}}
         [BsonIgnore] public int league {get => _league; set {_league = value; isDirty = true;}}
@@ -58,7 +58,7 @@ namespace SocialEdgeSDK.Server.Models
 
         [BsonIgnore] public string CollectionName { get => _collectionName; set => _collectionName = value; }
         [BsonIgnore] public string DBId { get => _id; set => _id = value; }
-        public TournamentEntryData TournamentEntry { get => _entry != null && _entry.isCached ? _entry : _entry = Get(); }
+        public TournamentEntryData TournamentEntry { get => _entry != null && _entry.isCached ? _entry : Get(); }
 
         public void ReadOnly() { _isCached = false; }
         
@@ -69,17 +69,36 @@ namespace SocialEdgeSDK.Server.Models
             _socialEdgeTournament.SetDirtyBit(CacheTournamentDataSegments.TOURNAMENT_ENTRY);
         } 
 
-        public TournamentEntryData Get()
+        public TournamentEntryData Create(string id, string collectionName)
         {
-            if (_collectionName == null || string.IsNullOrEmpty(_id))
+            _id = id;
+            _collectionName = collectionName;
+            return _entry = new TournamentEntryData();
+        }
+
+        public TournamentEntryData Get(string id = null, string collectionName = null)
+        {
+            if (id == _id && collectionName == _collectionName && _entry != null)
+                return _entry;
+
+            var entryId = id != null ? id : _id;
+            var tournamentCollectionName = collectionName != null ? collectionName : _collectionName;
+
+            if (tournamentCollectionName == null || string.IsNullOrEmpty(id))
                 return null;
 
-            var collection = SocialEdge.DataService.GetCollection<TournamentEntryModelDocument>(_collectionName);
+            var collection = SocialEdge.DataService.GetCollection<TournamentEntryModelDocument>(tournamentCollectionName);
             var projection = Builders<TournamentEntryModelDocument>.Projection.Exclude("_id").Include(typeof(TournamentEntryData).Name);
-            var taskT = collection.FindOneById<TournamentEntryData>(_id, projection);
+            var taskT = collection.FindOneById<TournamentEntryData>(entryId, projection);
             taskT.Wait();
-            if (taskT.Result != null) taskT.Result.isDirty = false;
-            return taskT.Result != null ? taskT.Result : new TournamentEntryData();
+            if (taskT.Result != null) 
+            {
+                taskT.Result.isDirty = false;
+                _id = entryId;
+                _collectionName = tournamentCollectionName;
+            }
+            SocialEdge.Log.LogInformation("Task fetch TOURNAMENT_ENTRY:" + (taskT.Result != null ? "(success)" : "(null)"));
+            return taskT.Result != null ? _entry = taskT.Result : null;
         }        
 
         internal bool CacheWrite()

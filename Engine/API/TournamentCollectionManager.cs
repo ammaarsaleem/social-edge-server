@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
@@ -19,9 +20,9 @@ namespace SocialEdgeSDK.Server.Api
     {
         public int index;
         public string name;
-        public DateTime expiryTime;
+        public long expiryTime;
 
-        public ActiveCollectionInfo(int index, string name, DateTime expiryTime)
+        public ActiveCollectionInfo(int index, string name, long expiryTime)
         {
             this.index = index;
             this.name = name;
@@ -72,15 +73,7 @@ namespace SocialEdgeSDK.Server.Api
                 }
             }
 
-            return found ? new ActiveCollectionInfo(i, collectionName + i.ToString(), new DateTime(expiryTimeMilliseconds)) : null;
-        }
-
-        public static BsonDocument GetPlayerFromCurrentTournament(SocialEdgePlayerContext socialEdgePlayer, string collectionName)
-        {
-            var collection = SocialEdge.DataService.GetCollection<BsonDocument>(collectionName);
-            var collectionT = collection.FindOneById(socialEdgePlayer.PlayerDBId);
-            collectionT.Wait();
-            return collectionT.Result;
+            return found ? new ActiveCollectionInfo(i, collectionName + i.ToString(), expiryTimeMilliseconds) : null;
         }
 
         public static int GetSlot(List<TournamentSlot> slotsData, long maxScore)
@@ -98,11 +91,9 @@ namespace SocialEdgeSDK.Server.Api
 
         public static void RegisterEntry(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, int score, string retentionDayString, string collectionName)
         {
-            var collection = SocialEdge.DataService.GetCollection<TournamentEntryData>(collectionName);
-            var taskT = collection.FindOneById(socialEdgePlayer.PlayerDBId);
-            taskT.Wait();
-            if (taskT.Result != null)
-                return;
+            //TournamentEntryData playerEntry = socialEdgeTournament.TournamentEntryModel.Get(socialEdgePlayer.PlayerDBId, collectionName);
+            //if (playerEntry != null)
+            //    return;
 
             string tournamentShortCode = socialEdgeTournament.TournamentLiveModel.GetActiveShortCode(socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot);
             var activeTournaments = socialEdgePlayer.PlayerModel.Tournament.activeTournaments;
@@ -119,11 +110,8 @@ namespace SocialEdgeSDK.Server.Api
             var slot = GetSlot(tournamentLive.slotsData, tournamentMaxScore);
 
             // Create a tournament entry
-            socialEdgeTournament.TournamentEntryModel.DBId = socialEdgePlayer.PlayerDBId;
-            socialEdgeTournament.TournamentEntryModel.CollectionName = collectionName;
-            TournamentEntryData entry = socialEdgeTournament.TournamentEntryModel.TournamentEntry;
-
-            entry.eloScore = 1000;// socialEdgePlayer.PlayerModel.Info.eloScore;
+            TournamentEntryData entry = socialEdgeTournament.TournamentEntryModel.Create(socialEdgePlayer.PlayerDBId, collectionName);
+            entry.eloScore = socialEdgePlayer.PlayerModel.Info.eloScore;
             //publicProfile: PlayerModel.getPublicProfileByPlayer(sparkPlayer),
             entry.rnd = Math.Floor((new Random().NextDouble() * 100));
             entry.expireAt = GetCurrentActiveCollection(socialEdgeTournament, tournamentShortCode).expiryTime;
@@ -137,22 +125,13 @@ namespace SocialEdgeSDK.Server.Api
             entry.playerTimeZoneSlot = socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot;
         }
 
-        public static List<TournamentEntryData> GetEntries(string collectionName, List<string> ids)
+        public static List<TournamentEntryModelDocument> GetSortedEntries(string collectionName, List<string> ids)
         {
             var collection = SocialEdge.DataService.GetDatabase().GetCollection<TournamentEntryModelDocument>(collectionName);
-            //var collection = SocialEdge.DataService.GetCollection<TournamentEntryModelDocument>(collectionName);
             FilterDefinition<TournamentEntryModelDocument> filter = Builders<TournamentEntryModelDocument>.Filter.In<string>("_id", ids);
-
-            //var sortByJoinTime = Builders<TournamentEntryData>.Sort.Ascending("joinTime");
-            //var sortByLastActive = Builders<TournamentEntryData>.Sort.Ascending("lastActiveTime");
-            //var projection = Builders<TournamentEntryData>.Projection.Include("_id");
-
-            //if (daysLeft > 0)
-            //    pool = collection.Find(filter).Sort(sortByJoinTime).Sort(sortByLastActive).Project<TournamentPoolEntry>(projection).Limit(poolSize).ToList<TournamentPoolEntry>();
-
-            List<TournamentEntryModelDocument> list = collection.Find(filter).ToList<TournamentEntryModelDocument>();
-            return null;
+            var sortByScore = Builders<TournamentEntryModelDocument>.Sort.Ascending(typeof(TournamentEntryData).Name + ".score");
+            var projection = Builders<TournamentEntryData>.Projection.Include("_id").Include(typeof(TournamentEntryData).Name + ".score");
+            return collection.Find(filter).Sort(sortByScore).ToList<TournamentEntryModelDocument>();
         }
-
     }
 }

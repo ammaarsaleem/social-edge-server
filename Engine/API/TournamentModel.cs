@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -28,7 +29,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool concluded;
                                                                 public List<string> entryIds;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int score;
-        [BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]    public DateTime expireAt;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long expireAt;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int tournamentCollectionIndex;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int tournamentSlot;
     }
@@ -45,60 +46,78 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] private SocialEdgeTournamentContext _socialEdgeTournament;
         [BsonIgnore] private bool _isCached;
         [BsonIgnore] private string _id;
-
-        [BsonElement("tournament")][BsonIgnoreIfNull] public TournamentData _tournament;
+        [BsonIgnore] Dictionary<string, TournamentData> _cache;
+        [BsonIgnore] Dictionary<string, bool> _readOnly;
+        [BsonElement("tournament")][BsonIgnore] public TournamentData _tournament;
         
-        public TournamentData Tournament { get => _tournament != null && _tournament.isCached ? _tournament : _tournament = Get<TournamentData>(nameof(_tournament)); }
-        public string Id { get => String.IsNullOrEmpty(_id) ? Insert() : _id; }
+        public TournamentData Tournament { get => _cache.ContainsKey(_id) ? _cache[_id] : null; }
+        public string Id { get => _id; }
 
         public void ReadOnly() { _isCached = false; }
+        public void ReadOnly(string id) { _readOnly.Add(id, true); }
         
         public TournamentDataModel(SocialEdgeTournamentContext socialEdgeTournament)
         {
             _socialEdgeTournament = socialEdgeTournament; 
             socialEdgeTournament.SetDirtyBit(CacheTournamentDataSegments.TOURNAMENT_MODEL);
             _isCached = true;
-        } 
-
-        private T Get<T>(string fieldName)
-        {
-            if (string.IsNullOrEmpty(_id))
-                return (T)Activator.CreateInstance(typeof(T));
-
-            string elemName = fieldName.Substring(1);
-            var collection = SocialEdge.DataService.GetCollection<TournamentModelDocument>(TOURNAMENT_MODEL_COLLECTION);
-            var projection = Builders<TournamentModelDocument>.Projection.Include(typeof(TournamentDataModel).Name + "." + elemName);
-            var taskT = collection.FindOneById<TournamentModelDocument>(_id, projection);
-            taskT.Wait();
-            _id = taskT.Result != null ? taskT.Result._id : null;
-            return taskT.Result != null ? (T)taskT.Result._model.GetType().GetField(fieldName).GetValue(taskT.Result._model) : (T)Activator.CreateInstance(typeof(T));
+            _cache = new Dictionary<string, TournamentData>();
+            _readOnly = new Dictionary<string, bool>();
         }
 
-        private string Insert()
+        public TournamentData Get(string tournamentId = null)
+        {
+            string id = tournamentId != null ? tournamentId : _id;
+            if (id != null && _cache.ContainsKey(id)) 
+                return _cache[id];
+
+            var collection = SocialEdge.DataService.GetCollection<TournamentModelDocument>(TOURNAMENT_MODEL_COLLECTION);
+            var projection = Builders<TournamentModelDocument>.Projection.Include(typeof(TournamentDataModel).Name);
+            var taskT = collection.FindOneById<TournamentModelDocument>(id, projection);
+            taskT.Wait();
+            if (taskT.Result != null) 
+            {
+                _cache.Add(id, taskT.Result._model);
+                _id = id;
+            }
+            SocialEdge.Log.LogInformation("Task fetch TOURNAMENT_MODEL:" + id + " " + (taskT.Result != null ? "(success)" : "(null)"));
+            return taskT.Result != null ? taskT.Result._model : null;
+        }
+
+        public string Create()
         {
             var collection = SocialEdge.DataService.GetCollection<TournamentModelDocument>(TOURNAMENT_MODEL_COLLECTION);
-
-            if (String.IsNullOrEmpty(_id))
-            {
-                TournamentModelDocument tournamentModelDocument = new TournamentModelDocument() { _model = _tournament };
-                var taskT = collection.InsertOne(tournamentModelDocument);
-                taskT.Wait();  
-                _id = tournamentModelDocument._id;           
-            }
-
-            return _id;
+            TournamentModelDocument tournamentModelDocument = new TournamentModelDocument();
+            var taskT = collection.InsertOne(tournamentModelDocument);
+            taskT.Wait();  
+            if (taskT.Result == true) _cache.Add(tournamentModelDocument._id, new TournamentData());           
+            return taskT.Result == true ? _id = tournamentModelDocument._id : null;
         } 
 
         internal bool CacheWriteTournamentModel()
         {
-            if (_isCached == false || string.IsNullOrEmpty(_id))
+            if (_isCached == false)
                 return false;
 
             var collection = SocialEdge.DataService.GetCollection<TournamentModelDocument>(TOURNAMENT_MODEL_COLLECTION);
-            var taskT = collection.UpdateOneById<TournamentData>(_id, typeof(TournamentDataModel).Name, _tournament, true);
-            taskT.Wait(); 
+
+            var tasks = new List<Task>();
+            var i = _cache.GetEnumerator();
+            while (i.MoveNext())
+            {
+                string id = i.Current.Key;
+                if (_readOnly.ContainsKey(id))
+                    continue;
+
+                TournamentData data = i.Current.Value;
+                var taskT = collection.UpdateOneById<TournamentData>(id, typeof(TournamentDataModel).Name, data, true);
+                tasks.Add(taskT);
+            }
+
+            Task.WaitAll(tasks.ToArray());
+
             SocialEdge.Log.LogInformation("Task flush TOURNAMENT_MODEL");
-            return taskT.Result.ModifiedCount != 0;       
+            return true;       
         }
     }
 }

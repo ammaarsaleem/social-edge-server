@@ -43,8 +43,7 @@ namespace SocialEdgeSDK.Server.Models
 
     public static class Inbox
     {
-
-        private static InboxDataMessage CreateMessage()
+        public static InboxDataMessage CreateMessage()
         {
             return new InboxDataMessage()
             {

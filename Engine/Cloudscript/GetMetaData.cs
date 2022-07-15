@@ -44,7 +44,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
             Inbox.Validate(SocialEdgePlayer);
-            //Tournaments.Join(SocialEdgePlayer, SocialEdgeTournament, "TournamentWeeklyChampionship", 100);
+            //Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
 
             try
             {

@@ -207,6 +207,9 @@ namespace SocialEdgeSDK.Server.Models
             var projection = Builders<PlayerModelDocument>.Projection.Include(typeof(PlayerDataModel).Name + "." + elemName).Exclude("_id");
             var taskT = collection.FindOneById<PlayerModelDocument>(_socialEdgePlayer.PlayerDBId, projection);
             taskT.Wait();
+
+            SocialEdge.Log.LogInformation("Task fetch PLAYER_MODEL:" + elemName + " " + (taskT.Result != null ? "(success)" : "(default)"));
+
             return taskT.Result != null ? (T)taskT.Result._model.GetType().GetField(fieldName).GetValue(taskT.Result._model) : (T)Activator.CreateInstance(typeof(T));
         }
 

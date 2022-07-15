@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
@@ -28,19 +29,6 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int min;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int max;
     }
-/*
-    public class TournamentRewards
-    {
-        [BsonElement("0")]  public List<TournamentReward> r0;
-        [BsonElement("1")]  public List<TournamentReward> r1;
-        [BsonElement("2")]  public List<TournamentReward> r2;
-        [BsonElement("3")]  public List<TournamentReward> r3;
-        [BsonElement("4")]  public List<TournamentReward> r4;
-        [BsonElement("5")]  public List<TournamentReward> r5;
-        [BsonElement("6")]  public List<TournamentReward> r6;
-        [BsonElement("7")]  public List<TournamentReward> r7;
-    }
-*/
 
     public class TournamentLiveData
     {
@@ -102,6 +90,7 @@ namespace SocialEdgeSDK.Server.Models
             var taskT = collection.FindOne<TournamentLiveDocument>(filter, projection);
             taskT.Wait();
             if (taskT.Result != null) _cache.Add(tournamentShortCode, taskT.Result.tournament);
+            SocialEdge.Log.LogInformation("Task fetch TOURNAMENT_LIVE:" + (taskT.Result != null ? "(success)" : "(null)"));
             return taskT.Result != null ? taskT.Result.tournament : null;
         }
 
@@ -117,11 +106,12 @@ namespace SocialEdgeSDK.Server.Models
             FilterDefinition<TournamentLiveDocument> filter = Builders<TournamentLiveDocument>.Filter.Eq("tournament.active", true);
             filter = filter & Builders<TournamentLiveDocument>.Filter.Lte("tournament.timeZoneMin", timeZone);
             filter = filter & Builders<TournamentLiveDocument>.Filter.Gt("tournament.timeZoneMax", timeZone);
-            ProjectionDefinition<TournamentLiveDocument> projection = Builders<TournamentLiveDocument>.Projection.Include("tournament.shortCode").Exclude<TournamentLiveDocument>("_id");
+            ProjectionDefinition<TournamentLiveDocument> projection = Builders<TournamentLiveDocument>.Projection.Include("TournamentLive").Exclude<TournamentLiveDocument>("_id");
             
             var taskT = collection.FindOne<TournamentLiveDocument>(filter, projection);
             taskT.Wait();
             if (taskT.Result != null) _cache.Add(taskT.Result.tournament.shortCode.ToString(), taskT.Result.tournament);
+            SocialEdge.Log.LogInformation("Task fetch TOURNAMENT_LIVE:" + (taskT.Result != null ? "(success)" : "(null)"));
             return taskT.Result != null ? taskT.Result.tournament.shortCode.ToString() : null;
         }
 

@@ -25,7 +25,7 @@ namespace SocialEdgeSDK.Server.Api
                 return null;
 
             ActiveCollectionInfo activeCollectionInfo = TournamentCollectionManager.GetCurrentActiveCollection(socialEdgeTournament, tournamentShortCode);
-            var playerEntry = TournamentCollectionManager.GetPlayerFromCurrentTournament(socialEdgePlayer, activeCollectionInfo.name);
+            var playerEntry = socialEdgeTournament.TournamentEntryModel.Get(socialEdgePlayer.PlayerDBId, activeCollectionInfo.name);// TournamentCollectionManager.GetPlayerFromCurrentTournament(socialEdgePlayer, activeCollectionInfo.name);
             if (playerEntry != null)
                 return null;
 
@@ -43,23 +43,24 @@ namespace SocialEdgeSDK.Server.Api
             var durationSeconds = liveTournament.duration * 60;
             var waitTimeSeconds = liveTournament.waitTime * 60;
             var currentStartTimeUTCSeconds = CalculateCurrentStartTime(waitTimeSeconds, durationSeconds, startTimeSeconds) * 1000;
-            TournamentDataModel tournamentModel = SetupTournamentModel(socialEdgeTournament, tournamentShortCode, liveTournament, currentStartTimeUTCSeconds, activeCollectionInfo.expiryTime, activeCollectionInfo.index);
+            TournamentData tournamentModel = SetupTournamentModel(socialEdgeTournament, tournamentShortCode, liveTournament, currentStartTimeUTCSeconds, activeCollectionInfo.expiryTime, activeCollectionInfo.index);
 
-            int tournamentMaxScore = socialEdgePlayer.PlayerModel._tournament.tournamentMaxScore;
+            int tournamentMaxScore = socialEdgePlayer.PlayerModel.Tournament.tournamentMaxScore;
             var tournamentSlot = TournamentCollectionManager.GetSlot(liveTournament.slotsData, tournamentMaxScore);
-            socialEdgeTournament.TournamentModel.Tournament.tournamentSlot = tournamentSlot;
+            tournamentModel.tournamentSlot = tournamentSlot;
 
-            var pool = TournamentPoolSample(tournamentShortCode, activeCollectionInfo.name, socialEdgePlayer, tournamentSlot, tournamentModel.Tournament.joinedTime, liveTournament.maxPlayers -1, null);
-            socialEdgeTournament.TournamentModel.Tournament.entryIds = pool;
+            var pool = TournamentPoolSample(tournamentShortCode, activeCollectionInfo.name, socialEdgePlayer, tournamentSlot, tournamentModel.joinedTime, liveTournament.maxPlayers - 1, null);
+            tournamentModel.entryIds = pool;
             string tournamentId = socialEdgeTournament.TournamentModel.Id;
-            var playerActiveTournament = CreatePlayerActiveTournament(tournamentModel.Tournament, 1);
+            var playerActiveTournament = CreatePlayerActiveTournament(tournamentModel, 1);
             socialEdgePlayer.PlayerModel.Tournament.activeTournaments.Add(tournamentId, playerActiveTournament);
 
             return tournamentId;
         }
 
-        private static TournamentDataModel SetupTournamentModel(SocialEdgeTournamentContext socialEdgeTournament, string tournamentShortCode, TournamentLiveData liveTourament, long currentStartTime, DateTime expiryTime, int tournamentCollectionIdx)
+        private static TournamentData SetupTournamentModel(SocialEdgeTournamentContext socialEdgeTournament, string tournamentShortCode, TournamentLiveData liveTourament, long currentStartTime, long expiryTime, int tournamentCollectionIdx)
         {
+            socialEdgeTournament.TournamentModel.Create();
             var tournament = socialEdgeTournament.TournamentModel.Tournament;
             tournament.shortCode = tournamentShortCode;
             tournament.name = liveTourament.name;
@@ -77,7 +78,7 @@ namespace SocialEdgeSDK.Server.Api
             tournament.tournamentCollectionIndex = tournamentCollectionIdx;
             tournament.tournamentSlot = 0;  
 
-            return socialEdgeTournament.TournamentModel;  
+            return socialEdgeTournament.TournamentModel.Tournament;  
         } 
 
         private static ActiveTournament CreatePlayerActiveTournament(TournamentData tournament, int rank)
@@ -102,13 +103,6 @@ namespace SocialEdgeSDK.Server.Api
             long creationTime = Utils.ToUTC(socialEdgePlayer.CombinedInfo.AccountInfo.Created);
             double retentionDays = (Utils.UTCNow() - creationTime) / (60*60*24*1000.0);
             return (int)Math.Floor(retentionDays);
-        }
-        
-        public static long GetPlayerMaxScore(SocialEdgePlayerContext socialEdgePlayer) 
-        {
-            //long? tournamentMaxScore = socialEdgePlayer.CombinedInfo.UserReadOnlyData(Constants.PrivateData.TOURNAMENT_MAX_SCORE);
-            //return tournamentMaxScore != null ? tournamentMaxScore.Value : 0;
-            return 0;
         }
 
         private static long CalculateCurrentStartTime(long waitTimeSeconds, long durationSeconds, long firstStartTimeSeconds) 
@@ -197,133 +191,92 @@ namespace SocialEdgeSDK.Server.Api
             return pool;
         }
 
-        public static void End(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, TournamentData activeTournament, TournamentDataModel tournament,  string tournamentId)
+        public static void End(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, ActiveTournament activeTournament)
         {
             int tournamentNewScore = 0;
+            TournamentData tournamentModel = socialEdgeTournament.TournamentModel.Tournament;
 
             if (activeTournament != null)
             {
-                var tournamentLive = socialEdgeTournament.TournamentLiveModel.Get(activeTournament.shortCode);
-                string collectionName = tournamentLive.collectionPrefix + activeTournament.tournamentCollectionIndex;
-                List<TournamentEntryData> playerList = TournamentCollectionManager.GetEntries(collectionName, tournament.Tournament.entryIds);
+                var tournamentLive = socialEdgeTournament.TournamentLiveModel.Get(tournamentModel.shortCode);
+                string collectionName = tournamentLive.collectionPrefix + tournamentModel.tournamentCollectionIndex;
+                List<string> entryIds = new List<string>(tournamentModel.entryIds);
+                entryIds.Add(socialEdgePlayer.PlayerDBId);
+                List<TournamentEntryModelDocument> entries = TournamentCollectionManager.GetSortedEntries(collectionName, entryIds);
+                activeTournament.rank = entries.FindIndex(0, entries.Count, x => x._id.ToString() == socialEdgePlayer.PlayerDBId) + 1;
+                tournamentModel.score = activeTournament.score;
+                tournamentNewScore = activeTournament.score;
+            }
 
-                if (playerList != null)
+            tournamentModel.concluded = true;
+
+            List<TournamentReward> rewards = tournamentModel.rewards[socialEdgePlayer.PlayerModel.Info.league.ToString()];
+            TournamentReward reward = rewards.Find(x => activeTournament.rank >= x.minRank && activeTournament.rank <= x.maxRank);
+
+            var i = socialEdgePlayer.Inbox.GetEnumerator();
+            bool found = false;
+            while(!found && i.MoveNext()) 
+                found = i.Current.Value.type == "RewardTournamentEnd";
+
+            if (!found)
+            {
+                InboxDataMessage msg = Inbox.CreateMessage();
+                msg.type = "RewardTournamentEnd";
+                msg.heading = "Tournament Results";
+                msg.body = "Tournament";
+                msg.trophies = reward.trophies;
+                msg.rank = activeTournament.rank;
+                msg.reward.Add("gems", reward.gems);
+                msg.tournamentType = activeTournament.type;
+                msg.tournamentId =  socialEdgeTournament.TournamentModel.Id;
+                msg.chestType = reward.chestType;
+                msg.expireAt = tournamentModel.expireAt;
+                
+                InboxModel.Add(msg, socialEdgePlayer);
+            }
+
+            if (tournamentNewScore > socialEdgePlayer.PlayerModel.Tournament.tournamentMaxScore)
+                socialEdgePlayer.PlayerModel.Tournament.tournamentMaxScore = tournamentNewScore;
+        }
+
+        public static void UpdateTournaments(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament)
+        {
+            Dictionary<string, ActiveTournament> activeTournaments = socialEdgePlayer.PlayerModel.Tournament.activeTournaments;
+            List<string> markedForDeletion = new List<string>();
+
+            foreach(var item in activeTournaments)
+            {
+                string tournamentId = item.Key;
+                ActiveTournament activeTournament = item.Value;
+
+                TournamentData tournamentModel = socialEdgeTournament.TournamentModel.Get(tournamentId);
+                if (tournamentModel != null)
                 {
-
+                    bool isEnded = (Utils.UTCNow() <  activeTournament.startTime) || // This case can occur if the tournament match ends after the tournament time is up
+                                    (Utils.UTCNow() > (activeTournament.startTime + activeTournament.duration * 60 * 1000 ));
+                    if (isEnded)
+                    {
+                        End(socialEdgePlayer, socialEdgeTournament, activeTournament);
+                        markedForDeletion.Add(tournamentId);
+                    }
                 }
+                else
+                {
+                    // Mark for deletion if tournament model was not found/deleted from db
+                    markedForDeletion.Add(tournamentId);
+                }
+            }
 
+            // Remove active tournaments marked for deletion
+            foreach (string id in markedForDeletion)
+                socialEdgePlayer.PlayerModel.Tournament.activeTournaments.Remove(id);
+
+            // Automatically join the next tournament
+            if (activeTournaments.Count == 0)
+            {
+                string tournamentShortCode = socialEdgeTournament.TournamentLiveModel.GetActiveShortCode(socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot);
+                Join(socialEdgePlayer, socialEdgeTournament, tournamentShortCode, 0);
             }
         }
     }
 }
-
-/*
-    var end = function(sparkPlayer, activeTournament, tournament, tournamentId) {
-        //-- Calculate reward here and reward player
-        var playerData = PlayerModel.get(sparkPlayer);
-        var tournamentNewScore = 0;
-
-        if (activeTournament) {
-            var tournamentConfig = TournamentConfig.get(tournament.shortCode);
-            var playersList = ChampionshipsCollectionManager.getPlayerLeaderboardFromCollection(sparkPlayer, tournamentConfig, tournament.championshipCollectionIndex, tournament.entries);
-            if (playersList) {
-                var entries = [];
-                for (var i = 0; i < playersList.length; i++) {
-                    var playerEntry = createTournamentPlayerModel(playersList[i]._id.$oid, playersList[i].publicProfile, playersList[i].score, true);
-                    entries.push(playerEntry);
-                }
-
-                sortEntries(entries);
-                
-                //// Adding player in entries list
-                var playerId = sparkPlayer.getPlayerId();
-                if (activeTournament) {
-                    var publicProfile = PlayerModel.getPublicProfile(playerId);
-                    var tournamentPlayer = createTournamentPlayerModel(playerId, publicProfile, activeTournament.score, false);
-                    var playerAdded = false;
-                    for (var i = 0; i < entries.length; i++) {
-                        if (entries[i].score <= tournamentPlayer.score) {
-                            entries.splice(i, 0, tournamentPlayer);
-                            playerAdded = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!playerAdded) {
-                        entries.push(tournamentPlayer);
-                    }
-                }
-                
-                updateRanks(entries);
-
-                // tournament.entries = entries;
-                
-                updatePlayerActiveTournament(playerId, activeTournament, entries);
-                
-                tournament.score = activeTournament.score;
-                tournamentNewScore = tournament.score;
-            }
-
-            tournament.concluded = true;
-            
-            var reward = TournamentModel.getRewardForRank(tournament, activeTournament.rank, playerData.pub.league);
-            var heading = Constants.TournamentResultMessage.HEADING;
-            var body = Constants.TournamentResultMessage.BODY;
-            
-            var trophies1 = 0;
-            var gems1 = 0;
-            var chestType1 = "";
-            
-            if(reward != undefined)
-            {
-                trophies1 = reward.trophies;
-                gems1 = reward.gems;
-                chestType1 = reward.chestType;
-            }
-            
-            var msgInfo = Inbox._getMessageByType(sparkPlayer, 'RewardTournamentEnd');
-            if (msgInfo == null) {
-                // Tournament reward
-                var msgInfo = {
-                    type: "RewardTournamentEnd",
-                    heading: heading,
-                    body: body,
-                    trophies: trophies1,
-                    rank: activeTournament.rank,
-                    reward: {
-                        gems: gems1
-                    },
-                    tournamentType: activeTournament.type,
-                    tournamentId: tournamentId,
-                    chest: chestType1,
-                    expireAt: tournament.expireAt
-                }
-                var message = Inbox.create(sparkPlayer, msgInfo);
-                InboxModel.add(sparkPlayer, message);
-            }
-                
-            // Award trophies
-            // playerData.pub.trophies2 += reward.trophies;
-            // _checkForLeaguePromotion(playerData);
-            PlayerModel.set(sparkPlayer);
-            
-            //Save new Max score in sparkPlayer
-            PlayerModel.getAndSetTournamentMaxScore(sparkPlayer, tournamentNewScore);
-
-            //-- If we decide to use a scheduler then we can put this code there.
-            // else {
-            //     // Convert durationMinutes and waitTimeMinutes to milliseconds
-            //     var duration = tournamentConfig.durationMinutes * 60 * 1000;
-            //     var waitTime = tournamentConfig.waitTimeMinutes * 60 * 1000;
-            //     liveTournament.startTime += duration + waitTime;
-            //     TournamentLive.set(tournamentShortCode, liveTournament);
-            // }
-
-            return tournament;
-        }
-
-        return errors.TOURNAMENT_NOT_FOUND;
-    };
-
-
-*/
