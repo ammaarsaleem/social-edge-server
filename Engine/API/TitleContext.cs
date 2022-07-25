@@ -3,6 +3,7 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System;
 using PlayFab.ServerModels;
 using System.Collections.Generic;
 using SocialEdgeSDK.Server.Api;
@@ -63,6 +64,9 @@ namespace SocialEdgeSDK.Server.DataService
             _storeItems = getShopTask.Result.storeResult;
             _catalogItemsDict = _catalogItems.Catalog.ToDictionary(m => m.ItemId, m => m);
             _storeItemsDict = _storeItems.Store.ToDictionary(m => m.ItemId, m => m);
+            Console.WriteLine("****** *********************  *****");
+            Console.WriteLine("****** ( FetchTitleContext )  *****");
+            Console.WriteLine("****** *********************  *****");
         }
 
         public dynamic GetTitleDataProperty(string key, dynamic dict = null)
