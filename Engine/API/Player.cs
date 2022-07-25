@@ -186,8 +186,9 @@ namespace SocialEdgeSDK.Server.Api
             return await PlayFab.PlayFabAdminAPI.UpdateUserTitleDisplayNameAsync(request);
         }
 
-        public static bool UpdatePlayerAvatarData(string playerId, string avatarData)
+        public static bool UpdatePlayerAvatarData(string playerId, PlayerMiniProfileData playerMiniProfile)
         {
+            string avatarData = playerMiniProfile.ToJson();
             var request = new PlayFab.ServerModels.UpdateAvatarUrlRequest();
             request.PlayFabId = playerId;
             request.ImageUrl = avatarData;
@@ -322,8 +323,13 @@ namespace SocialEdgeSDK.Server.Api
             InboxModel.Init(socialEdgePlayer.InboxId);
             //playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
 
-            String avatarInfo =  avatar + "," + avatarBgColor + "," + "XXX" + "," + "0";
-            UpdatePlayerAvatarData(playerId, avatarInfo);            
+            //String avatarInfo =  avatar + "," + avatarBgColor + "," + "XXX" + "," + "0";
+            PlayerMiniProfileData playerMiniProfile = new PlayerMiniProfileData();
+            playerMiniProfile.AvatarId = avatar;
+            playerMiniProfile.AvatarBgColor = avatarBgColor;
+            playerMiniProfile.UploadPicId = "XXX";
+            playerMiniProfile.EventGlow = 0;
+            UpdatePlayerAvatarData(playerId, playerMiniProfile);            
             //var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
             var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
@@ -331,17 +337,7 @@ namespace SocialEdgeSDK.Server.Api
 
             //Task.WaitAll(UpdatePlayerDataT, addVirualCurrencyT, updateDisplayNameT, UpdatePublicDataT);
             //Task.WaitAll(addVirualCurrencyT, updateDisplayNameT);
-            Task.WaitAll(addVirualCurrencyT, updateDisplayNameT, addInventoryT) ;
-
+            Task.WaitAll(addVirualCurrencyT, updateDisplayNameT, addInventoryT);
         }
-
-        public static bool UpdatePlayerAvatarInfo(SocialEdgePlayerContext socialEdgePlayer, String value, int index)
-        {
-            string[] avatarInfo = socialEdgePlayer.AvatarInfo.Split(',');
-            avatarInfo[index] = value;
-            string newInfo = String.Join(",",avatarInfo);
-           return  UpdatePlayerAvatarData(socialEdgePlayer.PlayerId, newInfo);
-        }
-
     }
 }

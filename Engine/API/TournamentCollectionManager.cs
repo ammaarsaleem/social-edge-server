@@ -111,27 +111,48 @@ namespace SocialEdgeSDK.Server.Api
 
             // Create a tournament entry
             TournamentEntryData entry = socialEdgeTournament.TournamentEntryModel.Create(socialEdgePlayer.PlayerDBId, collectionName);
+            entry.playerId = socialEdgePlayer.PlayerId;
+            entry.displayName = socialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
+            entry.country = socialEdgePlayer.CombinedInfo.PlayerProfile.Locations[0].CountryCode.ToString();
+            entry.league = socialEdgePlayer.PlayerModel.Info.league;
+
             entry.eloScore = socialEdgePlayer.PlayerModel.Info.eloScore;
-            //publicProfile: PlayerModel.getPublicProfileByPlayer(sparkPlayer),
             entry.rnd = Math.Floor((new Random().NextDouble() * 100));
             entry.expireAt = GetCurrentActiveCollection(socialEdgeTournament, tournamentShortCode).expiryTime;
             entry.score = score;
             entry.retentionDay = retentionDayString;
-            entry.league = socialEdgePlayer.PlayerModel.Info.league;
             entry.tournamentMaxScore = tournamentMaxScore;
             entry.tournamentSlot = slot;
             entry.lastActiveTime = Utils.UTCNow();
             entry.joinTime = Utils.UTCNow();
             entry.playerTimeZoneSlot = socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot;
+            entry._playerMiniProfile = socialEdgePlayer.AvatarInfo;
         }
 
-        public static List<TournamentEntryModelDocument> GetSortedEntries(string collectionName, List<string> ids)
+        public static int GetPlayerEntryRank(SocialEdgePlayerContext socialEdgePlayer, string collectionName, List<string> ids)
         {
             var collection = SocialEdge.DataService.GetDatabase().GetCollection<TournamentEntryModelDocument>(collectionName);
             FilterDefinition<TournamentEntryModelDocument> filter = Builders<TournamentEntryModelDocument>.Filter.In<string>("_id", ids);
-            var sortByScore = Builders<TournamentEntryModelDocument>.Sort.Ascending(typeof(TournamentEntryData).Name + ".score");
+            var sortByScore = Builders<TournamentEntryModelDocument>.Sort.Descending(typeof(TournamentEntryData).Name + ".score");
             var projection = Builders<TournamentEntryData>.Projection.Include("_id").Include(typeof(TournamentEntryData).Name + ".score");
-            return collection.Find(filter).Sort(sortByScore).ToList<TournamentEntryModelDocument>();
+            var entries = collection.Find(filter).Sort(sortByScore).ToList<TournamentEntryModelDocument>();
+            return entries.FindIndex(0, entries.Count, x => x._id.ToString() == socialEdgePlayer.PlayerDBId) + 1;
+        }
+        
+        public static List<TournamentLeaderboardEntry> GetSortedLeaderboardEntries(string collectionName, List<string> ids)
+        {
+            var collection = SocialEdge.DataService.GetDatabase().GetCollection<TournamentEntryModelDocument>(collectionName);
+            FilterDefinition<TournamentEntryModelDocument> filter = Builders<TournamentEntryModelDocument>.Filter.In<string>("_id", ids);
+            var sortByScore = Builders<TournamentEntryModelDocument>.Sort.Descending(typeof(TournamentEntryModelDocument).Name + ".score");
+            var projection = Builders<TournamentEntryModelDocument>.Projection.Expression(item => 
+                                                                        new TournamentLeaderboardEntry(
+                                                                                item._model.playerId, 
+                                                                                item._model.score, 
+                                                                                item._model.playerMiniProfile,
+                                                                                item._model.country,
+                                                                                item._model.league,
+                                                                                item._model.displayName));
+            return collection.Find(filter).Project(projection).Sort(sortByScore).ToList<TournamentLeaderboardEntry>();
         }
     }
 }

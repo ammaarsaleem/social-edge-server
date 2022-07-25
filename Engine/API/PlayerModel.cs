@@ -72,6 +72,7 @@ namespace SocialEdgeSDK.Server.Models
     {
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int eloScore;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int trophies;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int trophies2;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int earnings;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int win;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int lose;

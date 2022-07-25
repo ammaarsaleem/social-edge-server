@@ -162,9 +162,10 @@ namespace SocialEdgeSDK.Server.Api
 
         private static List<string> TournamentPoolSample(string tournamentShortCode, string collectionName, SocialEdgePlayerContext socialEdgePlayer, int tournamentSlot, long joinedTime, int poolSize, List<ObjectId> a_alreadyIncludedInArray)
         {
-            List<string> pool;
-            if(tournamentSlot <= 1) tournamentSlot = 1;
-            if(poolSize <= 1) poolSize = 1;
+            List<string> pool = new List<string>();
+            // TODO Need to check algorithm to uncomment this
+            //if (tournamentSlot <= 1) tournamentSlot = 1;
+            if (poolSize <= 1) poolSize = 1;
             
             var collection = SocialEdge.DataService.GetDatabase().GetCollection<TournamentEntryData>(collectionName);
             string playerId = socialEdgePlayer.PlayerId;
@@ -174,16 +175,20 @@ namespace SocialEdgeSDK.Server.Api
             // Check if user joined tournamnet on last day add the active players in leaderboards
             var daysLeft = GetTournamentDaysLeftWhenJoined(socialEdgePlayer, tournamentShortCode, joinedTime);
   
-            FilterDefinition<TournamentEntryData> filter = Builders<TournamentEntryData>.Filter.Eq("tournamentSlot", tournamentSlot);
+            FilterDefinition<TournamentEntryData> filter = Builders<TournamentEntryData>.Filter.Eq(typeof(TournamentEntryData).Name + ".tournamentSlot", tournamentSlot);
             filter = filter & Builders<TournamentEntryData>.Filter.Nin<ObjectId>("_id", alreadyIncludedArray);
             var sortByJoinTime = Builders<TournamentEntryData>.Sort.Ascending("joinTime");
             var sortByLastActive = Builders<TournamentEntryData>.Sort.Ascending("lastActiveTime");
             var projection = Builders<TournamentEntryData>.Projection.Include("_id");
 
+            List<BsonDocument> poolEntries;
             if (daysLeft > 0)
-                pool = collection.Find(filter).Sort(sortByJoinTime).Sort(sortByLastActive).Project<string>(projection).Limit(poolSize).ToList<string>();
+                poolEntries = collection.Find(filter).Sort(sortByJoinTime).Sort(sortByLastActive).Project(projection).Limit(poolSize).ToList();
             else
-                pool = collection.Find(filter).Sort(sortByLastActive).Project<string>(projection).Limit(poolSize).ToList<string>();
+                poolEntries = collection.Find(filter).Sort(sortByLastActive).Project(projection).Limit(poolSize).ToList();
+
+            foreach(var poolEntry in poolEntries)
+                pool.Add(poolEntry["_id"].ToString());
 
             // Filter out self and blocked
             pool = FilterFriends(socialEdgePlayer, pool);
@@ -202,8 +207,7 @@ namespace SocialEdgeSDK.Server.Api
                 string collectionName = tournamentLive.collectionPrefix + tournamentModel.tournamentCollectionIndex;
                 List<string> entryIds = new List<string>(tournamentModel.entryIds);
                 entryIds.Add(socialEdgePlayer.PlayerDBId);
-                List<TournamentEntryModelDocument> entries = TournamentCollectionManager.GetSortedEntries(collectionName, entryIds);
-                activeTournament.rank = entries.FindIndex(0, entries.Count, x => x._id.ToString() == socialEdgePlayer.PlayerDBId) + 1;
+                activeTournament.rank = TournamentCollectionManager.GetPlayerEntryRank(socialEdgePlayer, collectionName, entryIds);
                 tournamentModel.score = activeTournament.score;
                 tournamentNewScore = activeTournament.score;
             }
@@ -278,5 +282,36 @@ namespace SocialEdgeSDK.Server.Api
                 Join(socialEdgePlayer, socialEdgeTournament, tournamentShortCode, 0);
             }
         }
+
+        public static List<TournamentLeaderboardEntry> GetLeaderboard(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, string tournamentId)
+        {
+            TournamentData tournamentModel = socialEdgeTournament.TournamentModel.Get(tournamentId);
+            TournamentLiveData tournamentLive = socialEdgeTournament.TournamentLiveModel.Get(tournamentModel.shortCode);
+            string collectionName = tournamentLive.collectionPrefix + tournamentModel.tournamentCollectionIndex.ToString();
+            List<string> entryIds = new List<string>(tournamentModel.entryIds);
+            entryIds.Add(socialEdgePlayer.PlayerDBId);
+            List<TournamentLeaderboardEntry> leaderboardEntries = TournamentCollectionManager.GetSortedLeaderboardEntries(collectionName, entryIds);
+            return leaderboardEntries;
+        }
+
+        public static void FillAvailablePoolEntries(string tournamentId, SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament)
+        {
+            TournamentData tournamentData = socialEdgeTournament.TournamentModel.Get(tournamentId);
+            TournamentLiveData tournamentLiveData = socialEdgeTournament.TournamentLiveModel.Get(tournamentData.shortCode);
+            if (tournamentData.entryIds.Count >= tournamentLiveData.maxPlayers)
+                return;
+
+            int remainPoolSize = tournamentLiveData.maxPlayers - tournamentData.entryIds.Count - 1;
+            List<ObjectId> alreadyIncludedArray = new List<ObjectId>();
+
+            foreach(var id in tournamentData.entryIds)
+                alreadyIncludedArray.Add(ObjectId.Parse(id));
+
+            List<string> pool = TournamentPoolSample(tournamentData.shortCode, tournamentLiveData.collectionPrefix + tournamentData.tournamentCollectionIndex.ToString(), 
+                                        socialEdgePlayer, tournamentData.tournamentSlot, tournamentData.joinedTime, remainPoolSize, alreadyIncludedArray);
+            if (pool.Count > 0)
+                tournamentData.entryIds.AddRange(pool);
+        }
     }
 }
+

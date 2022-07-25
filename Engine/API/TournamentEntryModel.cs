@@ -14,31 +14,84 @@ using SocialEdgeSDK.Server.Context;
 
 namespace SocialEdgeSDK.Server.Models
 {
+    public class PlayerMiniProfileData 
+    {
+        [BsonElement("0")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarId;
+        [BsonElement("1")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarBgColor;
+        [BsonElement("2")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _uploadPicId;
+        [BsonElement("3")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _eventGlow;
+
+        [BsonIgnore] public string AvatarId { get => _avatarId; set => _avatarId = value; }
+        [BsonIgnore] public string AvatarBgColor { get => _avatarBgColor; set => _avatarBgColor = value; }
+        [BsonIgnore] public string UploadPicId { get => _uploadPicId; set => _uploadPicId = value; }
+        [BsonIgnore] public int EventGlow { get => _eventGlow; set => _eventGlow = value; }
+    }
+
     public class TournamentEntryData : DataModelBase
     {
+        [BsonElement("playerId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _playerId;
+        [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _displayName;
+        [BsonElement("country")][BsonRepresentation(MongoDB.Bson.BsonType.String)]          public string _country;
+        [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _league;
+
         [BsonElement("eloScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _eloScore;
         [BsonElement("rnd")][BsonRepresentation(MongoDB.Bson.BsonType.Double)]              public double _rnd;
         [BsonElement("expireAt")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]          public long _expireAt;
         [BsonElement("score")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int _score;
         [BsonElement("retentionDay")][BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string _retentionDay;
-        [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _league;
         [BsonElement("tournamentMaxScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]public int _tournamentMaxScore;
         [BsonElement("tournamentSlot")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]    public int _tournamentSlot;
         [BsonElement("lastActiveTime")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]    public long _lastActiveTime;
         [BsonElement("joinTime")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]          public long _joinTime;
         [BsonElement("playerTimeZoneSlot")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]public int _playerTimeZoneSlot;
+        [BsonElement("playerMiniProfile")]                                                  public PlayerMiniProfileData _playerMiniProfile;
+
+        [BsonIgnore] public string playerId {get => _playerId; set {_playerId = value; isDirty = true;}}
+        [BsonIgnore] public int league {get => _league; set {_league = value; isDirty = true;}}
+        [BsonIgnore] public string displayName {get => _displayName; set {_displayName = value; isDirty = true;}}
+        [BsonIgnore] public string country {get => _country; set {_country = value; isDirty = true;}}
 
         [BsonIgnore] public int eloScore {get => _eloScore; set {_eloScore = value; isDirty = true;}}
         [BsonIgnore] public double rnd {get => _rnd; set {_rnd = value; isDirty = true;}}
         [BsonIgnore] public long expireAt {get => _expireAt; set {_expireAt = value; isDirty = true;}}
         [BsonIgnore] public int score {get => _eloScore; set {_eloScore = value; isDirty = true;}}
         [BsonIgnore] public string retentionDay {get => _retentionDay; set {_retentionDay = value; isDirty = true;}}
-        [BsonIgnore] public int league {get => _league; set {_league = value; isDirty = true;}}
         [BsonIgnore] public int tournamentMaxScore {get => _eloScore; set {_eloScore = value; isDirty = true;}}
         [BsonIgnore] public int tournamentSlot {get => _tournamentSlot; set {_tournamentSlot = value; isDirty = true;}}
         [BsonIgnore] public long lastActiveTime {get => _lastActiveTime; set {_lastActiveTime = value; isDirty = true;}}
         [BsonIgnore] public long joinTime {get => _joinTime; set {_joinTime = value; isDirty = true;}}
         [BsonIgnore] public int playerTimeZoneSlot {get => _playerTimeZoneSlot; set {_playerTimeZoneSlot = value; isDirty = true;}}
+
+        [BsonIgnore] public PlayerMiniProfileData playerMiniProfile {get => _playerMiniProfile; set {_playerMiniProfile = value; isDirty = true;}}
+        [BsonIgnore] public string playerMiniProfileAvatarId {get => _playerMiniProfile._avatarId; set {_playerMiniProfile._avatarId = value; isDirty = true;}}
+        [BsonIgnore] public string playerMiniProfileAvtarBgColor {get => _playerMiniProfile._avatarBgColor; set {_playerMiniProfile._avatarBgColor = value; isDirty = true;}}
+        [BsonIgnore] public string playerMiniProfileUploadPicId {get => _playerMiniProfile._uploadPicId; set {_playerMiniProfile._uploadPicId = value; isDirty = true;}}
+        [BsonIgnore] public int playerMiniProfileEventGlow {get => _playerMiniProfile._eventGlow; set {_playerMiniProfile._eventGlow = value; isDirty = true;}}
+
+        public TournamentEntryData()
+        {
+            _playerMiniProfile = new PlayerMiniProfileData();
+        }
+    }
+
+    public class TournamentLeaderboardEntry
+    {
+        [BsonElement("playerId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string playerId;
+        [BsonElement("score")][BsonRepresentation(MongoDB.Bson.BsonType.String)]        public int score;
+        [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string displayName;
+        [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int league;
+        [BsonElement("country")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string country;
+        [BsonElement("playerMiniProfile")]                                              public PlayerMiniProfileData playerMiniProfile;
+
+        public TournamentLeaderboardEntry(string playerId, int score, PlayerMiniProfileData playerMiniProfile, string country, int league, string displayName)
+        {
+            this.playerId = playerId;
+            this.score = score;
+            this.displayName = displayName;
+            this.league = league;
+            this.country = country;
+            this.playerMiniProfile = playerMiniProfile;
+        }
     }
 
     public class TournamentEntryModelDocument 

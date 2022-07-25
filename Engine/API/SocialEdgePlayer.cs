@@ -5,6 +5,7 @@
 
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
+using MongoDB.Bson.Serialization;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using PlayFab.ProfilesModels;
@@ -69,9 +70,8 @@ namespace SocialEdgeSDK.Server.Context
         private string _playerId;
         private string _entityToken;
         private string _entityId;
-        private string _avatarInfo;
+        private PlayerMiniProfileData _avatarInfo;
         private Dictionary<string, EntityDataObject> _publicDataObjs;
-        private BsonDocument _mongoDocIds;
         private Dictionary<string, InboxDataMessage> _inbox;
         private BsonDocument _chat;
         private BsonDocument _publicData;
@@ -85,7 +85,7 @@ namespace SocialEdgeSDK.Server.Context
         private PlayerDataModel _playerModel;
 
         public string PlayerId => _playerId;
-        public string AvatarInfo { get => _avatarInfo; }
+        public PlayerMiniProfileData AvatarInfo { get => _avatarInfo; }
         public string InboxId { get => PlayerDBId; }
         public string ChatId { get => PlayerDBId; }
         public string PlayerDBId { get => _playerId.ToLower().PadLeft(24, '0'); }
@@ -115,7 +115,7 @@ namespace SocialEdgeSDK.Server.Context
             _contextType = ContextType.FUNCTION_EXECUTION_API;
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             _entityId = context.CallerEntityProfile.Entity.Id;
-            _avatarInfo = context.CallerEntityProfile.AvatarUrl;
+            _avatarInfo = BsonSerializer.Deserialize<PlayerMiniProfileData>(context.CallerEntityProfile.AvatarUrl.ToString());
             _publicDataObjs = context.CallerEntityProfile.Objects;
             _fillMask |= _entityId != null ? CachePlayerDataSegments.ENTITY_ID : 0;
             _playerData =  new PlayerDataSegment(this);
