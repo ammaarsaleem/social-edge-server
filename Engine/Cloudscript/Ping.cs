@@ -31,10 +31,28 @@ namespace SocialEdgeSDK.Server.Requests
         {
             // log.LogInformation("C# HTTP trigger function processed a request.");
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
-            PingResult result = new PingResult();
-            result.clientSendTimestamp = (long)Args["data"]["clientSendTimestamp"].Value;
-            result.serverReceiptTimestamp = Utils.UTCNow();
-            return result;
+            try
+            {
+                PingResult result = new PingResult();
+                result.clientSendTimestamp = (long)Args["data"]["clientSendTimestamp"].Value;
+                result.serverReceiptTimestamp = Utils.UTCNow();
+
+                // Dictionary<string, string> titleData = SocialEdge.TitleContext.TitleData.Data;
+                // var testing = titleData["Testing"];
+                // SocialEdge.Log.LogInformation("testing RESULT : " + testing.ToJson());
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                if(e is OperationCanceledException){
+                     log.LogWarning("Function cancelled " + e.Message);
+                      return new PingResult();
+                }
+                else{
+                    throw e;
+                }
+            }
         }
     }
 }
