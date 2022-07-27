@@ -16,13 +16,4 @@ namespace SocialEdgeSDK.Server.Models{
         public long size;
         public long modifiedOn;
     }
-
-     public class RemotePurchaseResult
-    {
-        public int responseCode = 0;
-        public string responseMessage = "Success";
-        public string itemId;
-        public bool isAdded;
-        public long removeAdsTimeStamp;
-    }
 }

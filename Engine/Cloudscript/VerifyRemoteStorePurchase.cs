@@ -14,24 +14,36 @@ using Newtonsoft.Json;
 using PlayFab.Samples;
 using PlayFab;
 using SocialEdgeSDK.Server.Context;
-using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
+using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.Api;
-using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
 {
+     public class RemotePurchaseResult
+    {
+        public int responseCode = 0;
+        public string responseMessage = "Success";
+        public string itemId;
+        public bool isAdded;
+        public long removeAdsTimeStamp;
+        public int addedGems = 0;
+        public int addedCoins = 0;
+        public int piggyBank = 0;
+    }
+
     public class VerifyRemoteStorePurchase : FunctionContext
     {
        // IDataService _dataService;
         public VerifyRemoteStorePurchase(ITitleContext titleContext, IDataService dataService) {Base(titleContext, dataService); }
 
         [FunctionName("VerifyRemoteStorePurchase")]
-        public RemotePurchaseResult Run(
+            public RemotePurchaseResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
                 InitContext<FunctionExecutionContext<dynamic>>(req, log);
+
                 //var sharedSecret = "39c303891fcf4e9ca7f00f144e78d1e0";
                 var data = Args["data"];
                 string  remoteProductId = data["itemId"].Value;
@@ -39,7 +51,7 @@ namespace SocialEdgeSDK.Server.Requests
                 double expiryTime = data["expiryTimeStamp"].Value;
                 String subscriptionType = data["subscriptionType"].Value;
 
-                try
+               try
                 {
                      RemotePurchaseResult result = new RemotePurchaseResult();
                      PlayFab.ServerModels.CatalogItem purchaseItem =  SocialEdge.TitleContext.GetCatalogItem(remoteProductId);
@@ -50,13 +62,31 @@ namespace SocialEdgeSDK.Server.Requests
                              return result;
                      }
 
-                   log.LogInformation("VerifyRemoteStorePurchase : called " + result.ToString());
+                    log.LogInformation("Before VerifyRemoteStorePurchase : VirtualCurrency GM : " + SocialEdgePlayer.VirtualCurrency["GM"].ToString());
+
+                    if(remoteProductId.Contains("piggybank"))
+                    {
+                        int gemsCredit  = SocialEdgePlayer.PlayerModel.Economy.piggyBankGems;
+                        var addVirualCurrencyT = Player.AddVirtualCurrency(SocialEdgePlayer.PlayerId, gemsCredit, "GM");
+                        addVirualCurrencyT.Wait();
+
+                        result.addedGems = gemsCredit;
+                        result.piggyBank = gemsCredit;
+
+                        SocialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = 0;
+                        SocialEdgePlayer.PlayerModel.Economy.piggyBankGems = 0;
+                    }
+                    
+                    SocialEdgePlayer.CacheFlush();
+
+                    log.LogInformation("AFTER VerifyRemoteStorePurchase : VirtualCurrency GM : " + SocialEdgePlayer.VirtualCurrency["GM"].ToString());
+                    log.LogInformation("VerifyRemoteStorePurchase : called addedGems : " + result.addedGems);
                     return result;
                 }
                 catch (Exception e)
-                {
-                    throw e;
-                }
+                 {
+                     throw e;
+                 }
 
             }
     }

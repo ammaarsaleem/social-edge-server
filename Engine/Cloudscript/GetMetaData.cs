@@ -26,7 +26,7 @@ namespace SocialEdgeSDK.Server.Requests
         public GetMetaData(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
         [FunctionName("GetMetaData")]
-        public async Task<GetMetaDataResult> Run(
+        public  GetMetaDataResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
@@ -45,6 +45,9 @@ namespace SocialEdgeSDK.Server.Requests
             SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
             Inbox.Validate(SocialEdgePlayer);
             //Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
+
+             //TEST Piggybank
+            //Player.HandlePiggyBankRewardPerPlayer(SocialEdgePlayer);
 
             try
             {

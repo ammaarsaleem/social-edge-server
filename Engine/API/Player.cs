@@ -339,5 +339,47 @@ namespace SocialEdgeSDK.Server.Api
             //Task.WaitAll(addVirualCurrencyT, updateDisplayNameT);
             Task.WaitAll(addVirualCurrencyT, updateDisplayNameT, addInventoryT);
         }
+
+        public static void HandlePiggyBankRewardPerPlayer(SocialEdgePlayerContext socialEdgePlayer)
+        {
+            // if ((!matchData.tournamentId || matchData.tournamentId === "") && !matchData.isEventMatch) {
+            //     //Spark.getLog().debug("matchData: " + JSON.stringify(matchData));
+            //     return;
+            // }
+            string playerId = socialEdgePlayer.PlayerId;
+            long currentTime = Utils.UTCNow();
+            Int32 piggyBankBalance = socialEdgePlayer.PlayerModel.Economy.piggyBankGems;
+            long piggyBankExpiryTimestamp = socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp;
+            Int32 playerLeague = 1; //socialEdgePlayer.PlayerModel.Info.league;
+
+            dynamic gameSettings = SocialEdge.TitleContext.GetTitleDataProperty("GameSettings");
+            dynamic commonSettings = gameSettings["Common"];
+
+            if(piggyBankExpiryTimestamp != 0 && currentTime >= piggyBankExpiryTimestamp){
+
+                socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = 0;
+                socialEdgePlayer.PlayerModel.Economy.piggyBankGems = 0;
+                piggyBankBalance = 0;
+            }
+
+            if(playerLeague >= commonSettings["piggyBankUnlocksAtLeague"] && piggyBankBalance < commonSettings["piggyBankMaxCap"]){
+
+                Int32 piggyBankRewardPerGameSetting = (Int32)commonSettings["piggyBankRewardPerGame"];
+                Int32 piggyBankRewardPerGame = piggyBankExpiryTimestamp > currentTime ? piggyBankRewardPerGameSetting * 2 : piggyBankRewardPerGameSetting;
+
+                Int32 piggyBankMaxCap = (Int32)commonSettings["piggyBankMaxCap"];
+                Int32 piggyLimitAvailable = piggyBankMaxCap - piggyBankBalance;
+                Int32 piggyBankReward = piggyLimitAvailable >= piggyBankRewardPerGame ? piggyBankRewardPerGame : piggyLimitAvailable;
+
+                socialEdgePlayer.PlayerModel.Economy.piggyBankGems += piggyBankReward;
+                //matchData.piggyBankReward = piggyBankReward;
+
+                if(socialEdgePlayer.PlayerModel.Economy.piggyBankGems >= piggyBankMaxCap) {
+
+                    long piggyBankExpiry = (int)commonSettings["piggyBankExpirationInDays"] * 24 * 60 * 60 * 1000;
+                    socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = currentTime + piggyBankExpiry;
+                }
+            }
+        }
     }
 }

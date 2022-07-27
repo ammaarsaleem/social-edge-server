@@ -25,7 +25,7 @@ namespace SocialEdgeSDK.Server.Requests
         public Ping(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
         [FunctionName("Ping")]
-        public async Task<PingResult> Run(
+        public  PingResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {

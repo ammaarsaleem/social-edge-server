@@ -115,6 +115,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int totalPowerupUsageCount;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long chestUnlockTimestamp;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long rvUnlockTimestamp;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int piggyBankGems;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long piggyBankExpiryTimestamp;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long piggyBankDoublerExipryTimestamp;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long freePowerPlayExipryTimestamp;
