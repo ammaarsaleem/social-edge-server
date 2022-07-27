@@ -17,11 +17,13 @@ namespace SocialEdgeSDK.Server.Requests
         private IDataService _dataService;
         private SocialEdgePlayerContext _socialEdgePlayer;
         private SocialEdgeTournamentContext _socialEdgeTournament;
+        private SocialEdgeChallengeContext _socialEdgeChallenge;
         private dynamic _args;
         private dynamic _context;
 
         public SocialEdgePlayerContext SocialEdgePlayer { get => _socialEdgePlayer; }
         public SocialEdgeTournamentContext SocialEdgeTournament { get => _socialEdgeTournament; }
+        public SocialEdgeChallengeContext SocialEdgeChallenge { get => _socialEdgeChallenge; }
         public dynamic Args { get => _args; }
 
         public void Base(ITitleContext titleContext, IDataService dataService = null)
@@ -40,6 +42,14 @@ namespace SocialEdgeSDK.Server.Requests
             _socialEdgePlayer = new SocialEdgePlayerContext(_context);
             _socialEdgePlayer.CacheFill(CachePlayerDataSegments.NONE);
             _socialEdgeTournament = new SocialEdgeTournamentContext(_context);
+            _socialEdgeChallenge = new SocialEdgeChallengeContext(_context);
+        }
+
+        public void CacheFlush()
+        {
+            SocialEdgePlayer.CacheFlush();
+            SocialEdgeTournament.CacheFlush();
+            SocialEdgeChallenge.CacheFlush();
         }
     }
 }

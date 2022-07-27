@@ -49,8 +49,8 @@ namespace SocialEdgeSDK.Server.Requests
                     else if(op == "picUpload"){
 
                         fileName = "pic-" + Guid.NewGuid().ToString();
-                        SocialEdgePlayer.AvatarInfo.UploadPicId = fileName;
-                        Player.UpdatePlayerAvatarData(SocialEdgePlayer.PlayerId, SocialEdgePlayer.AvatarInfo);
+                        SocialEdgePlayer.MiniProfile.UploadPicId = fileName;
+                        Player.UpdatePlayerAvatarData(SocialEdgePlayer.PlayerId, SocialEdgePlayer.MiniProfile);
                     }
                  
                     var blobStorage = SocialEdge.DataService.GetBlobStorage(containerName);

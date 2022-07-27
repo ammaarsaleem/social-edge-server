@@ -59,7 +59,8 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong COMBINED_INFO =      0x0200;
         public const ulong PLAYER_DATA =        0x0400;
         public const ulong PLAYER_MODEL =       0x0800;
-        public const ulong MAX = PLAYER_MODEL;
+        public const ulong MINI_PROFILE =       0x1000;
+        public const ulong MAX = MINI_PROFILE;
 
         public const ulong META = INBOX | CHAT | FRIENDS_PROFILES;
         public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | INVENTORY;
@@ -70,7 +71,7 @@ namespace SocialEdgeSDK.Server.Context
         private string _playerId;
         private string _entityToken;
         private string _entityId;
-        private PlayerMiniProfileData _avatarInfo;
+        private PlayerMiniProfileData _miniProfile;
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private Dictionary<string, InboxDataMessage> _inbox;
         private BsonDocument _chat;
@@ -85,7 +86,7 @@ namespace SocialEdgeSDK.Server.Context
         private PlayerDataModel _playerModel;
 
         public string PlayerId => _playerId;
-        public PlayerMiniProfileData AvatarInfo { get => _avatarInfo; }
+        //public PlayerMiniProfileData MiniProfile { get => _miniProfile;}
         public string InboxId { get => PlayerDBId; }
         public string ChatId { get => PlayerDBId; }
         public string PlayerDBId { get => _playerId.ToLower().PadLeft(24, '0'); }
@@ -94,6 +95,7 @@ namespace SocialEdgeSDK.Server.Context
         public PlayerDataModel PlayerModel { get => _playerModel != null ? _playerModel : _playerModel = new PlayerDataModel(this); }
 
         public PlayerDataSegment PlayerData { get => _playerData; }
+        public PlayerMiniProfileData MiniProfile { get => (((_fillMask & CachePlayerDataSegments.MINI_PROFILE) != 0) || (CacheFillSegment(CachePlayerDataSegments.MINI_PROFILE))) ? _miniProfile : null; }
         public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CachePlayerDataSegments.COMBINED_INFO) != 0) || (CacheFillSegment(CachePlayerDataSegments.COMBINED_INFO))) ? _combinedInfo : null; }
         public string EntityId { get => (((_fillMask & CachePlayerDataSegments.ENTITY_ID) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_ID))) ? _entityId : null; }
         public string EntityToken { get => (((_fillMask & CachePlayerDataSegments.ENTITY_TOKEN) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_TOKEN))) ? _entityToken : null; }
@@ -112,10 +114,10 @@ namespace SocialEdgeSDK.Server.Context
 
         public SocialEdgePlayerContext(FunctionExecutionContext<dynamic> context)
         {
+            _context = context;
             _contextType = ContextType.FUNCTION_EXECUTION_API;
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
             _entityId = context.CallerEntityProfile.Entity.Id;
-            _avatarInfo = BsonSerializer.Deserialize<PlayerMiniProfileData>(context.CallerEntityProfile.AvatarUrl.ToString());
             _publicDataObjs = context.CallerEntityProfile.Objects;
             _fillMask |= _entityId != null ? CachePlayerDataSegments.ENTITY_ID : 0;
             _playerData =  new PlayerDataSegment(this);
@@ -147,7 +149,8 @@ namespace SocialEdgeSDK.Server.Context
                 {CachePlayerDataSegments.ENTITY_TOKEN, CacheFillEntityToken},
                 {CachePlayerDataSegments.ENTITY_ID, CacheFillEntityId},
                 {CachePlayerDataSegments.COMBINED_INFO, CacheFillCombinedInfo},
-                {CachePlayerDataSegments.PLAYER_DATA, CacheFillPlayerData}
+                {CachePlayerDataSegments.PLAYER_DATA, CacheFillPlayerData},
+                {CachePlayerDataSegments.MINI_PROFILE, CacheFillMiniProfile},
             };
 
             _writeMap = new Dictionary<ulong, CacheFnType>()
@@ -162,6 +165,7 @@ namespace SocialEdgeSDK.Server.Context
                 {CachePlayerDataSegments.INVENTORY, CacheWriteReadOnlyError},
                 {CachePlayerDataSegments.PLAYER_DATA, CacheWritePlayerData},
                 {CachePlayerDataSegments.PLAYER_MODEL, CacheWritePlayerModel},
+                {CachePlayerDataSegments.MINI_PROFILE, CacheWriteMiniProfile},
             };
         }
 
@@ -265,7 +269,6 @@ namespace SocialEdgeSDK.Server.Context
                 return false;
             }
                 
-
             _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
             _fillMask |= _publicData != null ? CachePlayerDataSegments.PUBLIC_DATA : 0;
             SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
@@ -364,13 +367,13 @@ namespace SocialEdgeSDK.Server.Context
             SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILES");
 
             // Remove DBIds private information for security
-            if (_friendsProfiles != null)
-            {
-                foreach(var friendProfile in _friendsProfiles)
-                {
-                    friendProfile.Objects.Remove("DBIds");
-                }
-            }
+            //if (_friendsProfiles != null)
+            //{
+            //    foreach(var friendProfile in _friendsProfiles)
+            //    {
+            //        friendProfile.Objects.Remove("DBIds");
+            //    }
+            //}
 
             return _friendsProfiles != null;
         }
@@ -381,8 +384,7 @@ namespace SocialEdgeSDK.Server.Context
             {
                 SocialEdge.Log.LogInformation("Called CacheFillActiveInventory and it was NULLL : " + _publicDataObjs.ToString());
                 return false;
-            }
-                
+            }    
 
             _activeInventory = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["ActiveInventory"].EscapedDataObject));
             _fillMask |= _activeInventory != null ? CachePlayerDataSegments.ACTIVE_INVENTORY : 0;
@@ -404,6 +406,24 @@ namespace SocialEdgeSDK.Server.Context
         private bool CacheWritePlayerModel()
         {
             return _playerModel != null ? _playerModel.CacheWrite() : false;
+        }
+
+        private bool CacheFillMiniProfile()
+        {
+            SocialEdge.Log.LogInformation("Parse MINI_PROFILE");
+            _miniProfile = BsonSerializer.Deserialize<PlayerMiniProfileData>(_context.CallerEntityProfile.AvatarUrl.ToString());
+            _fillMask |= _miniProfile != null ? CachePlayerDataSegments.MINI_PROFILE : 0;
+            // Force write call. Dirty is controlled by mini profile internal data structure
+            SetDirtyBit(CachePlayerDataSegments.MINI_PROFILE);
+            return _miniProfile != null;
+        }
+
+        private bool CacheWriteMiniProfile()
+        {
+            if (_miniProfile.isDirty)
+                SocialEdge.Log.LogInformation("Task flush MINI_PROFILE");
+
+            return _miniProfile.isDirty ? Player.UpdatePlayerAvatarData(_playerId, _miniProfile) : false;
         }
    }
 }

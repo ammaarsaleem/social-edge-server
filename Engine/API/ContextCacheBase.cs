@@ -19,6 +19,7 @@ namespace SocialEdgeSDK.Server.Context
         }
 
         protected ContextType _contextType;
+        protected dynamic _context;
 
         protected ulong _fillMask;
         protected ulong _dirtyMask;

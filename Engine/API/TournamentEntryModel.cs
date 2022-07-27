@@ -14,17 +14,19 @@ using SocialEdgeSDK.Server.Context;
 
 namespace SocialEdgeSDK.Server.Models
 {
-    public class PlayerMiniProfileData 
+    public class PlayerMiniProfileData : DataModelBase
     {
         [BsonElement("0")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarId;
         [BsonElement("1")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarBgColor;
         [BsonElement("2")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _uploadPicId;
         [BsonElement("3")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _eventGlow;
+        [BsonElement("4")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _league;
 
-        [BsonIgnore] public string AvatarId { get => _avatarId; set => _avatarId = value; }
-        [BsonIgnore] public string AvatarBgColor { get => _avatarBgColor; set => _avatarBgColor = value; }
-        [BsonIgnore] public string UploadPicId { get => _uploadPicId; set => _uploadPicId = value; }
-        [BsonIgnore] public int EventGlow { get => _eventGlow; set => _eventGlow = value; }
+        [BsonIgnore] public string AvatarId { get => _avatarId; set { _avatarId = value; isDirty = true; }}
+        [BsonIgnore] public string AvatarBgColor { get => _avatarBgColor; set { _avatarBgColor = value;  isDirty = true; }}
+        [BsonIgnore] public string UploadPicId { get => _uploadPicId; set { _uploadPicId = value;  isDirty = true; }}
+        [BsonIgnore] public int EventGlow { get => _eventGlow; set { _eventGlow = value;  isDirty = true; }}
+        [BsonIgnore] public int League { get => _league; set { _league = value;  isDirty = true; }}
     }
 
     public class TournamentEntryData : DataModelBase
@@ -32,7 +34,6 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("playerId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _playerId;
         [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _displayName;
         [BsonElement("country")][BsonRepresentation(MongoDB.Bson.BsonType.String)]          public string _country;
-        [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _league;
 
         [BsonElement("eloScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _eloScore;
         [BsonElement("rnd")][BsonRepresentation(MongoDB.Bson.BsonType.Double)]              public double _rnd;
@@ -47,7 +48,6 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("playerMiniProfile")]                                                  public PlayerMiniProfileData _playerMiniProfile;
 
         [BsonIgnore] public string playerId {get => _playerId; set {_playerId = value; isDirty = true;}}
-        [BsonIgnore] public int league {get => _league; set {_league = value; isDirty = true;}}
         [BsonIgnore] public string displayName {get => _displayName; set {_displayName = value; isDirty = true;}}
         [BsonIgnore] public string country {get => _country; set {_country = value; isDirty = true;}}
 
@@ -83,12 +83,11 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("country")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string country;
         [BsonElement("playerMiniProfile")]                                              public PlayerMiniProfileData playerMiniProfile;
 
-        public TournamentLeaderboardEntry(string playerId, int score, PlayerMiniProfileData playerMiniProfile, string country, int league, string displayName)
+        public TournamentLeaderboardEntry(string playerId, int score, PlayerMiniProfileData playerMiniProfile, string country, string displayName)
         {
             this.playerId = playerId;
             this.score = score;
             this.displayName = displayName;
-            this.league = league;
             this.country = country;
             this.playerMiniProfile = playerMiniProfile;
         }

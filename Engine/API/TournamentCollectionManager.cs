@@ -114,7 +114,6 @@ namespace SocialEdgeSDK.Server.Api
             entry.playerId = socialEdgePlayer.PlayerId;
             entry.displayName = socialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
             entry.country = socialEdgePlayer.CombinedInfo.PlayerProfile.Locations[0].CountryCode.ToString();
-            entry.league = socialEdgePlayer.PlayerModel.Info.league;
 
             entry.eloScore = socialEdgePlayer.PlayerModel.Info.eloScore;
             entry.rnd = Math.Floor((new Random().NextDouble() * 100));
@@ -126,7 +125,7 @@ namespace SocialEdgeSDK.Server.Api
             entry.lastActiveTime = Utils.UTCNow();
             entry.joinTime = Utils.UTCNow();
             entry.playerTimeZoneSlot = socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot;
-            entry._playerMiniProfile = socialEdgePlayer.AvatarInfo;
+            entry._playerMiniProfile = socialEdgePlayer.MiniProfile;
         }
 
         public static int GetPlayerEntryRank(SocialEdgePlayerContext socialEdgePlayer, string collectionName, List<string> ids)
@@ -150,7 +149,6 @@ namespace SocialEdgeSDK.Server.Api
                                                                                 item._model.score, 
                                                                                 item._model.playerMiniProfile,
                                                                                 item._model.country,
-                                                                                item._model.league,
                                                                                 item._model.displayName));
             return collection.Find(filter).Project(projection).Sort(sortByScore).ToList<TournamentLeaderboardEntry>();
         }
