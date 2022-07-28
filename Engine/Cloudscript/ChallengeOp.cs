@@ -11,7 +11,8 @@ using System.Net.Http;
 using PlayFab.Samples;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Api;
-using  SocialEdgeSDK.Server.Models;
+using SocialEdgeSDK.Server.Models;
+using MongoDB.Bson.Serialization;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -38,6 +39,9 @@ namespace SocialEdgeSDK.Server.Requests
             if (op == "startChallenge")
             {
                 opResult.status = true;
+                var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
+                opResult.challengeId = SocialEdgeChallenge.ChallengeModel.Create(challengeData);
+                SocialEdgeChallenge.ChallengeModel.ReadOnly();
             }
             else if (op == "endChallenge")
             {

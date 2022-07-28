@@ -15,9 +15,23 @@ using SocialEdgeSDK.Server.Context;
 
 namespace SocialEdgeSDK.Server.Models
 {
+    public class ChallengePlayerModel
+    {
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long betValue;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isEventMatch;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool powerMode;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string tournamentId;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isBot;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string playerId;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string playerColor;
+    }
+
     public class ChallengeData : DataModelBase
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string shortCode;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long matchDuration;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isRanked;
+        [BsonElement("player1Data")]                            public ChallengePlayerModel player1Data;
+        [BsonElement("player2Data")]                            public ChallengePlayerModel player2Data;
     }
 
     public class ChallengeModelDocument
@@ -98,7 +112,7 @@ namespace SocialEdgeSDK.Server.Models
                     continue;
 
                 ChallengeData data = i.Current.Value;
-                var taskT = collection.UpdateOneById<ChallengeData>(id, typeof(ChallengeModelDocument).Name, data, true);
+                var taskT = collection.UpdateOneById<ChallengeData>(id, typeof(ChallengeDataModel).Name, data, true);
                 tasks.Add(taskT);
             }
 
