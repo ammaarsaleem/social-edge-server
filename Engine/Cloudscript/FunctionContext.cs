@@ -3,6 +3,7 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
@@ -21,6 +22,9 @@ namespace SocialEdgeSDK.Server.Requests
         private dynamic _args;
         private dynamic _context;
 
+        public delegate bool CacheFlushFn();
+        public List<CacheFlushFn> _cacheFlush;
+
         public SocialEdgePlayerContext SocialEdgePlayer { get => _socialEdgePlayer; }
         public SocialEdgeTournamentContext SocialEdgeTournament { get => _socialEdgeTournament; }
         public SocialEdgeChallengeContext SocialEdgeChallenge { get => _socialEdgeChallenge; }
@@ -30,6 +34,7 @@ namespace SocialEdgeSDK.Server.Requests
         {
             _titleContext = titleContext;
             _dataService = dataService;
+            _cacheFlush = new List<CacheFlushFn>();
         }
 
         public void InitContext<FunctionContextT>(HttpRequestMessage req, ILogger log)
@@ -43,13 +48,28 @@ namespace SocialEdgeSDK.Server.Requests
             _socialEdgePlayer.CacheFill(CachePlayerDataSegments.NONE);
             _socialEdgeTournament = new SocialEdgeTournamentContext(_context);
             _socialEdgeChallenge = new SocialEdgeChallengeContext(_context);
+
+            RegisterCacheFlush(SocialEdgePlayer.CacheFlush);
+            RegisterCacheFlush(SocialEdgeTournament.CacheFlush);
+            RegisterCacheFlush(SocialEdgeChallenge.CacheFlush);
+        }
+
+        public void RegisterCacheFlush(CacheFlushFn fn)
+        {
+            _cacheFlush.Add(fn);
+        }
+
+        public SocialEdgePlayerContext LoadPlayer(string playerId)
+        {
+            SocialEdgePlayerContext player = new SocialEdgePlayerContext(playerId);
+            RegisterCacheFlush(player.CacheFlush);
+            return player;        
         }
 
         public void CacheFlush()
         {
-            SocialEdgePlayer.CacheFlush();
-            SocialEdgeTournament.CacheFlush();
-            SocialEdgeChallenge.CacheFlush();
+            foreach(var cacheFlushFn in _cacheFlush)
+                cacheFlushFn.Invoke();
         }
     }
 }

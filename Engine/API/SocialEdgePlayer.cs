@@ -112,6 +112,12 @@ namespace SocialEdgeSDK.Server.Context
         public string InboxJson { get => Inbox != null ? _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
         public string ChatJson { get => Chat != null ? _chat.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
 
+        public SocialEdgePlayerContext(string playerId)
+        {
+            _playerId = playerId;
+            SocialEdgePlayerContextInit();
+        }
+
         public SocialEdgePlayerContext(FunctionExecutionContext<dynamic> context)
         {
             _context = context;
