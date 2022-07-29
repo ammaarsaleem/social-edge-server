@@ -59,5 +59,12 @@ namespace SocialEdgeSDK.Server.Common
         {  
             return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 23, 59, 59, 999);
         }  
+
+        public static int compareTier(dynamic t1, dynamic t2)
+        {
+            int t1Int = (int)(t1.slice(1, t1.length));
+            int t2Int = (int)(t2.slice(1, t2.length));
+            return t1Int == t2Int ? 0 : t1Int < t2Int ? -1 : 1;
+        }
     }
 }

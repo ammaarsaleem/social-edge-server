@@ -277,7 +277,8 @@ namespace SocialEdgeSDK.Server.Api
 
         private static string GenerateAvatarBgColor()
         {
-            var colorCodesArray = SocialEdge.TitleContext.GetTitleDataProperty("GameSettings")["AvatarBgColors"];
+            //var colorCodesArray = SocialEdge.TitleContext.GetTitleDataProperty("GameSettings")["AvatarBgColors"];
+            var colorCodesArray = Settings.GameSettings["AvatarBgColors"];
             var randomColorCode = colorCodesArray[(int)(Math.Floor(new Random().NextDouble() * colorCodesArray.Count))];
             //BsonDocument colorCodeInventoryItem = new BsonDocument() {["key"] = randomColorCode, ["kind"] = "AvatarBgColor"};
             return randomColorCode.ToString();
@@ -293,7 +294,8 @@ namespace SocialEdgeSDK.Server.Api
             var newTag = Player.GenerateTag();
             //var playerPublicData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerPublicData"];
             //var playerData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerData"];
-            var coinsCredit = (int)SocialEdge.TitleContext.GetTitleDataProperty("Economy")["BettingIncrements"][0];
+            //var coinsCredit = (int)SocialEdge.TitleContext.GetTitleDataProperty("Economy")["BettingIncrements"][0];
+            var coinsCredit = (int)Settings.Economy["BettingIncrements"][0];
             var avatar = GenerateAvatar();
             var avatarBgColor = GenerateAvatarBgColor();
 
@@ -352,8 +354,7 @@ namespace SocialEdgeSDK.Server.Api
             long piggyBankExpiryTimestamp = socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp;
             Int32 playerLeague = 1; //socialEdgePlayer.PlayerModel.Info.league;
 
-            dynamic gameSettings = SocialEdge.TitleContext.GetTitleDataProperty("GameSettings");
-            dynamic commonSettings = gameSettings["Common"];
+            dynamic commonSettings = Settings.CommonSettings;
 
             if(piggyBankExpiryTimestamp != 0 && currentTime >= piggyBankExpiryTimestamp){
 
