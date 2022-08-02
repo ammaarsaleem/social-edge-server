@@ -10,6 +10,7 @@ using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Context;
 using System.Linq;
 using MongoDB.Bson;
+using Newtonsoft.Json;
 
 namespace SocialEdgeSDK.Server.DataService
 {
@@ -23,6 +24,8 @@ namespace SocialEdgeSDK.Server.DataService
         dynamic GetTitleDataProperty(string key, dynamic dict = null);
         CatalogItem GetCatalogItem(string ItemId);
         StoreItem GetStoreItem(string ItemId);
+        string GetShortCodeFromItemId(string itemId);
+
     }
     public class TitleContext : ITitleContext
     {
@@ -83,6 +86,14 @@ namespace SocialEdgeSDK.Server.DataService
         public StoreItem GetStoreItem(string ItemId)
         {
             return _storeItemsDict.ContainsKey(ItemId) ? _storeItemsDict[ItemId] : null;
+        }
+
+        public string GetShortCodeFromItemId(string itemId)
+        {
+            CatalogItem itemData = GetCatalogItem(itemId);
+            Dictionary<string, object> dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(itemData.CustomData);
+            string shortCode = dictionary["shortCode"].ToString();
+            return shortCode;
         }
     }
 }

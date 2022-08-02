@@ -15,6 +15,10 @@ using MongoDB.Bson;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Models;
+using Newtonsoft.Json;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -381,6 +385,77 @@ namespace SocialEdgeSDK.Server.Api
                     socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = currentTime + piggyBankExpiry;
                 }
             }
+        }
+        public static string GetDynamicDisplayBundle(SocialEdgePlayerContext socialEdgePlayer)
+        {
+            _setupDynamicBundleTier(socialEdgePlayer);
+
+            if(socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier == null || socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier == "") 
+                {
+                    socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier = "A";
+                }
+            
+            if( socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount > 0) {
+                socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount++;
+                
+                if(socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount > (int)Settings.CommonSettings["dynamicBundleSwitchAfterSessions"]){
+                    socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier = "B";
+                }
+            }
+
+            string tempItemId = Settings.DynamicDisplayBundles[socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier][socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier].ToString();
+            string shortCode  =  Utils.GetShortCode(tempItemId);
+            return shortCode;
+        }
+
+        public static void _setupDynamicBundleTier(SocialEdgePlayerContext socialEdgePlayer)
+        {
+             if( socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier == null || socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier == "") 
+             {   
+                socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier = "T1";
+    
+                foreach (var dataItem in Settings.DynamicPurchaseTiers)
+                {
+                    string tierValue = dataItem.Value.ToString();
+                    string dynamicBundlePurchaseTier = socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier;
+                    string itemId = Utils.AppendItemId(dataItem.Name.ToString());
+                    if( HasItemInInventory(socialEdgePlayer, itemId) &&  Utils.compareTier(tierValue, dynamicBundlePurchaseTier) == 1)
+                    {
+                        socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier = tierValue;
+                    }
+                }
+             }  
+        }
+
+         public static bool HasItemInInventory(SocialEdgePlayerContext socialEdgePlayer, string itemId)
+         {
+            ItemInstance object1 = socialEdgePlayer.Inventory.FirstOrDefault(i => i.ItemId == itemId); 
+            return object1 != null && object1.RemainingUses > 0 ;
+         }
+
+        public static dynamic GetDynamicGemSpotBundle(SocialEdgePlayerContext socialEdgePlayer)
+        {
+             _setupDynamicBundleTier(socialEdgePlayer);
+            dynamic dynamicBundlePurchaseTier = Settings.DynamicGemSpotBundles[socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier];
+            // Dictionary<string, object> dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(dynamicBundlePurchaseTier.ToString());
+            // dictionary["pack1"] = Utils.GetShortCode(dictionary["pack1"].ToString());;
+            // dictionary["pack2"] = Utils.GetShortCode(dictionary["pack2"].ToString());;
+            // dictionary["bundle"] = Utils.GetShortCode(dictionary["bundle"].ToString());;
+            return dynamicBundlePurchaseTier;
+        }
+
+        public static void PlayerCurrenyChanged(SocialEdgePlayerContext socialEdgePlayer, ILogger log)
+        {
+            int playerGems = (int)socialEdgePlayer.VirtualCurrency["GM"];
+            int dynamicBundleMinGemsRequired = (int)Settings.CommonSettings["dynamicBundleMinGemsRequired"];
+
+            SocialEdge.Log.LogInformation("PlayerCurrenyChanged : playerGems : " + playerGems + " dynamicBundleMinGemsRequired: " + dynamicBundleMinGemsRequired);
+            if(socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount == 0 && (playerGems < dynamicBundleMinGemsRequired))
+            {
+                socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount = 1;
+            }
+
+           SocialEdge.Log.LogInformation("PlayerCurrenyChanged : socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount: " + socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount);
         }
     }
 }

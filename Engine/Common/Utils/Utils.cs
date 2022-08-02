@@ -6,6 +6,7 @@
 using System.Threading.Tasks;
 using PlayFab;
 using System;
+using SocialEdgeSDK.Server.Context;
 
 namespace SocialEdgeSDK.Server.Common
 {
@@ -60,11 +61,23 @@ namespace SocialEdgeSDK.Server.Common
             return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 23, 59, 59, 999);
         }  
 
-        public static int compareTier(dynamic t1, dynamic t2)
+        public static int compareTier(string t1, string t2)
         {
-            int t1Int = (int)(t1.slice(1, t1.length));
-            int t2Int = (int)(t2.slice(1, t2.length));
+            int t1Int = int.Parse(t1.Substring(1, t1.Length-1));
+            int t2Int = int.Parse(t2.Substring(1, t2.Length-1));
             return t1Int == t2Int ? 0 : t1Int < t2Int ? -1 : 1;
         }
+
+        public static string AppendItemId(string itemId)
+        {
+            return "com.turbolabz.instantchess." + itemId;
+        }
+
+         public static string GetShortCode(string tempId)
+         {
+            string itemId     = AppendItemId(tempId);
+            string shortCode  =  SocialEdge.TitleContext.GetShortCodeFromItemId(itemId);
+            return shortCode;
+         }
     }
 }

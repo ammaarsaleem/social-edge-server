@@ -17,6 +17,7 @@ using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.Api;
+using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -30,6 +31,9 @@ namespace SocialEdgeSDK.Server.Requests
         public int addedGems = 0;
         public int addedCoins = 0;
         public int piggyBank = 0;
+        public string dynamicBundleShortCode;
+        public dynamic dynamicGemSpotBundle;
+        public long rvUnlockTimestamp;
     }
 
     public class VerifyRemoteStorePurchase : FunctionContext
@@ -47,12 +51,14 @@ namespace SocialEdgeSDK.Server.Requests
                 //var sharedSecret = "39c303891fcf4e9ca7f00f144e78d1e0";
                 var data = Args["data"];
                 string  remoteProductId = data["itemId"].Value;
-                String instanceId = data["instanceId"].Value;
-                double expiryTime = data["expiryTimeStamp"].Value;
-                String subscriptionType = data["subscriptionType"].Value;
+                string instanceId       = data["instanceId"].Value;
+                long expiryTime         = data["expiryTimeStamp"].Value;
+                string subscriptionType = data["subscriptionType"].Value;
 
                try
                 {
+                    dynamic commonSettings = Settings.CommonSettings;
+                    
                      RemotePurchaseResult result = new RemotePurchaseResult();
                      PlayFab.ServerModels.CatalogItem purchaseItem =  SocialEdge.TitleContext.GetCatalogItem(remoteProductId);
                      if(purchaseItem == null)
@@ -76,11 +82,42 @@ namespace SocialEdgeSDK.Server.Requests
                         SocialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = 0;
                         SocialEdgePlayer.PlayerModel.Economy.piggyBankGems = 0;
                     }
-                    
+
+                    //result.boughtItem = {shortCode: remoteStoreVGood.shortCode, quantity: 1};
+
+                    if(remoteProductId.Contains("subscription")) 
+                    {
+                        SocialEdgePlayer.PlayerModel.Economy.subscriptionExpiryTime = expiryTime;
+                        SocialEdgePlayer.PlayerModel.Economy.subscriptionType = subscriptionType;
+                    }
+
+                    string[] itemsList = remoteProductId.Split(".");  
+                    string remoteProductShortCode = itemsList[itemsList.Length-1];
+
+                    if(Settings.DynamicPurchaseTiers.Contains(remoteProductShortCode))
+                    {
+                        SocialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount = 0;
+                        SocialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier = "A";
+                        string tierValue = Settings.DynamicPurchaseTiers[remoteProductShortCode].ToString();
+
+                        if(Utils.compareTier(tierValue, SocialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier) == 1)
+                        {
+                            SocialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier = tierValue;
+                        }
+                    } 
+
+                    string tempItemId = Settings.DynamicDisplayBundles[SocialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier][SocialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier].ToString();
+                    string dynamicBundleShortCode  =  Utils.GetShortCode(tempItemId);
+                    dynamic dynamicGemSpotBundle   = Player.GetDynamicGemSpotBundle(SocialEdgePlayer);
+
+                    result.dynamicBundleShortCode = dynamicBundleShortCode;
+                    result.dynamicGemSpotBundle = dynamicGemSpotBundle;
+                    result.rvUnlockTimestamp = SocialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp;
+
                     SocialEdgePlayer.CacheFlush();
 
                     log.LogInformation("AFTER VerifyRemoteStorePurchase : VirtualCurrency GM : " + SocialEdgePlayer.VirtualCurrency["GM"].ToString());
-                    log.LogInformation("VerifyRemoteStorePurchase : called addedGems : " + result.addedGems);
+                    log.LogInformation("VerifyRemoteStorePurchase : called addedGems : " + result.ToString());
                     return result;
                 }
                 catch (Exception e)

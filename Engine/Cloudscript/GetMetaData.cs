@@ -47,7 +47,8 @@ namespace SocialEdgeSDK.Server.Requests
             //Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
 
              //TEST Piggybank
-            //Player.HandlePiggyBankRewardPerPlayer(SocialEdgePlayer);
+            //string data1 = Player.GetDynamicDisplayBundle(SocialEdgePlayer);
+            //dynamic data2 =  Player.GetDynamicGemSpotBundle(SocialEdgePlayer);
 
             try
             {
