@@ -59,33 +59,30 @@ namespace SocialEdgeSDK.Server.Requests
 
             if (op == "startChallenge")
             {
-                opResult.status = true;
-
-                //parse challenge data
                 var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
-
-                //save challenge data in db
                 var challengeId = SocialEdgeChallenge.ChallengeModel.Create(challengeData);
 
-                //load second player data
-                var socialEdgePlayer2 = LoadPlayer(challengeData.player2Data.playerId);
-
-                //save challenge id for both players and in response
                 SocialEdgeChallenge.ChallengeModel.ReadOnly();
-                opResult.challengeId = challengeId;
                 SocialEdgePlayer.PlayerModel.Challenge.currentChallengeId = challengeId;
-                socialEdgePlayer2.PlayerModel.Challenge.currentChallengeId = challengeId;
 
-                //deduct bet amount for both players
                 if(challengeData.player1Data.betValue > 0)
                 {
                     Transactions.Consume("coins", (int)challengeData.player1Data.betValue, SocialEdgePlayer);
                 }
 
-                if(challengeData.player2Data.betValue > 0)
+                if(!challengeData.player2Data.isBot)
                 {
-                    Transactions.Consume("coins", (int)challengeData.player2Data.betValue, socialEdgePlayer2);
+                    var socialEdgePlayer2 = LoadPlayer(challengeData.player2Data.playerId);
+                    socialEdgePlayer2.PlayerModel.Challenge.currentChallengeId = challengeId;
+
+                    if(challengeData.player2Data.betValue > 0)
+                    {
+                        Transactions.Consume("coins", (int)challengeData.player2Data.betValue, socialEdgePlayer2);
+                    }
                 }
+
+                opResult.status = true;
+                opResult.challengeId = challengeId;
             }
             else if (op == "endChallenge")
             {
