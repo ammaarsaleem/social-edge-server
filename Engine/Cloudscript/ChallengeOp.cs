@@ -112,13 +112,16 @@ namespace SocialEdgeSDK.Server.Requests
                 {
                     ChallengePlayerModel winnerChallengeModel = SocialEdgeChallenge.ChallengeModel.Challenge.player1Data.playerId == player1.PlayerId ?
                                                                     SocialEdgeChallenge.ChallengeModel.Challenge.player1Data : SocialEdgeChallenge.ChallengeModel.Challenge.player2Data;
-                    opResult.challengeEndedInfo.winnerBonusRewards = new Dictionary<string, int>();
-                    opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree1", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree1);
-                    opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree2", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree2);
-                    opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree3", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree3);
-                    opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV1", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV1);
-                    opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV2", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV2);
-                    opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV3", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV3);
+                    if (winnerChallengeModel.winnerBonusRewards != null)
+                    {
+                        opResult.challengeEndedInfo.winnerBonusRewards = new Dictionary<string, int>();
+                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree1", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree1);
+                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree2", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree2);
+                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree3", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree3);
+                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV1", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV1);
+                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV2", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV2);
+                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV3", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV3);
+                    }
                 }
             }
 

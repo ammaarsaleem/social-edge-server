@@ -41,8 +41,8 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int tournamentScore;
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool promoted;
 
-        [BsonIgnore]                                            public ChallengeWinnerBonusRewardsData winnerBonusRewards;
-        [BsonIgnore]                                            public long piggyBankReward;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int piggyBankReward;
+                                                                public ChallengeWinnerBonusRewardsData winnerBonusRewards;
     }
 
     public class ChallengeData : DataModelBase
