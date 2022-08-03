@@ -79,5 +79,15 @@ namespace SocialEdgeSDK.Server.Common
             string shortCode  =  SocialEdge.TitleContext.GetShortCodeFromItemId(itemId);
             return shortCode;
          }
+
+         public static int GetRandomInteger(int min, int max)
+         {
+            return min + (int)(new Random().NextDouble() * (max - min));
+         }
+
+        public static double RoundToNearestMultiple(double numToRound, double numToRoundTo) 
+        {
+            return Math.Round(numToRound / numToRoundTo) * numToRoundTo;
+        }
     }
 }

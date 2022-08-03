@@ -24,6 +24,13 @@ namespace SocialEdgeSDK.Server.Models
 
     }
 
+    public class FriendData
+    {
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesWon;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesLost;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesDrawn;
+    }
+
     public class ActiveTournament
     {
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string shortCode;
@@ -68,15 +75,25 @@ namespace SocialEdgeSDK.Server.Models
                                                             public List<PlayerInventoryItem> activeInventory;
     }
 
+    public class PlayerDataFriends : DataModelBase
+    {
+        public Dictionary<string, FriendData> friends;
+
+        public PlayerDataFriends()
+        {
+            friends = new Dictionary<string, FriendData>();
+        }
+    }
+
     public class PlayerDataInfo : DataModelBase
     {
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int eloScore;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int trophies;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int trophies2;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int earnings;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int win;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int lose;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int draw;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesWon;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesLost;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesDrawn;
                                                             public List<PlayerInventoryItem> activeInventory;
 
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int league;
@@ -124,6 +141,8 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string lastWatchedVideoId;
                                                             public AdRewardsData adsRewardData;
 
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int jackpotNotCollectedCounter;
+
         public PlayerDataEconomy()
         {
             adsRewardData = new AdRewardsData();
@@ -135,7 +154,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long eventTimeStamp;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long dailyEventExpiryTimestamp;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int dailyEventProgress;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int dailyEventState;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string dailyEventState;
                                                             public DailyEventRewards dailyEventRewards;
 
         public PlayerDataEvent()
@@ -185,6 +204,8 @@ namespace SocialEdgeSDK.Server.Models
         [JsonIgnore][BsonElement("events")][BsonIgnoreIfNull]       public PlayerDataEvent _events;
         [JsonIgnore][BsonElement("tournament")][BsonIgnoreIfNull]   public PlayerDataTournament _tournament;
         [JsonIgnore][BsonElement("challenge")][BsonIgnoreIfNull]    public PlayerDataChallenge _challenge;
+        [JsonIgnore][BsonElement("friends")][BsonIgnoreIfNull]      public PlayerDataFriends _friends;
+
 
         public PlayerDataMeta Meta { get => _meta != null && _meta.isCached ? _meta : _meta = Get<PlayerDataMeta>(nameof(_meta)); }
         public PlayerDataInfo Info { get => _info != null && _info.isCached ? _info : _info = Get<PlayerDataInfo>(nameof(_info)); }
@@ -192,6 +213,7 @@ namespace SocialEdgeSDK.Server.Models
         public PlayerDataEvent Events { get => _events != null && _events.isCached ? _events : _events = Get<PlayerDataEvent>(nameof(_events)); }
         public PlayerDataTournament Tournament { get => _tournament != null && _tournament.isCached ? _tournament : _tournament = Get<PlayerDataTournament>(nameof(_tournament)); }
         public PlayerDataChallenge Challenge { get => _challenge != null && _challenge.isCached ? _challenge : _challenge = Get<PlayerDataChallenge>(nameof(_challenge)); }
+        public PlayerDataFriends Friends { get => _friends != null && _friends.isCached ? _friends : _friends = Get<PlayerDataFriends>(nameof(_friends)); }
 
         public void ReadOnly() { _isCached = false; }
         
@@ -247,6 +269,8 @@ namespace SocialEdgeSDK.Server.Models
                 updates.Add(update.Set<PlayerDataTournament>(typeof(PlayerDataModel).Name + ".tournament", _tournament));
             if (_challenge != null)
                 updates.Add(update.Set<PlayerDataChallenge>(typeof(PlayerDataModel).Name + ".challenge", _challenge));
+            if (_friends != null)
+                updates.Add(update.Set<PlayerDataFriends>(typeof(PlayerDataModel).Name + ".friends", _friends));
 
             if (updates.Count == 0)
                 return false;
@@ -265,6 +289,7 @@ namespace SocialEdgeSDK.Server.Models
             _events = new PlayerDataEvent();
             _tournament = new PlayerDataTournament();
             _challenge = new PlayerDataChallenge();
+            _friends = new PlayerDataFriends();
         }
 
         private void Fill(PlayerDataModel model)
@@ -275,6 +300,7 @@ namespace SocialEdgeSDK.Server.Models
             _events = _events == null && model._events != null ? model._events : _events;
             _tournament = _tournament == null && model._tournament != null ? model._tournament : _tournament;
             _challenge = _challenge == null && model._challenge != null ? model._challenge : _challenge;
+            _friends = _friends == null && model._friends != null ? model._friends : _friends;
         }
 /*
         public void Get(List<string> fields)

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Models;
+using SocialEdgeSDK.Server.DataService;
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -312,6 +313,153 @@ namespace SocialEdgeSDK.Server.Api
             if (pool.Count > 0)
                 tournamentData.entryIds.AddRange(pool);
         }
+
+        public static bool HasTournamentEnded(TournamentData tournament)
+        {
+            long currentTime = Utils.UTCNow();
+        
+            // This case can occur if the tournament match ends after the tournament time is up
+            if (currentTime < tournament.startTime) {
+                return true;
+            }
+
+            // calculate if a tournament has ended using start time and duration
+            if (currentTime > (tournament.startTime + (tournament.duration * 60 * 1000))) {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static void HandleTournamentMatchEnd(SocialEdgeChallengeContext socialEdgeChallenge, SocialEdgePlayerContext socialEdgePlayer, 
+                                                    SocialEdgeTournamentContext socialEdgeTournament, bool isWin)
+        {
+            ChallengePlayerModel challengePlayerModel = socialEdgePlayer.PlayerDBId == socialEdgeChallenge.ChallengeModel.Challenge.player1Data.playerId ?
+                                            socialEdgeChallenge.ChallengeModel.Challenge.player1Data : socialEdgeChallenge.ChallengeModel.Challenge.player2Data;
+
+            if (string.IsNullOrEmpty(challengePlayerModel.tournamentId))
+                return;
+
+            int score = 0;
+            LeagueSettingsData leagueSettings = SocialEdge.TitleContext.LeagueSettings.leagues[socialEdgePlayer.PlayerModel.Info.league.ToString()];
+
+            if (isWin) 
+            {
+                // TODO use settings for coinsMultiplyer
+                score = (int)(challengePlayerModel.betValue * challengePlayerModel.coinsMultiplyer);
+                int rewardTrophies = leagueSettings.trophies.win;
+                if (challengePlayerModel.powerMode)
+                    rewardTrophies *= 2;
+
+                socialEdgePlayer.PlayerModel.Info.trophies += rewardTrophies;
+
+                // Update Allstars leaderboard
+                var taskT = Player.UpdatePlayerStatistics(socialEdgePlayer.PlayerId, "score", score);
+
+                 socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter++;
+                // jackpot probablity = jackpot not collected counter divided by 10
+                // is jackpot = select a random number between 1 and 10, if random number is less or equal to the probability into 10
+                int randNumber = Utils.GetRandomInteger(1, 10);
+                double rewardJackpotProbability = socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter >= 10 ? 1 : 
+                                                        socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter / 10;
+                bool isJackpot = randNumber <= rewardJackpotProbability * 10;
+                // e.g. total reward : reward 1 + reward 2 + reward 3 = 100
+                // reward 1 = random or jackpot
+                // reward 2 max = 100 minus reward 1 minus min of reward 3
+                // reward 2 = random between reward 2 min and max
+                // reward 3 = 100 minus reward 1 minus reward 2
+                var commonSettings = SocialEdge.TitleContext.GetTitleDataProperty("Common", Settings.GameSettings);
+                var rewardSettings = SocialEdge.TitleContext.GetTitleDataProperty("bonusCoinsRewards");
+                int reward1Rand = Utils.GetRandomInteger(rewardSettings.bonusCoinsRewards["reward1"][0], rewardSettings.bonusCoinsRewards["reward1"][1]);
+                int reward1Round = (int)Utils.RoundToNearestMultiple(reward1Rand, 5);
+                int reward1 = isJackpot ? rewardSettings.bonusCoinsRewards.reward1[1] : reward1Round;
+                double reward1Ratio = reward1 / 100;
+                isJackpot = rewardSettings.bonusCoinsRewards.reward1[1] == reward1;
+            
+                int reward2Max = 100 - reward1 - rewardSettings.bonusCoinsRewards.reward3[0];
+                int reward2Rand = Utils.GetRandomInteger(rewardSettings.bonusCoinsRewards.reward2[0], reward2Max);
+                int reward2 = (int)Utils.RoundToNearestMultiple(reward2Rand, 5);
+                double reward2Ratio = reward2 / 100;
+
+                int reward3 = 100 - reward1 - reward2;
+                double reward3Ratio = reward3 / 100;
+            
+                int freeReward = challengePlayerModel.betValue * rewardSettings.bonusCoinsFreeRatio;
+                int rvReward = challengePlayerModel.betValue * rewardSettings.bonusCoinsRVRatio;
+            
+                ChallengeWinnerBonusRewardsData rewards = new ChallengeWinnerBonusRewardsData();
+                rewards.bonusCoinsFree1 = (int)Math.Round(freeReward * reward1Ratio);
+                rewards.bonusCoinsFree2 = (int)Math.Round(freeReward * reward2Ratio);
+                rewards.bonusCoinsFree3 = (int)Math.Round(freeReward * reward3Ratio);
+                rewards.bonusCoinsRV1 = (int)Math.Round(rvReward * reward1Ratio);
+                rewards.bonusCoinsRV2 = (int)Math.Round(rvReward * reward2Ratio);
+                rewards.bonusCoinsRV3 = (int)Math.Round(rvReward * reward3Ratio);
+                challengePlayerModel.winnerBonusRewards = rewards;
+
+                if (isJackpot)
+                    socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter = 0;
+            }
+            else 
+            {
+                score = 0;
+                socialEdgePlayer.PlayerModel.Info.trophies -= leagueSettings.trophies.loss;
+                socialEdgePlayer.PlayerModel.Info.trophies = socialEdgePlayer.PlayerModel.Info.trophies < 0 ? 0 : socialEdgePlayer.PlayerModel.Info.trophies;
+            }
+
+            // Check for league promotion
+            int nextLeague = socialEdgePlayer.PlayerModel.Info.league + 1;
+            LeagueSettingsData nextLeagueData = SocialEdge.TitleContext.LeagueSettings.leagues[nextLeague.ToString()];
+            bool promoted = false;   
+            if (nextLeagueData != null)
+            {
+                if (socialEdgePlayer.PlayerModel.Info.trophies >= nextLeagueData.qualification.trophies)
+                {
+                    socialEdgePlayer.PlayerModel.Info.league = nextLeague;
+                    socialEdgePlayer.PlayerModel.Info.trophies -= nextLeagueData.qualification.trophies;
+                    Inbox.SetupLeaguePromotion(nextLeague.ToString(), true, socialEdgePlayer);
+                    promoted = true;
+                }
+            }
+            
+            challengePlayerModel.tournamentScore = score;
+            challengePlayerModel.promoted = promoted;
+        
+            ActiveTournament activeTournament = socialEdgePlayer.PlayerModel.Tournament.activeTournaments.ContainsKey(challengePlayerModel.tournamentId) ? 
+                                        socialEdgePlayer.PlayerModel.Tournament.activeTournaments[challengePlayerModel.tournamentId] : null;
+            if (activeTournament != null) 
+            {
+                var tournament = socialEdgeTournament.TournamentModel.Get(challengePlayerModel.tournamentId);
+
+                if (score >= 0) 
+                {
+                    activeTournament.score += score;
+                
+                    // Report score to tournament collection entry
+                    if (socialEdgePlayer.PlayerModel.Tournament.isReportingInChampionship) 
+                    {
+                        // TODO store prefix in tournament model!
+                        string collectionName = socialEdgeTournament.TournamentLiveModel.Get(tournament.shortCode).collectionPrefix + tournament.tournamentCollectionIndex.ToString();
+                        socialEdgeTournament.TournamentEntryModel.Get(socialEdgePlayer.PlayerDBId, collectionName).score = activeTournament.score;
+                    }
+                }
+            
+                activeTournament.matchesPlayedCount++;
+
+                // If tournament time is up then we end it here
+                if (HasTournamentEnded(tournament)) 
+                {
+                    End(socialEdgePlayer, socialEdgeTournament, activeTournament);                
+                    socialEdgePlayer.PlayerModel.Tournament.activeTournaments.Remove(challengePlayerModel.tournamentId);
+                
+                    // Join championship tournament if not joined already
+                    if (socialEdgePlayer.PlayerModel.Tournament.activeTournaments.Count == 0)
+                    {
+                        string tournamentShortcode = 
+                                socialEdgeTournament.TournamentLiveModel.GetActiveShortCode(socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot);
+                        Join(socialEdgePlayer, socialEdgeTournament,tournamentShortcode, 0);
+                    }
+                }
+            }
+        }
     }
 }
-

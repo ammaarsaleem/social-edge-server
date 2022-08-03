@@ -15,6 +15,16 @@ using SocialEdgeSDK.Server.Context;
 
 namespace SocialEdgeSDK.Server.Models
 {
+    public class ChallengeWinnerBonusRewardsData
+    {
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int bonusCoinsFree1;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int bonusCoinsFree2;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int bonusCoinsFree3;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int bonusCoinsRV1;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int bonusCoinsRV2;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int bonusCoinsRV3;
+    }
+
     public class ChallengePlayerModel
     {
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long betValue;
@@ -24,6 +34,15 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isBot;
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string playerId;
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string playerColor;
+
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int eloScore;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int eloChange;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Double)]      public double coinsMultiplyer;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int tournamentScore;
+        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool promoted;
+
+        [BsonIgnore]                                            public ChallengeWinnerBonusRewardsData winnerBonusRewards;
+        [BsonIgnore]                                            public long piggyBankReward;
     }
 
     public class ChallengeData : DataModelBase
@@ -32,6 +51,10 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isRanked;
         [BsonElement("player1Data")]                            public ChallengePlayerModel player1Data;
         [BsonElement("player2Data")]                            public ChallengePlayerModel player2Data;
+
+         [BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string gameEndReason; 
+         [BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string winnerId; 
+
     }
 
     public class ChallengeModelDocument

@@ -11,6 +11,7 @@ using SocialEdgeSDK.Server.Context;
 using System.Linq;
 using MongoDB.Bson;
 using Newtonsoft.Json;
+using MongoDB.Bson.Serialization;
 
 namespace SocialEdgeSDK.Server.DataService
 {
@@ -26,7 +27,9 @@ namespace SocialEdgeSDK.Server.DataService
         StoreItem GetStoreItem(string ItemId);
         string GetShortCodeFromItemId(string itemId);
 
+        LeagueSettingModel LeagueSettings { get; }
     }
+
     public class TitleContext : ITitleContext
     {
         public string version { get; set; }
@@ -38,9 +41,13 @@ namespace SocialEdgeSDK.Server.DataService
         private Dictionary<string, CatalogItem> _catalogItemsDict;
         private Dictionary<string, StoreItem> _storeItemsDict;
 
+        private LeagueSettingModel _leagueSettings;
+
         public GetTitleDataResult TitleData { get => _titleData; }
         public GetCatalogItemsResult CatalogItems { get => _catalogItems; } 
         public GetStoreItemsResult StoreItems { get => _storeItems; }
+
+        public LeagueSettingModel LeagueSettings { get => _leagueSettings; }
 
         public TitleContext()
         {
@@ -67,6 +74,10 @@ namespace SocialEdgeSDK.Server.DataService
             _storeItems = getShopTask.Result.storeResult;
             _catalogItemsDict = _catalogItems.Catalog.ToDictionary(m => m.ItemId, m => m);
             _storeItemsDict = _storeItems.Store.ToDictionary(m => m.ItemId, m => m);
+
+            _leagueSettings = new LeagueSettingModel();
+            _leagueSettings.leagues = BsonSerializer.Deserialize<Dictionary<string, LeagueSettingsData>>(_titleDataDict["Leagues"].ToString());
+
             Console.WriteLine("****** *********************  *****");
             Console.WriteLine("****** ( FetchTitleContext )  *****");
             Console.WriteLine("****** *********************  *****");
