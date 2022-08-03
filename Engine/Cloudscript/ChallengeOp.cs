@@ -39,9 +39,32 @@ namespace SocialEdgeSDK.Server.Requests
             if (op == "startChallenge")
             {
                 opResult.status = true;
+
+                //parse challenge data
                 var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
-                opResult.challengeId = SocialEdgeChallenge.ChallengeModel.Create(challengeData);
+
+                //save challenge data in db
+                var challengeId = SocialEdgeChallenge.ChallengeModel.Create(challengeData);
+
+                //load second player data
+                var socialEdgePlayer2 = LoadPlayer(challengeData.player2Data.playerId);
+
+                //save challenge id for both players and in response
                 SocialEdgeChallenge.ChallengeModel.ReadOnly();
+                opResult.challengeId = challengeId;
+                SocialEdgePlayer.PlayerModel.Challenge.currentChallengeId = challengeId;
+                socialEdgePlayer2.PlayerModel.Challenge.currentChallengeId = challengeId;
+
+                //deduct bet amount for both players
+                if(challengeData.player1Data.betValue > 0)
+                {
+                    Transactions.Consume("coins", challengeData.player1Data.betValue, SocialEdgePlayer);
+                }
+
+                if(challengeData.player2Data.betValue > 0)
+                {
+                    Transactions.Consume("coins", challengeData.player2Data.betValue, socialEdgePlayer2);
+                }
             }
             else if (op == "endChallenge")
             {
