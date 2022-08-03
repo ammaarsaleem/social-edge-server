@@ -95,7 +95,7 @@ namespace SocialEdgeSDK.Server.Models
                 return _cache[id];
 
             var collection = SocialEdge.DataService.GetCollection<ChallengeModelDocument>(COLLECTION);
-            var projection = Builders<ChallengeModelDocument>.Projection.Include(typeof(ChallengeModelDocument).Name);
+            var projection = Builders<ChallengeModelDocument>.Projection.Include(typeof(ChallengeDataModel).Name);
             var taskT = collection.FindOneById<ChallengeModelDocument>(id, projection);
             taskT.Wait();
             if (taskT.Result != null) 

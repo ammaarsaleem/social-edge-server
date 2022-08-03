@@ -44,7 +44,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
             Inbox.Validate(SocialEdgePlayer);
-            //Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
+            Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
 
              //TEST Piggybank
             //string data1 = Player.GetDynamicDisplayBundle(SocialEdgePlayer);

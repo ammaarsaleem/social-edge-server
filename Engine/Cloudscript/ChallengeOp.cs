@@ -79,21 +79,21 @@ namespace SocialEdgeSDK.Server.Requests
                 //deduct bet amount for both players
                 if(challengeData.player1Data.betValue > 0)
                 {
-                    Transactions.Consume("coins", challengeData.player1Data.betValue, SocialEdgePlayer);
+                    Transactions.Consume("coins", (int)challengeData.player1Data.betValue, SocialEdgePlayer);
                 }
 
                 if(challengeData.player2Data.betValue > 0)
                 {
-                    Transactions.Consume("coins", challengeData.player2Data.betValue, socialEdgePlayer2);
+                    Transactions.Consume("coins", (int)challengeData.player2Data.betValue, socialEdgePlayer2);
                 }
             }
             else if (op == "endChallenge")
             {
-                string challengeId = Args["challengeId"].ToString();
-                string winnerId = Args["winnerId"].ToString();
-                string gameEndReason = Args["gameEndReason"].ToString();
+                string challengeId = data["challengeId"].ToString();
+                string winnerId = data["winnerId"].ToString();
+                string gameEndReason = data["gameEndReason"].ToString();
 
-                ChallengeData challengeData = SocialEdgeChallenge.ChallengeModel.Challenge;
+                ChallengeData challengeData = SocialEdgeChallenge.ChallengeModel.Get(challengeId);
                 SocialEdgePlayerContext player1 = SocialEdgePlayer;
                 SocialEdgePlayerContext player2 = challengeData.player1Data.playerId == player1.PlayerId ? 
                                                                         LoadPlayer(challengeData.player2Data.playerId) :

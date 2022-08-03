@@ -138,7 +138,7 @@ namespace SocialEdgeSDK.Server.Api
                 // Win
                 ret[0] = diff <= 0 ? 10 : 5;
                 // Loss
-                ret[1] = diff <= 0 ? -5 : -10;
+                ret[1] = diff < 0 ? -5 : -10;
             }
 
             return ret;
