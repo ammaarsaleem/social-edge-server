@@ -12,12 +12,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using PlayFab.Samples;
-using PlayFab;
+using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Common;
+using System.Collections.Generic;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -29,11 +30,13 @@ namespace SocialEdgeSDK.Server.Requests
         public bool isAdded;
         public long removeAdsTimeStamp;
         public int addedGems = 0;
-        public int addedCoins = 0;
+        public long addedCoins = 0;
         public int piggyBank = 0;
-        public string dynamicBundleShortCode;
-        public dynamic dynamicGemSpotBundle;
+        public string dynamicBundleShortCode = "";
+        public dynamic dynamicGemSpotBundle = null;
         public long rvUnlockTimestamp;
+        public dynamic boughtItem = null;
+        public long piggyBankExpiryTimestamp;
     }
 
     public class VerifyRemoteStorePurchase : FunctionContext
@@ -42,7 +45,7 @@ namespace SocialEdgeSDK.Server.Requests
         public VerifyRemoteStorePurchase(ITitleContext titleContext, IDataService dataService) {Base(titleContext, dataService); }
 
         [FunctionName("VerifyRemoteStorePurchase")]
-            public RemotePurchaseResult Run(
+            public  RemotePurchaseResult  Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
@@ -57,16 +60,25 @@ namespace SocialEdgeSDK.Server.Requests
 
                try
                 {
+                    RemotePurchaseResult result = new RemotePurchaseResult();
                     dynamic commonSettings = Settings.CommonSettings;
                     
-                     RemotePurchaseResult result = new RemotePurchaseResult();
                      PlayFab.ServerModels.CatalogItem purchaseItem =  SocialEdge.TitleContext.GetCatalogItem(remoteProductId);
                      if(purchaseItem == null)
                      {
                              result.responseCode = 1;
-                             result.responseMessage = "Item Not found :" + remoteProductId;
+                             result.responseMessage = "Item Not found Catalog:" + remoteProductId;;
                              return result;
                      }
+
+                    ItemInstance invenotryObject = SocialEdgePlayer.PlayerEconomy.GetInventoryItem(SocialEdgePlayer, instanceId);
+                    if(invenotryObject == null)
+                    {
+                        result.responseCode = 1;
+                        result.responseMessage = "Item Not found in invenotry:" + instanceId;;
+                        return result;
+                        
+                    } 
 
                     log.LogInformation("Before VerifyRemoteStorePurchase : VirtualCurrency GM : " + SocialEdgePlayer.VirtualCurrency["GM"].ToString());
 
@@ -83,8 +95,11 @@ namespace SocialEdgeSDK.Server.Requests
                         SocialEdgePlayer.PlayerModel.Economy.piggyBankGems = 0;
                     }
 
-                    //result.boughtItem = {shortCode: remoteStoreVGood.shortCode, quantity: 1};
-
+                    Dictionary<string, object>  boughtItem = new Dictionary<string, object>();
+                    boughtItem.Add("shortCode", SocialEdge.TitleContext.GetShortCodeFromItemId(remoteProductId));
+                    boughtItem.Add("quantity", invenotryObject.RemainingUses);
+                    result.boughtItem = boughtItem;
+            
                     if(remoteProductId.Contains("subscription")) 
                     {
                         SocialEdgePlayer.PlayerModel.Economy.subscriptionExpiryTime = expiryTime;
@@ -108,11 +123,12 @@ namespace SocialEdgeSDK.Server.Requests
 
                     string tempItemId = Settings.DynamicDisplayBundles[SocialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier][SocialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier].ToString();
                     string dynamicBundleShortCode  =  Utils.GetShortCode(tempItemId);
-                    dynamic dynamicGemSpotBundle   = Player.GetDynamicGemSpotBundle(SocialEdgePlayer);
+                    dynamic dynamicGemSpotBundle   = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle().ToString();
 
                     result.dynamicBundleShortCode = dynamicBundleShortCode;
                     result.dynamicGemSpotBundle = dynamicGemSpotBundle;
                     result.rvUnlockTimestamp = SocialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp;
+                    result.piggyBankExpiryTimestamp = SocialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp; 
 
                     SocialEdgePlayer.CacheFlush();
 

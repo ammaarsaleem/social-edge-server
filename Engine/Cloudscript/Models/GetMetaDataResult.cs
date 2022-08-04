@@ -22,6 +22,8 @@ namespace SocialEdgeSDK.Server.Models
         public List<FriendInfo> friends;
         public GetTitleDataResult titleData;
         public List<EntityProfileBody> friendsProfiles;
+        public string dynamicBundleToDisplay;
+        public string dynamicGemSpotBundle;
 
         public bool appVersionValid;
         public string contentData;
