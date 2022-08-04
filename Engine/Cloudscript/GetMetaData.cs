@@ -73,9 +73,8 @@ namespace SocialEdgeSDK.Server.Requests
                     metaDataResponse.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
                 }
 
-                SocialEdgePlayer.CacheFlush();
-                SocialEdgeTournament.CacheFlush();
-                
+                CacheFlush();
+                // Force a fetch of player model after all data is written out so all fields of playermodel cache are filled.
                 metaDataResponse.playerDataModel = SocialEdgePlayer.PlayerModel.Fetch();
                 return metaDataResponse;
             }

@@ -77,14 +77,14 @@ namespace SocialEdgeSDK.Server.Requests
                 socialEdgePlayer2.PlayerModel.Challenge.currentChallengeId = challengeId;
 
                 //deduct bet amount for both players
-                if(challengeData.player1Data.betValue > 0)
+                if (challengeData.player1Data.betValue > 0)
                 {
-                    Transactions.Consume("coins", (int)challengeData.player1Data.betValue, SocialEdgePlayer);
+                    var taskT = Transactions.Consume("coins", (int)challengeData.player1Data.betValue, SocialEdgePlayer);
                 }
 
-                if(challengeData.player2Data.betValue > 0)
+                if (challengeData.player2Data.betValue > 0)
                 {
-                    Transactions.Consume("coins", (int)challengeData.player2Data.betValue, socialEdgePlayer2);
+                    var taskT = Transactions.Consume("coins", (int)challengeData.player2Data.betValue, socialEdgePlayer2);
                 }
             }
             else if (op == "endChallenge")
