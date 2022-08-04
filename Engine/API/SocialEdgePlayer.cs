@@ -84,6 +84,7 @@ namespace SocialEdgeSDK.Server.Context
         private GetPlayerCombinedInfoResultPayload _combinedInfo;
         private PlayerDataSegment _playerData;
         private PlayerDataModel _playerModel;
+        private PlayerEconomy _playerEconomy;
 
         public string PlayerId => _playerId;
         //public PlayerMiniProfileData MiniProfile { get => _miniProfile;}
@@ -93,6 +94,8 @@ namespace SocialEdgeSDK.Server.Context
         public string PlayerIdFromObjectId(ObjectId id) { return id.ToString().TrimStart('0'); }
         public string PlayerIdFromObjectId(string id) { return id.TrimStart('0'); }
         public PlayerDataModel PlayerModel { get => _playerModel != null ? _playerModel : _playerModel = new PlayerDataModel(this); }
+        public PlayerEconomy PlayerEconomy { get => _playerEconomy != null ? _playerEconomy : _playerEconomy = new PlayerEconomy(this); }
+
 
         public PlayerDataSegment PlayerData { get => _playerData; }
         public PlayerMiniProfileData MiniProfile { get => (((_fillMask & CachePlayerDataSegments.MINI_PROFILE) != 0) || (CacheFillSegment(CachePlayerDataSegments.MINI_PROFILE))) ? _miniProfile : null; }

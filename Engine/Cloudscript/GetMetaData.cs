@@ -67,6 +67,8 @@ namespace SocialEdgeSDK.Server.Requests
                 metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 metaDataResponse.contentData = GetContentList();
                 metaDataResponse.liveTournaments = SocialEdgeTournament.TournamentLiveModel.Fetch();
+                metaDataResponse.dynamicBundleToDisplay = SocialEdgePlayer.PlayerEconomy.ProcessDynamicDisplayBundle();
+                metaDataResponse.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle().ToString();
 
                 if (isNewlyCreated == true)
                 {
