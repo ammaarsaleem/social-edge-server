@@ -29,6 +29,7 @@ namespace SocialEdgeSDK.Server.Requests
         public int eloScore;
         public int totalGamesWon;
         public int totalGamesLost;
+        public int totalGamesDrawn;
         public int trophies;
         public int league;
         public long piggyBankReward;
@@ -67,7 +68,7 @@ namespace SocialEdgeSDK.Server.Requests
 
                 if(challengeData.player1Data.betValue > 0)
                 {
-                    Transactions.Consume("coins", (int)challengeData.player1Data.betValue, SocialEdgePlayer);
+                    var taskT = Transactions.Consume("coins", (int)challengeData.player1Data.betValue, SocialEdgePlayer);
                 }
 
                 if(!challengeData.player2Data.isBot)
@@ -77,7 +78,7 @@ namespace SocialEdgeSDK.Server.Requests
 
                     if(challengeData.player2Data.betValue > 0)
                     {
-                        Transactions.Consume("coins", (int)challengeData.player2Data.betValue, socialEdgePlayer2);
+                        var taskT = Transactions.Consume("coins", (int)challengeData.player2Data.betValue, socialEdgePlayer2);
                     }
                 }
 
@@ -137,6 +138,7 @@ namespace SocialEdgeSDK.Server.Requests
             model.piggyBankReward = playerChallengeData.piggyBankReward;
             model.totalGamesLost = playerModel.Info.gamesLost;
             model.totalGamesWon = playerModel.Info.gamesWon;
+            model.totalGamesDrawn = playerModel.Info.gamesDrawn;
             model.trophies = playerModel.Info.trophies;
 
             return model;

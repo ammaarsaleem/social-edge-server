@@ -141,16 +141,16 @@ namespace SocialEdgeSDK.Server.Models
 
             var collection = SocialEdge.DataService.GetCollection<TournamentEntryModelDocument>(tournamentCollectionName);
             var projection = Builders<TournamentEntryModelDocument>.Projection.Exclude("_id").Include(typeof(TournamentEntryData).Name);
-            var taskT = collection.FindOneById<TournamentEntryData>(entryId, projection);
+            var taskT = collection.FindOneById<TournamentEntryModelDocument>(entryId, projection);
             taskT.Wait();
             if (taskT.Result != null) 
             {
-                taskT.Result.isDirty = false;
+                taskT.Result._model.isDirty = false;
                 _id = entryId;
                 _collectionName = tournamentCollectionName;
             }
             SocialEdge.Log.LogInformation("Task fetch TOURNAMENT_ENTRY:" + (taskT.Result != null ? "(success)" : "(null)"));
-            return taskT.Result != null ? _entry = taskT.Result : null;
+            return taskT.Result != null ? _entry = taskT.Result._model : null;
         }        
 
         internal bool CacheWrite()

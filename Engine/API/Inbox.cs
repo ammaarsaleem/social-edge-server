@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Api;
+using SocialEdgeSDK.Server.DataService;
 
 namespace SocialEdgeSDK.Server.Models
 {
@@ -82,15 +83,15 @@ namespace SocialEdgeSDK.Server.Models
 
         public static void SetupLeaguePromotion(string qualifiedLeagueId, bool promoted, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var league = Leagues.GetLeague(qualifiedLeagueId);
+            LeagueSettingsData league = SocialEdge.TitleContext.LeagueSettings.leagues[qualifiedLeagueId];
             
             // Add promotion reward
             if (promoted)
             {
                 var message = CreateMessage();
                 message.type = "RewardLeaguePromotion";
-                message.league =  league[qualifiedLeagueId.ToString()].ToString();
-                message.reward = new Dictionary<string, int>() { ["gems"] = (int)league["qualification"]["reward"]["gems"]};
+                message.league =  league.name;
+                message.reward = new Dictionary<string, int>() { ["gems"] = (int)league.qualification.reward.gems};
                 InboxModel.Add(message, socialEdgePlayer);
             }
 
@@ -100,11 +101,11 @@ namespace SocialEdgeSDK.Server.Models
             var leageuDailyRewardMsgInfo =Inbox.CreateMessage();
             leageuDailyRewardMsgInfo.type = "RewardDailyLeague";
             leageuDailyRewardMsgInfo.isDaily = true;
-            leageuDailyRewardMsgInfo.league = league[socialEdgePlayer.PlayerModel.Info.league].ToString();
+            leageuDailyRewardMsgInfo.league = league.name;
             leageuDailyRewardMsgInfo.reward = new Dictionary<string, int>()
                 {
-                    ["gems"] = (int)league["dailyReward"]["gems"],
-                    ["coins"] = (int)league["dailyReward"]["coins"]
+                    ["gems"] = (int)league.dailyReward.gems,
+                    ["coins"] = (int)league.dailyReward.coins
                 };
             leageuDailyRewardMsgInfo.startTime = msg.startTime;
             leageuDailyRewardMsgInfo.time = msg.startTime;

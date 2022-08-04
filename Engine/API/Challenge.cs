@@ -5,6 +5,7 @@
 
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Models;
+using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -25,20 +26,22 @@ namespace SocialEdgeSDK.Server.Api
                                                              socialEdgeChallenge.ChallengeModel.Challenge.player1Data : socialEdgeChallenge.ChallengeModel.Challenge.player2Data;
                 ChallengePlayerModel loserChallengeModel = socialEdgeChallenge.ChallengeModel.Challenge.player1Data.playerId == winnerId ?
                                                              socialEdgeChallenge.ChallengeModel.Challenge.player2Data : socialEdgeChallenge.ChallengeModel.Challenge.player1Data;
-                winnerChallengeModel.eloChange = CalcEloChange(winnerChallengeModel.eloScore, loserChallengeModel.eloScore, true)[0];
-                loserChallengeModel.eloChange = CalcEloChange(loserChallengeModel.eloScore, winnerChallengeModel.eloScore, true)[1];
+                winnerChallengeModel.eloChange = CalcEloChange(winnerChallengeModel.eloScore, loserChallengeModel.eloScore, 
+                                                                    socialEdgeChallenge.ChallengeModel.Challenge.isRanked, winnerChallengeModel.isEventMatch)[0];
+                loserChallengeModel.eloChange = CalcEloChange(loserChallengeModel.eloScore, winnerChallengeModel.eloScore, 
+                                                                    socialEdgeChallenge.ChallengeModel.Challenge.isRanked, loserChallengeModel.isEventMatch)[1];
 
                 SocialEdgePlayerContext winnerPlayer = winnerId == player1.PlayerId ? player1 : player2;
                 SocialEdgePlayerContext loserPlayer = winnerId == player1.PlayerId ? player2 : player1;
-                Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge, winnerPlayer, socialEdgeTournament, true);
-                Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge, loserPlayer, socialEdgeTournament, false);
+                Tournaments.HandleTournamentMatchEnd(winnerChallengeModel, winnerPlayer, socialEdgeTournament, true, false);
+                Tournaments.HandleTournamentMatchEnd(loserChallengeModel, loserPlayer, socialEdgeTournament, false, false);
                 WinLoseGame(socialEdgeChallenge.ChallengeModel.Challenge, winnerPlayer, loserPlayer);
 
             }
             else
             {
-                Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge, player1, socialEdgeTournament, false);
-                Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge, player2, socialEdgeTournament, false);
+                Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge.ChallengeModel.Challenge.player1Data, player1, socialEdgeTournament, false, true);
+                Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge.ChallengeModel.Challenge.player2Data, player2, socialEdgeTournament, false, true);
                 DrawGame(socialEdgeChallenge.ChallengeModel.Challenge, player1, player2);
             }
 
@@ -48,6 +51,9 @@ namespace SocialEdgeSDK.Server.Api
                 socialEdgeChallenge.ChallengeModel.Challenge.player2Data.piggyBankReward = 0;
                 // TODO HandlePiggyBankReward(player1, player2);
             }
+
+            player1.PlayerModel.Challenge.currentChallengeId = null;
+            player2.PlayerModel.Challenge.currentChallengeId = null;
         }
 
         private static void WinLoseGame(ChallengeData challengeData, SocialEdgePlayerContext winnerPlayer, SocialEdgePlayerContext loserPlayer)
@@ -89,8 +95,10 @@ namespace SocialEdgeSDK.Server.Api
 
             if (winnerChallengePlayerModel.betValue > 0)
             {
-                double coinsMultiplyer = winnerChallengePlayerModel.coinsMultiplyer;// TODO get from settings
-                winnerPlayer.VirtualCurrency["CN"] +=  (int)(winnerChallengePlayerModel.betValue * coinsMultiplyer);
+                float matchCoinsMultiplyer = float.Parse(Settings.CommonSettings["matchCoinsMultiplyer"].ToString());
+                int rewardBet = (int)(winnerChallengePlayerModel.betValue * matchCoinsMultiplyer);
+                winnerPlayer.VirtualCurrency["CN"] +=  rewardBet;
+                var taskT = Transactions.Add("coins", rewardBet, winnerPlayer);
             }
         }
 
@@ -113,25 +121,23 @@ namespace SocialEdgeSDK.Server.Api
 
             if (challengeData.player1Data.betValue > 0)
             {
-                // TODO get from settings
-                double coinsMultiplyer = challengeData.player1Data.coinsMultiplyer;
-                player1.VirtualCurrency["CN"] +=  (int)(challengeData.player1Data.betValue * coinsMultiplyer);
+                player1.VirtualCurrency["CN"] +=  (int)(challengeData.player1Data.betValue);
+                var taskT = Transactions.Add("coins", (int)challengeData.player1Data.betValue, player1);
             }
 
             if (challengeData.player2Data.betValue > 0)
             {
-                // TODO get from settings
-                double coinsMultiplyer = challengeData.player2Data.coinsMultiplyer;
-                player2.VirtualCurrency["CN"] +=  (int)(challengeData.player2Data.betValue * coinsMultiplyer);
+                player2.VirtualCurrency["CN"] +=  (int)(challengeData.player2Data.betValue);
+                var taskT = Transactions.Add("coins", (int)challengeData.player2Data.betValue, player2);
             }
         }
 
-        private static int[] CalcEloChange(int elo1, int elo2, bool isRanked)
+        private static int[] CalcEloChange(int elo1, int elo2, bool isRanked, bool isEventMatch)
         {
             int[] ret = new int[2];
             ret[0] = ret[1] = 0;
 
-            if (isRanked)
+            if (isRanked && !isEventMatch)
             {
                 float diff = elo1 - elo2;
 
