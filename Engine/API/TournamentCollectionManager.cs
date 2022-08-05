@@ -142,7 +142,7 @@ namespace SocialEdgeSDK.Server.Api
         {
             var collection = SocialEdge.DataService.GetDatabase().GetCollection<TournamentEntryModelDocument>(collectionName);
             FilterDefinition<TournamentEntryModelDocument> filter = Builders<TournamentEntryModelDocument>.Filter.In<string>("_id", ids);
-            var sortByScore = Builders<TournamentEntryModelDocument>.Sort.Descending(typeof(TournamentEntryModelDocument).Name + ".score");
+            var sortByScore = Builders<TournamentEntryModelDocument>.Sort.Descending(typeof(TournamentEntryData).Name + ".score");
             var projection = Builders<TournamentEntryModelDocument>.Projection.Expression(item => 
                                                                         new TournamentLeaderboardEntry(
                                                                                 item._model.playerId, 

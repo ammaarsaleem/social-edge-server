@@ -54,9 +54,9 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int eloScore {get => _eloScore; set {_eloScore = value; isDirty = true;}}
         [BsonIgnore] public double rnd {get => _rnd; set {_rnd = value; isDirty = true;}}
         [BsonIgnore] public long expireAt {get => _expireAt; set {_expireAt = value; isDirty = true;}}
-        [BsonIgnore] public int score {get => _eloScore; set {_eloScore = value; isDirty = true;}}
+        [BsonIgnore] public int score {get => _score; set {_score = value; isDirty = true;}}
         [BsonIgnore] public string retentionDay {get => _retentionDay; set {_retentionDay = value; isDirty = true;}}
-        [BsonIgnore] public int tournamentMaxScore {get => _eloScore; set {_eloScore = value; isDirty = true;}}
+        [BsonIgnore] public int tournamentMaxScore {get => _tournamentMaxScore; set {_tournamentMaxScore = value; isDirty = true;}}
         [BsonIgnore] public int tournamentSlot {get => _tournamentSlot; set {_tournamentSlot = value; isDirty = true;}}
         [BsonIgnore] public long lastActiveTime {get => _lastActiveTime; set {_lastActiveTime = value; isDirty = true;}}
         [BsonIgnore] public long joinTime {get => _joinTime; set {_joinTime = value; isDirty = true;}}

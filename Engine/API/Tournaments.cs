@@ -82,14 +82,14 @@ namespace SocialEdgeSDK.Server.Api
             return socialEdgeTournament.TournamentModel.Tournament;  
         } 
 
-        private static ActiveTournament CreatePlayerActiveTournament(TournamentData tournament, int rank)
+        private static ActiveTournament CreatePlayerActiveTournament(TournamentData tournament, int playerRank)
         {
             return new ActiveTournament()
             {
                 shortCode = tournament.shortCode,
                 type = tournament.type,
                 name = tournament.name,
-                rank = rank,
+                rank = playerRank,
                 grandPrize = tournament.rewards["0"],
                 startTime = tournament.startTime,
                 duration = tournament.duration,
