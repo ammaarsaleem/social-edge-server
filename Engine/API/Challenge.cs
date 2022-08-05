@@ -33,16 +33,41 @@ namespace SocialEdgeSDK.Server.Api
 
                 SocialEdgePlayerContext winnerPlayer = winnerId == player1.PlayerId ? player1 : player2;
                 SocialEdgePlayerContext loserPlayer = winnerId == player1.PlayerId ? player2 : player1;
-                Tournaments.HandleTournamentMatchEnd(winnerChallengeModel, winnerPlayer, socialEdgeTournament, true, false);
-                Tournaments.HandleTournamentMatchEnd(loserChallengeModel, loserPlayer, socialEdgeTournament, false, false);
-                WinLoseGame(socialEdgeChallenge.ChallengeModel.Challenge, winnerPlayer, loserPlayer);
 
+                if (winnerPlayer != null)
+                {
+                    Tournaments.HandleTournamentMatchEnd(winnerChallengeModel, winnerPlayer, socialEdgeTournament, true, false);
+                    WinGame(socialEdgeChallenge.ChallengeModel.Challenge, winnerPlayer);
+                }
+
+                if (loserPlayer != null)
+                {
+                    Tournaments.HandleTournamentMatchEnd(loserChallengeModel, loserPlayer, socialEdgeTournament, false, false);
+                    LoseGame(socialEdgeChallenge.ChallengeModel.Challenge, loserPlayer);
+                }
+
+                if (winnerPlayer != null && loserPlayer != null)
+                    UpdateWinLoseGameFriendsInfo(winnerPlayer, loserPlayer);
             }
             else
             {
-                Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge.ChallengeModel.Challenge.player1Data, player1, socialEdgeTournament, false, true);
-                Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge.ChallengeModel.Challenge.player2Data, player2, socialEdgeTournament, false, true);
-                DrawGame(socialEdgeChallenge.ChallengeModel.Challenge, player1, player2);
+                if (player1 != null)
+                {
+                    Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge.ChallengeModel.Challenge.player1Data, player1, socialEdgeTournament, false, true);
+                    DrawGame(socialEdgeChallenge.ChallengeModel.Challenge.player1Data, player1);
+                }
+                
+                if (player2 != null)
+                {
+                    Tournaments.HandleTournamentMatchEnd(socialEdgeChallenge.ChallengeModel.Challenge.player2Data, player2, socialEdgeTournament, false, true);
+                    DrawGame(socialEdgeChallenge.ChallengeModel.Challenge.player2Data, player2);
+                }
+
+                if (player1 != null && player2 != null)
+                {
+                    UpdateDrawGameFriendsInfo(player1, player2);
+                }
+
             }
 
             if (!isAbandoned)
@@ -52,45 +77,24 @@ namespace SocialEdgeSDK.Server.Api
                 // TODO HandlePiggyBankReward(player1, player2);
             }
 
-            player1.PlayerModel.Challenge.currentChallengeId = null;
-            player2.PlayerModel.Challenge.currentChallengeId = null;
+            if (player1 != null)
+                player1.PlayerModel.Challenge.currentChallengeId = null;
+
+            if (player2 != null)
+                player2.PlayerModel.Challenge.currentChallengeId = null;
         }
 
-        private static void WinLoseGame(ChallengeData challengeData, SocialEdgePlayerContext winnerPlayer, SocialEdgePlayerContext loserPlayer)
+        private static void WinGame(ChallengeData challengeData, SocialEdgePlayerContext winnerPlayer)
         {
             challengeData.winnerId = winnerPlayer.PlayerId;
-
             ChallengePlayerModel winnerChallengePlayerModel = challengeData.player1Data.playerId == challengeData.winnerId ? challengeData.player1Data : challengeData.player2Data;
-            ChallengePlayerModel loserChallengePlayerModel = challengeData.player1Data.playerId == challengeData.winnerId ? challengeData.player2Data : challengeData.player1Data;
-            
             winnerPlayer.PlayerModel.Info.gamesWon++;
-            loserPlayer.PlayerModel.Info.gamesLost++;
             winnerPlayer.PlayerModel.Info.eloScore += winnerChallengePlayerModel.eloChange;
-            loserPlayer.PlayerModel.Info.eloScore += loserChallengePlayerModel.eloChange;
-
-            if (winnerPlayer.PlayerModel.Friends.friends.ContainsKey(loserPlayer.PlayerId))
-            {
-                FriendData friendData = winnerPlayer.PlayerModel.Friends.friends[loserPlayer.PlayerId];
-                friendData.gamesWon++;
-            }
-
-            if (loserPlayer.PlayerModel.Friends.friends.ContainsKey(winnerPlayer.PlayerId))
-            {
-                FriendData friendData = loserPlayer.PlayerModel.Friends.friends[winnerPlayer.PlayerId];
-                friendData.gamesWon++;
-            }
-
             if (winnerChallengePlayerModel.isEventMatch)
             {
                 // TODO ProcessDailyEventExpiry(winnerPlayer);
                 if (winnerPlayer.PlayerModel.Events.dailyEventProgress < SocialEdge.TitleContext.GetTitleDataProperty("DailyEventRewards").length) 
                     winnerPlayer.PlayerModel.Events.dailyEventProgress++;
-            }
-
-            if (loserChallengePlayerModel.isEventMatch) 
-            {
-                // TODO ProcessDailyEventExpiry(loserPlayer);
-                loserPlayer.PlayerModel.Events.dailyEventState = "lost";
             }
 
             if (winnerChallengePlayerModel.betValue > 0)
@@ -102,11 +106,35 @@ namespace SocialEdgeSDK.Server.Api
             }
         }
 
-        public static void DrawGame(ChallengeData challengeData, SocialEdgePlayerContext player1, SocialEdgePlayerContext player2)
+        private static void LoseGame(ChallengeData challengeData, SocialEdgePlayerContext loserPlayer)
         {
-            player1.PlayerModel.Info.gamesDrawn++;
-            player2.PlayerModel.Info.gamesDrawn++;
+            ChallengePlayerModel loserChallengePlayerModel = challengeData.player1Data.playerId == challengeData.winnerId ? challengeData.player2Data : challengeData.player1Data;
+            loserPlayer.PlayerModel.Info.gamesLost++;
+            loserPlayer.PlayerModel.Info.eloScore += loserChallengePlayerModel.eloChange;
+            if (loserChallengePlayerModel.isEventMatch) 
+            {
+                // TODO ProcessDailyEventExpiry(loserPlayer);
+                loserPlayer.PlayerModel.Events.dailyEventState = "lost";
+            }
+        }
 
+        private static void UpdateWinLoseGameFriendsInfo(SocialEdgePlayerContext winnerPlayer, SocialEdgePlayerContext loserPlayer)
+        {
+            if (winnerPlayer.PlayerModel.Friends.friends.ContainsKey(loserPlayer.PlayerId))
+            {
+                FriendData friendData = winnerPlayer.PlayerModel.Friends.friends[loserPlayer.PlayerId];
+                friendData.gamesWon++;
+            }
+
+            if (loserPlayer.PlayerModel.Friends.friends.ContainsKey(winnerPlayer.PlayerId))
+            {
+                FriendData friendData = loserPlayer.PlayerModel.Friends.friends[winnerPlayer.PlayerId];
+                friendData.gamesWon++;
+            }
+        }
+
+        public static void UpdateDrawGameFriendsInfo(SocialEdgePlayerContext player1, SocialEdgePlayerContext player2)
+        {
             if (player1.PlayerModel.Friends.friends.ContainsKey(player2.PlayerId))
             {
                 FriendData friendData = player1.PlayerModel.Friends.friends[player2.PlayerId];
@@ -118,17 +146,16 @@ namespace SocialEdgeSDK.Server.Api
                 FriendData friendData = player2.PlayerModel.Friends.friends[player1.PlayerId];
                 friendData.gamesDrawn++;
             }
+        }
 
-            if (challengeData.player1Data.betValue > 0)
-            {
-                player1.VirtualCurrency["CN"] +=  (int)(challengeData.player1Data.betValue);
-                var taskT = Transactions.Add("coins", (int)challengeData.player1Data.betValue, player1);
-            }
+        public static void DrawGame(ChallengePlayerModel challengePlayerModel, SocialEdgePlayerContext player)
+        {
+            player.PlayerModel.Info.gamesDrawn++;
 
-            if (challengeData.player2Data.betValue > 0)
+            if (challengePlayerModel.betValue > 0)
             {
-                player2.VirtualCurrency["CN"] +=  (int)(challengeData.player2Data.betValue);
-                var taskT = Transactions.Add("coins", (int)challengeData.player2Data.betValue, player2);
+                player.VirtualCurrency["CN"] +=  (int)(challengePlayerModel.betValue);
+                var taskT = Transactions.Add("coins", (int)challengePlayerModel.betValue, player);
             }
         }
 

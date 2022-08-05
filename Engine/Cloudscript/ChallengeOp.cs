@@ -71,7 +71,7 @@ namespace SocialEdgeSDK.Server.Requests
                     var taskT = Transactions.Consume("coins", (int)challengeData.player1Data.betValue, SocialEdgePlayer);
                 }
 
-                if(!challengeData.player2Data.isBot)
+                if (!challengeData.player2Data.isBot)
                 {
                     var socialEdgePlayer2 = LoadPlayer(challengeData.player2Data.playerId);
                     socialEdgePlayer2.PlayerModel.Challenge.currentChallengeId = challengeId;
@@ -93,9 +93,13 @@ namespace SocialEdgeSDK.Server.Requests
 
                 ChallengeData challengeData = SocialEdgeChallenge.ChallengeModel.Get(challengeId);
                 SocialEdgePlayerContext player1 = SocialEdgePlayer;
-                SocialEdgePlayerContext player2 = challengeData.player1Data.playerId == player1.PlayerId ? 
+                SocialEdgePlayerContext player2 = null;
+                if (!challengeData.player2Data.isBot)
+                {
+                    player2 = challengeData.player1Data.playerId == player1.PlayerId ? 
                                                                         LoadPlayer(challengeData.player2Data.playerId) :
                                                                         LoadPlayer(challengeData.player1Data.playerId);
+                }
 
                 Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, player1, player2, gameEndReason, winnerId);
 
@@ -103,8 +107,12 @@ namespace SocialEdgeSDK.Server.Requests
                 opResult.challengeId = challengeId;
                 opResult.challengeEndedInfo = new ChallengeEndDataModel();
                 opResult.challengeEndedInfo.playersData = new Dictionary<string, ChallengeEndPlayerModel>();
-                opResult.challengeEndedInfo.playersData.Add(player1.PlayerId, CreateChallengeEndPlayerModelResult(player1.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player1Data));
-                opResult.challengeEndedInfo.playersData.Add(player2.PlayerId, CreateChallengeEndPlayerModelResult(player2.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player2Data));
+
+                if (player1 != null)
+                    opResult.challengeEndedInfo.playersData.Add(player1.PlayerId, CreateChallengeEndPlayerModelResult(player1.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player1Data));
+                
+                if (player2 != null)
+                    opResult.challengeEndedInfo.playersData.Add(player2.PlayerId, CreateChallengeEndPlayerModelResult(player2.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player2Data));
 
                 if (winnerId != null)
                 {
