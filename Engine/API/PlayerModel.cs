@@ -14,6 +14,17 @@ using Newtonsoft.Json;
 
 namespace SocialEdgeSDK.Server.Models
 {
+    public static class PlayerModelFields
+    {
+        public static string META = typeof(PlayerDataModel).Name + ".meta";
+        public static string INFO = typeof(PlayerDataModel).Name + ".info";
+        public static string ECONOMY = typeof(PlayerDataModel).Name + ".economy";
+        public static string EVENTS = typeof(PlayerDataModel).Name + ".events";
+        public static string TOURNAMENT = typeof(PlayerDataModel).Name + ".tournament";
+        public static string CHALLENGE = typeof(PlayerDataModel).Name + ".challenge";
+        public static string FRIENDS = typeof(PlayerDataModel).Name + ".friends";
+    }
+
     public class AdRewardsData
     {
 
@@ -206,7 +217,6 @@ namespace SocialEdgeSDK.Server.Models
         [JsonIgnore][BsonElement("challenge")][BsonIgnoreIfNull]    public PlayerDataChallenge _challenge;
         [JsonIgnore][BsonElement("friends")][BsonIgnoreIfNull]      public PlayerDataFriends _friends;
 
-
         public PlayerDataMeta Meta { get => _meta != null && _meta.isCached ? _meta : _meta = Get<PlayerDataMeta>(nameof(_meta)); }
         public PlayerDataInfo Info { get => _info != null && _info.isCached ? _info : _info = Get<PlayerDataInfo>(nameof(_info)); }
         public PlayerDataEconomy Economy { get => _economy != null && _economy.isCached ? _economy : _economy = Get<PlayerDataEconomy>(nameof(_economy)); }
@@ -302,29 +312,32 @@ namespace SocialEdgeSDK.Server.Models
             _challenge = _challenge == null && model._challenge != null ? model._challenge : _challenge;
             _friends = _friends == null && model._friends != null ? model._friends : _friends;
         }
-/*
-        public void Get(List<string> fields)
+
+        public void Prefetch(List<string> fields)
         {
-            var collection = SocialEdge.DataService.GetCollection<PlayerModel>(PLAYER_MODEL_COLLECTION);
-            var projection = Builders<PlayerModel>.Projection.Include(fields[0]).Exclude("_id");
+            var collection = SocialEdge.DataService.GetCollection<PlayerModelDocument>(PLAYER_MODEL_COLLECTION);
+            var projection = Builders<PlayerModelDocument>.Projection.Include(fields[0]).Exclude("_id");
             for(int i = 1; i < fields.Count; i++)
             {
                 projection = projection.Include(fields[i]);
             }
 
-            var taskT = collection.FindOneById<PlayerModel>(_socialEdgePlayer.PlayerDBId, projection);
+            var taskT = collection.FindOneById<PlayerModelDocument>(_socialEdgePlayer.PlayerDBId, projection);
             taskT.Wait();
 
-            PlayerModel model = taskT.Result;
+            SocialEdge.Log.LogInformation("Task fetch PLAYER_MODEL fields:" + " " + (taskT.Result != null ? "(success)" : "(null)"));
+
+            PlayerDataModel model = taskT.Result._model;
             _meta = model._meta != null ? model._meta : _meta;
             _info = model._info != null ? model._info : _info;
             _economy = model._economy != null ? model._economy : _economy;
             _events = model._events != null ? model._events : _events;
             _tournament = model._tournament != null ? model._tournament : _tournament;
             _challenge = model._challenge != null ? model._challenge : _challenge;
+            _friends = _friends == null && model._friends != null ? model._friends : _friends;
         }
 
-
+/*
         private void Set<T>(string id, T val)
         {
             const string PLAYER_MODEL_COLLECTION = "playerModel";

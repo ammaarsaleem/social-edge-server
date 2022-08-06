@@ -35,6 +35,20 @@ namespace SocialEdgeSDK.Server.Requests
         public long piggyBankReward;
         public long piggyBankExipryTimestamp;
         public PlayerDataEvent dailyEventData;
+
+        public ChallengeEndPlayerModel (PlayerDataModel playerModel, ChallengePlayerModel playerChallengeData)
+        {
+            dailyEventData = playerModel.Events;
+            eloChange = playerChallengeData.eloChange;
+            eloScore = playerModel.Info.eloScore;
+            league = playerModel.Info.league;
+            piggyBankExipryTimestamp = playerModel.Economy.piggyBankExpiryTimestamp;
+            piggyBankReward = playerChallengeData.piggyBankReward;
+            totalGamesLost = playerModel.Info.gamesLost;
+            totalGamesWon = playerModel.Info.gamesWon;
+            totalGamesDrawn = playerModel.Info.gamesDrawn;
+            trophies = playerModel.Info.trophies;
+        }
     }
 
     public class ChallengeOpResult
@@ -68,7 +82,7 @@ namespace SocialEdgeSDK.Server.Requests
 
                 if(challengeData.player1Data.betValue > 0)
                 {
-                    var taskT = Transactions.Consume("coins", (int)challengeData.player1Data.betValue, SocialEdgePlayer);
+                    SocialEdgePlayer.PlayerEconomy.SubtractVirtualCurrency("CN",  (int)challengeData.player1Data.betValue);
                 }
 
                 if (!challengeData.player2Data.isBot)
@@ -78,7 +92,7 @@ namespace SocialEdgeSDK.Server.Requests
 
                     if(challengeData.player2Data.betValue > 0)
                     {
-                        var taskT = Transactions.Consume("coins", (int)challengeData.player2Data.betValue, socialEdgePlayer2);
+                        socialEdgePlayer2.PlayerEconomy.SubtractVirtualCurrency("CN",  (int)challengeData.player2Data.betValue);
                     }
                 }
 
@@ -109,10 +123,10 @@ namespace SocialEdgeSDK.Server.Requests
                 opResult.challengeEndedInfo.playersData = new Dictionary<string, ChallengeEndPlayerModel>();
 
                 if (player1 != null)
-                    opResult.challengeEndedInfo.playersData.Add(player1.PlayerId, CreateChallengeEndPlayerModelResult(player1.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player1Data));
+                    opResult.challengeEndedInfo.playersData.Add(player1.PlayerId, new ChallengeEndPlayerModel(player1.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player1Data));
                 
                 if (player2 != null)
-                    opResult.challengeEndedInfo.playersData.Add(player2.PlayerId, CreateChallengeEndPlayerModelResult(player2.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player2Data));
+                    opResult.challengeEndedInfo.playersData.Add(player2.PlayerId, new ChallengeEndPlayerModel(player2.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player2Data));
 
                 if (winnerId != null)
                 {
@@ -133,23 +147,6 @@ namespace SocialEdgeSDK.Server.Requests
 
             CacheFlush();
             return opResult;
-        }
-
-        private ChallengeEndPlayerModel CreateChallengeEndPlayerModelResult(PlayerDataModel playerModel, ChallengePlayerModel playerChallengeData)
-        {
-            ChallengeEndPlayerModel model = new ChallengeEndPlayerModel();
-            model.dailyEventData = playerModel.Events;
-            model.eloChange = playerChallengeData.eloChange;
-            model.eloScore = playerModel.Info.eloScore;
-            model.league = playerModel.Info.league;
-            model.piggyBankExipryTimestamp = playerModel.Economy.piggyBankExpiryTimestamp;
-            model.piggyBankReward = playerChallengeData.piggyBankReward;
-            model.totalGamesLost = playerModel.Info.gamesLost;
-            model.totalGamesWon = playerModel.Info.gamesWon;
-            model.totalGamesDrawn = playerModel.Info.gamesDrawn;
-            model.trophies = playerModel.Info.trophies;
-
-            return model;
         }
     }
 }

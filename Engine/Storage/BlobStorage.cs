@@ -4,6 +4,7 @@
 /// Proprietary and confidential
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
@@ -11,6 +12,13 @@ using Azure.Storage.Sas;
 
 namespace SocialEdgeSDK.Server.DataService
 {
+    public class BlobFileInfo
+    {
+        public string shortCode;
+        public long size;
+        public long modifiedOn;
+    }
+
     public class BlobStorage : IBlobStorage
     {
         private readonly BlobContainerClient _blobContainerClient;
@@ -27,7 +35,7 @@ namespace SocialEdgeSDK.Server.DataService
             var T = await blobClient.UploadAsync(binaryData, true);
             return T.Value != null;
         }
-        
+
         // Code Referece:
         // https://docs.microsoft.com/en-us/azure/storage/blobs/sas-service-create?tabs=dotnet
         //
@@ -65,6 +73,29 @@ namespace SocialEdgeSDK.Server.DataService
                                 credentials to create a service SAS.");
                 return null;
             }
-        }        
+        }
+
+        public Dictionary<string, BlobFileInfo> GetContentList()
+        {
+            var blobs = _blobContainerClient.GetBlobs();
+            if (blobs == null)
+                return null;
+
+            Dictionary<string, BlobFileInfo> data = new Dictionary<string, BlobFileInfo>();
+
+            foreach (var item in blobs)
+            {
+                if (!data.ContainsKey(item.Name))
+                {
+                    BlobFileInfo dataItem = new BlobFileInfo();
+                    dataItem.shortCode = item.Name;
+                    dataItem.size = item.Properties.ContentLength.Value;
+                    dataItem.modifiedOn = item.Properties.LastModified.Value.ToUnixTimeMilliseconds();
+                    data.Add(item.Name, dataItem);
+                }
+            }
+
+            return data;
+        }
     }
 }

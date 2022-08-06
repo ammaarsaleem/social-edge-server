@@ -23,55 +23,42 @@ namespace SocialEdgeSDK.Server.DataService
         private readonly IDatabase _cacheDb;
         #endregion
         public readonly BlobServiceClient _blobServerClient;
-
-        //ICollection _collection;
         ICache _cache;
-        IBlobStorage _blobStorage;
 
         public IMongoDatabase GetDatabase()
         {
             return _database;
         }
 
-
         public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn, BlobServiceClient serviceClient)
         {
             _dbClient = mongoClient;
-            string dbName = ConfigConstants.DATABASE;
-            _database = _dbClient.GetDatabase(dbName);
+            _database = _dbClient.GetDatabase(ConfigConstants.DATABASE);
             _redis = redisConn;
             _cacheDb = _redis.GetDatabase();
-
             _blobServerClient = serviceClient;
         }
 
         public ICollection<T> GetCollection<T>(string name)
         {
-            ICollection<T> _collection = new Collection<T>(_database,name);
-            if(_collection!=null)
-            {
-                return _collection;
-            }
-            return null;
+            ICollection<T> _collection = new Collection<T>(_database, name);
+            return _collection;
         }
 
         public IBlobStorage GetBlobStorage(string containerName)
-        {   
+        {
             BlobContainerClient containerClient = _blobServerClient.GetBlobContainerClient(containerName);
-            _blobStorage = new BlobStorage(containerClient);
-            return _blobStorage;
+            return new BlobStorage(containerClient);
         }
 
         public BlobContainerClient GetContainerClient(string containerName)
         {
-             BlobContainerClient containerClient = _blobServerClient.GetBlobContainerClient(containerName);
-            return containerClient;
+            return _blobServerClient.GetBlobContainerClient(containerName);
         }
 
         public ICache GetCache()
         {
-            _cache = new Cache(_cacheDb);
-            return _cache;
+            return _cache = new Cache(_cacheDb);
         }
     }
 }

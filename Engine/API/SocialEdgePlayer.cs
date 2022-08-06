@@ -52,7 +52,7 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong CHAT =               0x0004;
         public const ulong FRIENDS =            0x0008;
         public const ulong FRIENDS_PROFILES  =  0x0010;
-        public const ulong ACTIVE_INVENTORY =   0x0020;
+                                              //0x0020;
         public const ulong INVENTORY =          0x0040;
         public const ulong ENTITY_TOKEN =       0x0080;
         public const ulong ENTITY_ID =          0x0100;
@@ -76,10 +76,10 @@ namespace SocialEdgeSDK.Server.Context
         private Dictionary<string, InboxDataMessage> _inbox;
         private BsonDocument _chat;
         private BsonDocument _publicData;
-        private BsonDocument _activeInventory;
         private List<FriendInfo> _friends;
         private List<EntityProfileBody> _friendsProfiles;
         private List<ItemInstance> _inventory;
+        private Dictionary<string, int> _virtualCurrencyBase;
         private Dictionary<string, int> _virtualCurrency;
         private GetPlayerCombinedInfoResultPayload _combinedInfo;
         private PlayerDataSegment _playerData;
@@ -87,22 +87,20 @@ namespace SocialEdgeSDK.Server.Context
         private PlayerEconomy _playerEconomy;
 
         public string PlayerId => _playerId;
-        //public PlayerMiniProfileData MiniProfile { get => _miniProfile;}
         public string InboxId { get => PlayerDBId; }
         public string ChatId { get => PlayerDBId; }
         public string PlayerDBId { get => _playerId.ToLower().PadLeft(24, '0'); }
         public string PlayerIdFromObjectId(ObjectId id) { return id.ToString().TrimStart('0'); }
         public string PlayerIdFromObjectId(string id) { return id.TrimStart('0'); }
+
         public PlayerDataModel PlayerModel { get => _playerModel != null ? _playerModel : _playerModel = new PlayerDataModel(this); }
         public PlayerEconomy PlayerEconomy { get => _playerEconomy != null ? _playerEconomy : _playerEconomy = new PlayerEconomy(this); }
-
 
         public PlayerDataSegment PlayerData { get => _playerData; }
         public PlayerMiniProfileData MiniProfile { get => (((_fillMask & CachePlayerDataSegments.MINI_PROFILE) != 0) || (CacheFillSegment(CachePlayerDataSegments.MINI_PROFILE))) ? _miniProfile : null; }
         public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CachePlayerDataSegments.COMBINED_INFO) != 0) || (CacheFillSegment(CachePlayerDataSegments.COMBINED_INFO))) ? _combinedInfo : null; }
         public string EntityId { get => (((_fillMask & CachePlayerDataSegments.ENTITY_ID) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_ID))) ? _entityId : null; }
         public string EntityToken { get => (((_fillMask & CachePlayerDataSegments.ENTITY_TOKEN) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_TOKEN))) ? _entityToken : null; }
-        public BsonDocument ActiveInventory { get => (((_fillMask & CachePlayerDataSegments.ACTIVE_INVENTORY) != 0) || (CacheFillSegment(CachePlayerDataSegments.ACTIVE_INVENTORY))) ? _activeInventory : null; }
         public BsonDocument PublicData { get => (((_fillMask & CachePlayerDataSegments.PUBLIC_DATA) != 0) || (CacheFillSegment(CachePlayerDataSegments.PUBLIC_DATA))) ? _publicData : null; }
         public Dictionary<string, InboxDataMessage> Inbox { get => (((_fillMask & CachePlayerDataSegments.INBOX) != 0) || (CacheFillSegment(CachePlayerDataSegments.INBOX))) ? _inbox : null; }                                                
         public BsonDocument Chat { get => (((_fillMask & CachePlayerDataSegments.CHAT) != 0) || (CacheFillSegment(CachePlayerDataSegments.CHAT))) ? _chat : null; }
@@ -153,7 +151,6 @@ namespace SocialEdgeSDK.Server.Context
                 {CachePlayerDataSegments.CHAT, CacheFillChat},
                 {CachePlayerDataSegments.FRIENDS, CacheFillFriends},
                 {CachePlayerDataSegments.FRIENDS_PROFILES, CacheFillFriendProfiles},
-                {CachePlayerDataSegments.ACTIVE_INVENTORY, CacheFillActiveInventory},
                 {CachePlayerDataSegments.INVENTORY, CacheFillInventory},
                 {CachePlayerDataSegments.ENTITY_TOKEN, CacheFillEntityToken},
                 {CachePlayerDataSegments.ENTITY_ID, CacheFillEntityId},
@@ -170,8 +167,7 @@ namespace SocialEdgeSDK.Server.Context
                 {CachePlayerDataSegments.CHAT, CacheWriteChat},
                 {CachePlayerDataSegments.FRIENDS, CacheWriteReadOnlyError},
                 {CachePlayerDataSegments.FRIENDS_PROFILES, CacheWriteReadOnlyError},
-                {CachePlayerDataSegments.ACTIVE_INVENTORY, CacheWriteReadOnlyError},
-                {CachePlayerDataSegments.INVENTORY, CacheWriteReadOnlyError},
+                {CachePlayerDataSegments.INVENTORY, CacheWriteInventory},
                 {CachePlayerDataSegments.PLAYER_DATA, CacheWritePlayerData},
                 {CachePlayerDataSegments.PLAYER_MODEL, CacheWritePlayerModel},
                 {CachePlayerDataSegments.MINI_PROFILE, CacheWriteMiniProfile},
@@ -213,12 +209,6 @@ namespace SocialEdgeSDK.Server.Context
             return segment != null ? PlayerData[segment][key] : (PlayerData.LastAccessKey != null ? PlayerData[PlayerData.LastAccessKey][key] : null);
         }
 
-        private bool CacheFillNone()
-        {
-            SocialEdge.Log.LogInformation("Initialize empty cache");
-            return true;
-        }
-
         private bool CacheFillEntityToken()
         {
             // Title entity token
@@ -256,12 +246,6 @@ namespace SocialEdgeSDK.Server.Context
             _fillMask |= _combinedInfo != null ? CachePlayerDataSegments.COMBINED_INFO : 0;
             SocialEdge.Log.LogInformation("Task fetch COMBINED_INFO");
             return _combinedInfo != null;
-        }
-
-        private bool CacheWriteNone()
-        {
-            SocialEdge.Log.LogInformation("Ignore cache write");
-            return true;
         }
 
         private bool CacheWriteReadOnlyError()
@@ -374,31 +358,7 @@ namespace SocialEdgeSDK.Server.Context
             _friendsProfiles = friendsProfilesT.Result.Error == null ? friendsProfilesT.Result.Result.Profiles : null;
             _fillMask |= _friendsProfiles != null ? CachePlayerDataSegments.FRIENDS_PROFILES : 0;
             SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILES");
-
-            // Remove DBIds private information for security
-            //if (_friendsProfiles != null)
-            //{
-            //    foreach(var friendProfile in _friendsProfiles)
-            //    {
-            //        friendProfile.Objects.Remove("DBIds");
-            //    }
-            //}
-
             return _friendsProfiles != null;
-        }
-
-        private bool CacheFillActiveInventory()
-        {
-            if (_publicDataObjs == null || _publicDataObjs.ContainsKey("ActiveInventory"))
-            {
-                SocialEdge.Log.LogInformation("Called CacheFillActiveInventory and it was NULLL : " + _publicDataObjs.ToString());
-                return false;
-            }    
-
-            _activeInventory = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["ActiveInventory"].EscapedDataObject));
-            _fillMask |= _activeInventory != null ? CachePlayerDataSegments.ACTIVE_INVENTORY : 0;
-            SocialEdge.Log.LogInformation("Parse ACTIVE_INVENTORY");
-            return _activeInventory != null;
         }
 
         private bool CacheFillInventory()
@@ -407,9 +367,27 @@ namespace SocialEdgeSDK.Server.Context
             getPlayerInventoryT.Wait();
             _inventory = getPlayerInventoryT.Result.Error == null ? getPlayerInventoryT.Result.Result.Inventory : null;
             _virtualCurrency = _inventory != null ? getPlayerInventoryT.Result.Result.VirtualCurrency : null;
+            _virtualCurrencyBase = _virtualCurrency != null ? new Dictionary<string, int>(_virtualCurrency) : null;
             _fillMask |= _inventory != null ? CachePlayerDataSegments.INVENTORY : 0;
+            SetDirtyBit(_fillMask & CachePlayerDataSegments.INVENTORY);
             SocialEdge.Log.LogInformation("Task fetch INVENTORY/VIRTUALCURRENCY");
             return _inventory != null;
+        }
+
+        private bool CacheWriteInventory()
+        {
+            int writes = 0;
+            foreach (var currency in _virtualCurrency)
+            {
+                int diff = currency.Value - _virtualCurrencyBase[currency.Key];
+                var addTaskT = diff > 0 ? Player.AddVirtualCurrency(PlayerId, diff, currency.Key) : diff < 0 ? Player.SubtractVirtualCurrency(PlayerId, -diff, currency.Key) : null;
+                if (diff > 0 || diff < 0)
+                {
+                    writes++;
+                    SocialEdge.Log.LogInformation("Task flush VIRTUAL CURRENCY" + "(" + currency.Key + ")");
+                }
+            }
+            return writes > 0;
         }
 
         private bool CacheWritePlayerModel()

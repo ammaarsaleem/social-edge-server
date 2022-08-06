@@ -74,7 +74,7 @@ namespace SocialEdgeSDK.Server.Api
             List<PlayFab.ProfilesModels.EntityKey> entities = new List<PlayFab.ProfilesModels.EntityKey>();
             foreach (var friend in friends)
             {
-                entities.Add(new PlayFab.ProfilesModels.EntityKey() { Id = friend.Tags[1], Type = "title_player_account"});
+                entities.Add(new PlayFab.ProfilesModels.EntityKey() { Id = friend.Tags[1], Type = "title_player_account" });
             }
 
             var request = new GetEntityProfilesRequest();
@@ -107,7 +107,7 @@ namespace SocialEdgeSDK.Server.Api
 
         public static async Task<PlayFabResult<SetObjectsResponse>> UpdatePublicData(string entityToken, string entityId, dynamic dataDict)
         {
-            List<SetObject> dataList =  new List<SetObject>();
+            List<SetObject> dataList = new List<SetObject>();
             foreach (var dataItem in dataDict)
             {
                 SetObject obj = new SetObject();
@@ -134,7 +134,7 @@ namespace SocialEdgeSDK.Server.Api
             request.Keys = keys;
 
             return await PlayFab.PlayFabServerAPI.GetUserReadOnlyDataAsync(request);
-        } 
+        }
 
         public static async Task<PlayFabResult<UpdateUserDataResult>> UpdatePlayerData(string playerId, dynamic dataDict)
         {
@@ -143,7 +143,7 @@ namespace SocialEdgeSDK.Server.Api
             {
                 data.Add(dataItem.Name.ToString(), dataItem.Value.ToString());
             }
-            
+
             PlayFab.ServerModels.UpdateUserDataRequest request = new PlayFab.ServerModels.UpdateUserDataRequest();
             request.PlayFabId = playerId;
             request.Data = data;
@@ -169,17 +169,26 @@ namespace SocialEdgeSDK.Server.Api
         public static async Task<PlayFabResult<GetUserInventoryResult>> GetPlayerInventory(string playerId)
         {
             GetUserInventoryRequest request = new GetUserInventoryRequest();
-            request.PlayFabId = playerId;            
+            request.PlayFabId = playerId;
             return await PlayFab.PlayFabServerAPI.GetUserInventoryAsync(request);
         }
 
-        public static async Task<PlayFabResult<ModifyUserVirtualCurrencyResult>> AddVirtualCurrency(string playerId, int amount, string currentyType)
+        public static async Task<PlayFabResult<ModifyUserVirtualCurrencyResult>> AddVirtualCurrency(string playerId, int amount, string currencyType)
         {
             AddUserVirtualCurrencyRequest request = new AddUserVirtualCurrencyRequest();
             request.Amount = amount;
             request.PlayFabId = playerId;
-            request.VirtualCurrency = currentyType;
+            request.VirtualCurrency = currencyType;
             return await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
+        }
+
+        public static async Task<PlayFabResult<ModifyUserVirtualCurrencyResult>> SubtractVirtualCurrency(string playerId, int amount, string currencyType)
+        {
+            SubtractUserVirtualCurrencyRequest request = new SubtractUserVirtualCurrencyRequest();
+            request.Amount = amount;
+            request.PlayFabId = playerId;
+            request.VirtualCurrency = currencyType;
+            return await PlayFab.PlayFabServerAPI.SubtractUserVirtualCurrencyAsync(request);
         }
 
         public static async Task<PlayFabResult<PlayFab.AdminModels.UpdateUserTitleDisplayNameResult>> UpdatePlayerDisplayName(string playerId, string displayName)
@@ -204,7 +213,7 @@ namespace SocialEdgeSDK.Server.Api
         {
             GetUserAccountInfoRequest request = new GetUserAccountInfoRequest();
             request.PlayFabId = playerId;
-            return await PlayFab.PlayFabServerAPI.GetUserAccountInfoAsync(request); 
+            return await PlayFab.PlayFabServerAPI.GetUserAccountInfoAsync(request);
         }
         public static async Task<PlayFabResult<PlayFab.ClientModels.PurchaseItemResult>> PurchaseItem(string itemID, int price, string vCurrency)
         {
@@ -218,8 +227,17 @@ namespace SocialEdgeSDK.Server.Api
         {
             var request = new PlayFab.ServerModels.GrantItemsToUserRequest();
             request.PlayFabId = playerId;
-            request.ItemIds = new List<string> {itemId};
+            request.ItemIds = new List<string> { itemId };
             return await PlayFab.PlayFabServerAPI.GrantItemsToUserAsync(request);
+        }
+
+        public static async Task<PlayFabResult<PlayFab.ServerModels.ConsumeItemResult>> ConsumeItem(string playerId, string itemId)
+        {
+            ConsumeItemRequest request = new ConsumeItemRequest();
+            request.PlayFabId = playerId;
+            request.ConsumeCount = 1;
+            request.ItemInstanceId = itemId;
+            return await PlayFab.PlayFabServerAPI.ConsumeItemAsync(request);
         }
 
         public static async Task<PlayFabResult<GetPlayerCombinedInfoResult>> GetCombinedInfo(string playerId)
@@ -250,7 +268,7 @@ namespace SocialEdgeSDK.Server.Api
             var displayNameNounsArray = SocialEdge.TitleContext.GetTitleDataProperty("DisplayNameNouns")["Nouns"].AsBsonArray;
             var randomNoun = displayNameNounsArray[(int)Math.Floor(new Random().NextDouble() * displayNameNounsArray.Count)];
             var randomAdjective = displayNameAdjectiveArray[(int)Math.Floor((new Random()).NextDouble() * displayNameAdjectiveArray.Count)];
-            
+
             return randomAdjective + "" + randomNoun;
         }
 
@@ -261,8 +279,8 @@ namespace SocialEdgeSDK.Server.Api
             const int MIN_LENGTH = 6;
 
             var collection = SocialEdge.DataService.GetCollection<BsonDocument>(COUNTER_COLLECTION_NAME);
-            var counterDoc =  collection.IncAll("counter", 1);
-            
+            var counterDoc = collection.IncAll("counter", 1);
+
             var salt = Utils.UTCNow().ToString();
             var hashids = new Hashids(salt, MIN_LENGTH, CHARACTER_SET);
             var counter = (int)counterDoc.Result["counter"];
@@ -286,7 +304,7 @@ namespace SocialEdgeSDK.Server.Api
             var randomColorCode = colorCodesArray[(int)(Math.Floor(new Random().NextDouble() * colorCodesArray.Count))];
             //BsonDocument colorCodeInventoryItem = new BsonDocument() {["key"] = randomColorCode, ["kind"] = "AvatarBgColor"};
             return randomColorCode.ToString();
-        }    
+        }
 
         public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer)
         {
@@ -304,7 +322,7 @@ namespace SocialEdgeSDK.Server.Api
             var avatarBgColor = GenerateAvatarBgColor();
 
             //List<BsonValue> activeInventoryList = playerPublicData["ActiveInventory"]["invl"].ToList();
-           // var activeInventoryAvatar = activeInventoryList.Find(s => s[1].Equals("Avatar"));
+            // var activeInventoryAvatar = activeInventoryList.Find(s => s[1].Equals("Avatar"));
             //var activeInventoryBgColor = activeInventoryList.Find(s => s[1].Equals("AvatarBgColor"));
 
             socialEdgePlayer.PlayerModel.CreateDefaults();
@@ -313,7 +331,7 @@ namespace SocialEdgeSDK.Server.Api
             socialEdgePlayer.PlayerModel.Info.tag = newTag;
             socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
-            CatalogItem defaultSkin =  SocialEdge.TitleContext.GetCatalogItem("SkinDark");
+            CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinDark");
             PlayerInventoryItem skinItem = new PlayerInventoryItem();
             skinItem.kind = defaultSkin.Tags[0];
             skinItem.key = defaultSkin.ItemId;
@@ -323,7 +341,7 @@ namespace SocialEdgeSDK.Server.Api
 
             //playerData["coldData"]["isInitialized"] = true;
             //playerPublicData["PublicProfileEx"]["tag"] = newTag;
-           // activeInventoryAvatar["key"] = avatar;
+            // activeInventoryAvatar["key"] = avatar;
             //activeInventoryBgColor["key"] = avatarBgColor;
 
             InboxModel.Init(socialEdgePlayer.InboxId);
@@ -335,7 +353,7 @@ namespace SocialEdgeSDK.Server.Api
             playerMiniProfile.AvatarBgColor = avatarBgColor;
             playerMiniProfile.UploadPicId = "XXX";
             playerMiniProfile.EventGlow = 0;
-            UpdatePlayerAvatarData(playerId, playerMiniProfile);            
+            UpdatePlayerAvatarData(playerId, playerMiniProfile);
             //var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
             var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
@@ -351,12 +369,12 @@ namespace SocialEdgeSDK.Server.Api
             int dynamicBundleMinGemsRequired = (int)Settings.CommonSettings["dynamicBundleMinGemsRequired"];
 
             SocialEdge.Log.LogInformation("PlayerCurrenyChanged : playerGems : " + playerGems + " dynamicBundleMinGemsRequired: " + dynamicBundleMinGemsRequired);
-            if(socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount == 0 && (playerGems < dynamicBundleMinGemsRequired))
+            if (socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount == 0 && (playerGems < dynamicBundleMinGemsRequired))
             {
                 socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount = 1;
             }
 
-           SocialEdge.Log.LogInformation("PlayerCurrenyChanged : socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount: " + socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount);
+            SocialEdge.Log.LogInformation("PlayerCurrenyChanged : socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount: " + socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount);
         }
     }
 }

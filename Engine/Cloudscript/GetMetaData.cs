@@ -4,7 +4,6 @@
 /// Proprietary and confidential
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -17,10 +16,29 @@ using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Api;
 using PlayFab.Samples;
-using Azure.Storage.Blobs;
+using PlayFab.ServerModels;
+using PlayFab.ProfilesModels;
 
 namespace SocialEdgeSDK.Server.Requests
 {
+    public class GetMetaDataResult
+    {
+        public PlayerDataModel playerDataModel;
+        public GetPlayerCombinedInfoResultPayload playerCombinedInfoResultPayload;
+        public string publicDataObjs;
+        public Dictionary<string, TournamentLiveData> liveTournaments;
+        public string chat;
+        public int inboxCount;
+        public Dictionary<string, InboxDataMessage> inbox;
+        public List<FriendInfo> friends;
+        public GetTitleDataResult titleData;
+        public List<EntityProfileBody> friendsProfiles;
+        public string dynamicBundleToDisplay;
+        public string dynamicGemSpotBundle;
+        public bool appVersionValid;
+        public string contentData;
+    }
+
     public class GetMetaData : FunctionContext
     {
         public GetMetaData(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
@@ -34,86 +52,43 @@ namespace SocialEdgeSDK.Server.Requests
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
 
-            //Inbox.Validate(SocialEdgePlayer);
-            //InboxModel.Init(SocialEdgePlayer.InboxId);
-            // TEST : CREATE NEW PLAYER
-            //Player.NewPlayerInit(SocialEdgePlayer);
-            //SocialEdgePlayer.CacheFlush();
-            //return new GetMetaDataResult();
-            // TEST : CREATE NEW PLAYER
-
             SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
+            SocialEdgePlayer.PlayerModel.Prefetch(new List<string>(){PlayerModelFields.ECONOMY, PlayerModelFields.TOURNAMENT});
             Inbox.Validate(SocialEdgePlayer);
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
 
-             //TEST Piggybank
-            //string data1 = Player.GetDynamicDisplayBundle(SocialEdgePlayer);
-            //dynamic data2 =  Player.GetDynamicGemSpotBundle(SocialEdgePlayer);
 
             try
             {
-                // Prepare client response
-                GetMetaDataResult metaDataResponse = new GetMetaDataResult();
-                //metaDataResponse.shop = new GetShopResult();
-                //metaDataResponse.shop.catalogResult = SocialEdge.TitleContext.CatalogItems;
-                //metaDataResponse.shop.storeResult = SocialEdge.TitleContext.StoreItems;
-                metaDataResponse.titleData = SocialEdge.TitleContext.TitleData;
-                metaDataResponse.friends = SocialEdgePlayer.Friends;
-                metaDataResponse.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
-                //metaDataResponse.publicDataObjs = SocialEdgePlayer.PublicDataObjsJson;
-                metaDataResponse.inbox = SocialEdgePlayer.Inbox;
-                metaDataResponse.chat = SocialEdgePlayer.ChatJson;
-                metaDataResponse.appVersionValid = true; // TODO
-                metaDataResponse.inboxCount = InboxModel.Count(SocialEdgePlayer);
-                metaDataResponse.contentData = GetContentList();
-                metaDataResponse.liveTournaments = SocialEdgeTournament.TournamentLiveModel.Fetch();
-                metaDataResponse.dynamicBundleToDisplay = SocialEdgePlayer.PlayerEconomy.ProcessDynamicDisplayBundle();
-                metaDataResponse.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle().ToString();
+                GetMetaDataResult result = new GetMetaDataResult();
+                result.titleData = SocialEdge.TitleContext.TitleData;
+                result.friends = SocialEdgePlayer.Friends;
+                result.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
+                result.inbox = SocialEdgePlayer.Inbox;
+                result.chat = SocialEdgePlayer.ChatJson;
+                result.appVersionValid = true; // TODO
+                result.inboxCount = InboxModel.Count(SocialEdgePlayer);
+                result.liveTournaments = SocialEdgeTournament.TournamentLiveModel.Fetch();
+                result.dynamicBundleToDisplay = SocialEdgePlayer.PlayerEconomy.ProcessDynamicDisplayBundle();
+                result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle().ToString();
+                result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC)
+                                                    .ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson})
+                                                    .ToString();
 
                 if (isNewlyCreated == true)
                 {
-                    metaDataResponse.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
+                    result.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
                 }
 
                 CacheFlush();
                 // Force a fetch of player model after all data is written out so all fields of playermodel cache are filled.
-                metaDataResponse.playerDataModel = SocialEdgePlayer.PlayerModel.Fetch();
-                return metaDataResponse;
+                result.playerDataModel = SocialEdgePlayer.PlayerModel.Fetch();
+                return result;
             }
             catch (Exception e)
             {
                 throw e;
             }
-        }
-
-        public string GetContentList()
-        {
-            string result = null;
-            BlobContainerClient containerClient = SocialEdge.DataService.GetContainerClient(Constants.Constant.CONTAINER_DLC);
-            var blobs = containerClient.GetBlobs();
-
-            if(blobs != null)
-            {
-                Dictionary<string, ContentResult> data = new Dictionary<string, ContentResult>();
-                
-                foreach (var item in blobs)
-                {
-                    ContentResult dataItem =  new ContentResult(); 
-                    dataItem.shortCode = item.Name;
-                    dataItem.size = item.Properties.ContentLength.Value;
-                    dataItem.modifiedOn = item.Properties.LastModified.Value.ToUnixTimeMilliseconds();                    
-
-                    if(!data.ContainsKey(item.Name)){
-                        data.Add(item.Name, dataItem);
-                    }
-                }
-
-                var blobsListJson = data.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson});
-                result = blobsListJson.ToString();
-            }
-
-            SocialEdge.Log.LogInformation("GetContentList RESULT : " + result);
-            return result;
-        }       
+        }    
     }  
 }

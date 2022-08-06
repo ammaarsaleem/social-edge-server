@@ -101,8 +101,7 @@ namespace SocialEdgeSDK.Server.Api
             {
                 float matchCoinsMultiplyer = float.Parse(Settings.CommonSettings["matchCoinsMultiplyer"].ToString());
                 int rewardBet = (int)(winnerChallengePlayerModel.betValue * matchCoinsMultiplyer);
-                winnerPlayer.VirtualCurrency["CN"] +=  rewardBet;
-                var taskT = Transactions.Add("coins", rewardBet, winnerPlayer);
+                winnerPlayer.PlayerEconomy.AddVirtualCurrency("CN", rewardBet);
             }
         }
 
@@ -153,10 +152,7 @@ namespace SocialEdgeSDK.Server.Api
             player.PlayerModel.Info.gamesDrawn++;
 
             if (challengePlayerModel.betValue > 0)
-            {
-                player.VirtualCurrency["CN"] +=  (int)(challengePlayerModel.betValue);
-                var taskT = Transactions.Add("coins", (int)challengePlayerModel.betValue, player);
-            }
+                player.PlayerEconomy.AddVirtualCurrency("CN", (int)challengePlayerModel.betValue);
         }
 
         private static int[] CalcEloChange(int elo1, int elo2, bool isRanked, bool isEventMatch)

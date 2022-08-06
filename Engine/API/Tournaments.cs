@@ -323,9 +323,6 @@ namespace SocialEdgeSDK.Server.Api
         public static void HandleTournamentMatchEnd(ChallengePlayerModel challengePlayerModel, SocialEdgePlayerContext socialEdgePlayer, 
                                                     SocialEdgeTournamentContext socialEdgeTournament, bool isWin, bool isDraw)
         {
-           // ChallengePlayerModel challengePlayerModel = socialEdgePlayer.PlayerDBId == socialEdgeChallenge.ChallengeModel.Challenge.player1Data.playerId ?
-           //                                 socialEdgeChallenge.ChallengeModel.Challenge.player1Data : socialEdgeChallenge.ChallengeModel.Challenge.player2Data;
-
             if (string.IsNullOrEmpty(challengePlayerModel.tournamentId))
                 return;
 

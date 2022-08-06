@@ -91,9 +91,9 @@ namespace SocialEdgeSDK.Server.Api
 
         public static void RegisterEntry(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, int score, string retentionDayString, string collectionName)
         {
-            //TournamentEntryData playerEntry = socialEdgeTournament.TournamentEntryModel.Get(socialEdgePlayer.PlayerDBId, collectionName);
-            //if (playerEntry != null)
-            //    return;
+            TournamentEntryData playerEntry = socialEdgeTournament.TournamentEntryModel.Get(socialEdgePlayer.PlayerDBId, collectionName);
+            if (playerEntry != null)
+                return;
 
             string tournamentShortCode = socialEdgeTournament.TournamentLiveModel.GetActiveShortCode(socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot);
             var activeTournaments = socialEdgePlayer.PlayerModel.Tournament.activeTournaments;

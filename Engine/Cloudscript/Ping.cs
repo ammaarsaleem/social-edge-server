@@ -20,6 +20,12 @@ using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
 {
+    public class PingResult
+    {
+        public long serverReceiptTimestamp;
+        public long clientSendTimestamp;
+    }
+        
     public class Ping : FunctionContext
     {
         public Ping(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }

@@ -4,6 +4,7 @@
 /// Proprietary and confidential
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SocialEdgeSDK.Server.DataService
@@ -12,5 +13,6 @@ namespace SocialEdgeSDK.Server.DataService
     {
         Task<bool> Save(string fileName, byte[] stream);
         Uri GetServiceSasUriForBlob(string fileName, int expireMins, string storedPolicyName = null);
+        Dictionary<string, BlobFileInfo> GetContentList();
     }
 }

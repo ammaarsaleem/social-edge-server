@@ -14,83 +14,61 @@ namespace SocialEdgeSDK.Server.Api
 {
     public static class Transactions
     {
-        public static async Task<bool> Consume(string itemId, int qty, SocialEdgePlayerContext playerContext)
+        public static async Task<bool> Consume(string itemId, int qty, SocialEdgePlayerContext socialEdgePlayer)
         {
             bool used = false;
         
             if (itemId == "gems") 
             {
-                SubtractUserVirtualCurrencyRequest request = new SubtractUserVirtualCurrencyRequest();
-                request.Amount = qty;
-                request.PlayFabId = playerContext.PlayerId;
-                request.VirtualCurrency = "GM";
-                var resultT = await PlayFab.PlayFabServerAPI.SubtractUserVirtualCurrencyAsync(request);
-                used = resultT.Result.VirtualCurrency != null;
+                socialEdgePlayer.PlayerEconomy.SubtractVirtualCurrency("GM", qty);
+                used = true;
             }
             else if (itemId == "coins") 
             {
-                SubtractUserVirtualCurrencyRequest request = new SubtractUserVirtualCurrencyRequest();
-                request.Amount = qty;
-                request.PlayFabId = playerContext.PlayerId;
-                request.VirtualCurrency = "CN";
-                var resultT = await PlayFab.PlayFabServerAPI.SubtractUserVirtualCurrencyAsync(request);
-                used = resultT.Result.VirtualCurrency != null;
+                socialEdgePlayer.PlayerEconomy.SubtractVirtualCurrency("CN", qty);
+                used = true;
             }
             else // consume virtual good
             {
-                ConsumeItemRequest request = new ConsumeItemRequest();
-                request.PlayFabId = playerContext.PlayerId;
-                request.ConsumeCount = qty;
-                request.ItemInstanceId = itemId;
-
-                var resultT = await PlayFab.PlayFabServerAPI.ConsumeItemAsync(request);
-                used = resultT.Result.ItemInstanceId != null;
+                var taskT = Player.ConsumeItem(socialEdgePlayer.PlayerId, itemId);
+                taskT.Wait();
+                used = taskT.Result.Result.ItemInstanceId != null; 
             }
 
             return used;
         }
 
-        public static async Task<bool> Add(string itemId, int qty, SocialEdgePlayerContext playerContext)
+        public static async Task<bool> Add(string itemId, int qty, SocialEdgePlayerContext socialEdgePlayer)
         {
             bool added = false;
         
             if (itemId == "gems") 
             {
-                AddUserVirtualCurrencyRequest request = new AddUserVirtualCurrencyRequest();
-                request.Amount = qty;
-                request.PlayFabId = playerContext.PlayerId;
-                request.VirtualCurrency = "GM";
-                var resultT = await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
-                added = resultT.Result.VirtualCurrency != null;
+                socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", qty);
+                added = true;
             } 
             else if (itemId == "coins")
             {
-                AddUserVirtualCurrencyRequest request = new AddUserVirtualCurrencyRequest();
-                request.Amount = qty;
-                request.PlayFabId = playerContext.PlayerId;
-                request.VirtualCurrency = "CN";
-                var resultT = await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
-                added = resultT.Result.VirtualCurrency != null;
+                socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", qty);
+                added = true;
             } 
             else // add virtual good
             {
-                GrantItemsToUserRequest request = new GrantItemsToUserRequest();
-                request.ItemIds = new List<string> {itemId};
-                request.PlayFabId = playerContext.PlayerId;
-                var resutlT = await PlayFab.PlayFabServerAPI.GrantItemsToUserAsync(request);
-                added = resutlT.Result.ItemGrantResults.Count != 0;
+                var taskT = Player.GrantItem(socialEdgePlayer.PlayerId, itemId);
+                taskT.Wait();
+                return taskT.Result.Result.ItemGrantResults.Count != 0;
             }
 
             return added;
         }
 
-        public static async Task<Dictionary<string, int>> Grant(Dictionary<string, int> rewards, SocialEdgePlayerContext playerContext)
+        public static async Task<Dictionary<string, int>> Grant(Dictionary<string, int> rewards, SocialEdgePlayerContext socialEdgePlayer)
         {
             Dictionary<string, int> rewarded = new Dictionary<string, int>();
         
             foreach(var item in rewards)
             {
-                bool added = await Add(item.Key, (int)item.Value, playerContext);
+                bool added = await Add(item.Key, (int)item.Value, socialEdgePlayer);
                 if (added)
                 {
                     rewarded.Add(item.Key, (int)item.Value);
@@ -100,13 +78,13 @@ namespace SocialEdgeSDK.Server.Api
             return rewarded;
         }
 
-        public static async Task<Dictionary<string, int>> Grant(BsonDocument rewards, SocialEdgePlayerContext playerContext)
+        public static async Task<Dictionary<string, int>> Grant(BsonDocument rewards, SocialEdgePlayerContext socialEdgePlayer)
         {
             Dictionary<string, int> rewarded = new Dictionary<string, int>();
         
             foreach(var item in rewards)
             {
-                bool added = await Add(item.Name, (int)item.Value, playerContext);
+                bool added = await Add(item.Name, (int)item.Value, socialEdgePlayer);
                 if (added)
                 {
                     rewarded.Add(item.Name, (int)item.Value);
@@ -116,14 +94,10 @@ namespace SocialEdgeSDK.Server.Api
             return rewarded;
         }
 
-        public static async Task<int> GrantTrophies(int qty, SocialEdgePlayerContext playerContext)
+        public static int GrantTrophies(int qty, SocialEdgePlayerContext socialEdgePlayer)
         {
-            int trophies = (int)playerContext.PublicData["trpy"] + qty;
-            playerContext.PublicData["trpy"] = trophies;
-
-            BsonDocument publicData = new BsonDocument() {["PublicProfileEx"] = Utils.CleanupJsonString(playerContext.PublicDataJson)};
-            await Player.UpdatePublicData(playerContext.EntityToken, playerContext.EntityId, publicData);
-            return trophies;
+            socialEdgePlayer.PlayerModel.Info.trophies += qty;
+            return socialEdgePlayer.PlayerModel.Info.trophies;
         }
     }
 }
