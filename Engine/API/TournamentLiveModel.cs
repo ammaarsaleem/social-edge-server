@@ -15,6 +15,7 @@ namespace SocialEdgeSDK.Server.Models
 {
     public class TournamentReward
     {
+        #pragma warning disable format
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int minRank;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int maxRank;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int trophies;
@@ -22,16 +23,20 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gems;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int hints;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int ratingBoosters;
+        #pragma warning restore format
     }
 
     public class TournamentSlot
     {
+        #pragma warning disable format
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int min;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int max;
+        #pragma warning restore format
     }
 
     public class TournamentLiveData
     {
+        #pragma warning disable format
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string shortCode;
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)] public bool active;
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string name;
@@ -61,6 +66,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int entryCost;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int matchCurrency;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int matchCost;              
+        #pragma warning restore format
     }
 
     public class TournamentLiveDocument
@@ -81,7 +87,7 @@ namespace SocialEdgeSDK.Server.Models
 
         public TournamentLiveData Get(string tournamentShortCode)
         {
-            if (_cache.ContainsKey(tournamentShortCode)) 
+            if (_cache.ContainsKey(tournamentShortCode))
                 return _cache[tournamentShortCode];
 
             var collection = SocialEdge.DataService.GetCollection<TournamentLiveDocument>(LIVE_TOURNAMENTS_COLLECTION);
@@ -94,7 +100,7 @@ namespace SocialEdgeSDK.Server.Models
             return taskT.Result != null ? taskT.Result.tournament : null;
         }
 
-        public string GetActiveShortCode (int timeZone)
+        public string GetActiveShortCode(int timeZone)
         {
             // Check cache first
             var val = _cache.Where(t => timeZone >= t.Value.timeZoneMin && timeZone < t.Value.timeZoneMax).Select(t => (KeyValuePair<string, TournamentLiveData>?)t).FirstOrDefault();
@@ -107,7 +113,7 @@ namespace SocialEdgeSDK.Server.Models
             filter = filter & Builders<TournamentLiveDocument>.Filter.Lte("tournament.timeZoneMin", timeZone);
             filter = filter & Builders<TournamentLiveDocument>.Filter.Gt("tournament.timeZoneMax", timeZone);
             ProjectionDefinition<TournamentLiveDocument> projection = Builders<TournamentLiveDocument>.Projection.Include("TournamentLive").Exclude<TournamentLiveDocument>("_id");
-            
+
             var taskT = collection.FindOne<TournamentLiveDocument>(filter, projection);
             taskT.Wait();
             if (taskT.Result != null) _cache.Add(taskT.Result.tournament.shortCode.ToString(), taskT.Result.tournament);
@@ -124,12 +130,12 @@ namespace SocialEdgeSDK.Server.Models
             taskT.Wait();
             if (taskT.Result != null && taskT.Result.Count > 0)
             {
-                foreach(var doc in taskT.Result)
+                foreach (var doc in taskT.Result)
                 {
                     if (!_cache.ContainsKey(doc.tournament.shortCode))
                         _cache.Add(doc.tournament.shortCode, doc.tournament);
                 }
-                 
+
             }
             return _cache;
         }

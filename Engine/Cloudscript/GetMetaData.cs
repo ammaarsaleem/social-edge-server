@@ -53,10 +53,9 @@ namespace SocialEdgeSDK.Server.Requests
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
 
             SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
-            SocialEdgePlayer.PlayerModel.Prefetch(new List<string>(){PlayerModelFields.ECONOMY, PlayerModelFields.TOURNAMENT});
+            SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.ALL);
             Inbox.Validate(SocialEdgePlayer);
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
-
 
             try
             {
@@ -74,6 +73,7 @@ namespace SocialEdgeSDK.Server.Requests
                 result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC)
                                                     .ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson})
                                                     .ToString();
+                result.playerDataModel = SocialEdgePlayer.PlayerModel;
 
                 if (isNewlyCreated == true)
                 {
@@ -81,8 +81,6 @@ namespace SocialEdgeSDK.Server.Requests
                 }
 
                 CacheFlush();
-                // Force a fetch of player model after all data is written out so all fields of playermodel cache are filled.
-                result.playerDataModel = SocialEdgePlayer.PlayerModel.Fetch();
                 return result;
             }
             catch (Exception e)

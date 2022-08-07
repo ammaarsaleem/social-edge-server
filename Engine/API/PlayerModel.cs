@@ -23,6 +23,11 @@ namespace SocialEdgeSDK.Server.Models
         public static string TOURNAMENT = typeof(PlayerDataModel).Name + ".tournament";
         public static string CHALLENGE = typeof(PlayerDataModel).Name + ".challenge";
         public static string FRIENDS = typeof(PlayerDataModel).Name + ".friends";
+
+        public static List<string> ALL = new List<string>()
+        {
+            META, INFO, ECONOMY, EVENTS, TOURNAMENT, CHALLENGE, FRIENDS
+        };
     }
 
     public class AdRewardsData
@@ -37,56 +42,88 @@ namespace SocialEdgeSDK.Server.Models
 
     public class FriendData
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesWon;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesLost;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesDrawn;
+        #pragma warning disable format
+        [JsonIgnore][BsonIgnore]                                                            public PlayerDataTournament _parent;
+        [BsonElement("gamesWon")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _gamesWon;
+        [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _gamesLost;
+        [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _gamesDrawn;
+        #pragma warning restore format
+
+        [BsonIgnore] public int gamesWon { get => _gamesWon; set { _gamesWon = value; _parent.isDirty = true; } }
+        [BsonIgnore] public int gamesLost { get => _gamesLost; set { _gamesLost = value; _parent.isDirty = true; } }
+        [BsonIgnore] public int gamesDrawn { get => _gamesDrawn; set { _gamesDrawn = value; _parent.isDirty = true; } }
+
+        // Note: invokes setters so do not use operators (+=, ++ etc)
+        public int GamesWonInc() { return gamesWon = gamesWon + 1; }
+        public int GamesLostInc() { return gamesLost = gamesLost + 1; }
+        public int GamesDrawnInc() { return gamesDrawn = gamesDrawn + 1; }
+        public int GamesWonDec() { return  gamesWon = gamesWon - 1; }
+        public int GamesLostDec() { return gamesLost = gamesLost - 1; }
+        public int GamesDrawnDec() { return gamesDrawn = gamesDrawn - 1; }
     }
 
     public class ActiveTournament
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string shortCode;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string type;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string name;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int rank;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long startTime;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long duration;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int score;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int matchesPlayedCount;
-                                                            public List<TournamentReward> grandPrize;
+        #pragma warning disable format
+        [JsonIgnore][BsonIgnore]                                                                public PlayerDataTournament _parent;
+        [BsonElement("shortCode")][BsonRepresentation(MongoDB.Bson.BsonType.String)]            public string _shortCode;
+        [BsonElement("type")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                 public string _type;
+        [BsonElement("name")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                 public string _name;
+        [BsonElement("rank")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                  public int _rank;
+        [BsonElement("startTime")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]             public long _startTime;
+        [BsonElement("duration")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]              public long _duration;
+        [BsonElement("score")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                 public int _score;
+        [BsonElement("matchesPlayedCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]    public int _matchesPlayedCount;
+        [BsonElement("grandPrize")]                                                             public List<TournamentReward> _grandPrize;
+        #pragma warning restore format
+
+        [BsonIgnore] public string shortCode { get => _shortCode; set { _shortCode = value; _parent.isDirty = true; } }
+        [BsonIgnore] public string type { get => _type; set { _type = value; _parent.isDirty = true; } }
+        [BsonIgnore] public string name { get => _name; set { _name = value; _parent.isDirty = true; } }
+        [BsonIgnore] public int rank { get => _rank; set { _rank = value; _parent.isDirty = true; } }
+        [BsonIgnore] public long startTime { get => _startTime; set { _startTime = value; _parent.isDirty = true; } }
+        [BsonIgnore] public long duration { get => _duration; set { _duration = value; _parent.isDirty = true; } }
+        [BsonIgnore] public int score { get => _score; set { _score = value; _parent.isDirty = true; } }
+        [BsonIgnore] public int matchesPlayedCount { get => _matchesPlayedCount; set { _matchesPlayedCount = value; _parent.isDirty = true; } }
+        [BsonIgnore] public List<TournamentReward>  grandPrize { get => _grandPrize; set { _grandPrize = value; _parent.isDirty = true; } }
+    }
+
+    public interface IDataModelBase
+    {
+        public void PrepareCache();
     }
 
     public class DataModelBase
     {
         [JsonIgnore][BsonIgnore] public bool isCached;
         [JsonIgnore][BsonIgnore] public bool isDirty;
+
         public DataModelBase() { isCached = true; }
+        public void SetDirty() { isDirty = true; }
+        public virtual void PrepareCache() {}
     }
 
-    public class PlayerDataMeta : DataModelBase
+    public class PlayerDataMeta : DataModelBase, IDataModelBase
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)] public bool isInitialized;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string clientVersion;
+        #pragma warning disable format
+        [BsonElement("isInitialized")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool _isInitialized;
+        [BsonElement("clientVersion")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _clientVersion;
+        #pragma warning restore format
+
+        [BsonIgnore] public bool isInitialized { get => _isInitialized; set { _isInitialized = value; isDirty = true; } }
+        [BsonIgnore] public string clientVersion { get => _clientVersion; set { _clientVersion = value; isDirty = true; } }
     }
 
     public class PlayerInventoryItem
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string key;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string kind;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string json;
+        #pragma warning disable format
+        [BsonElement("key")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string key;
+        [BsonElement("kind")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string kind;
+        [BsonElement("json")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string json;
+        #pragma warning restore format
     }
 
-    public class PlayerPublicProfileEx
-    {
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int eloScore;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int trophies;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int earnings;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int win;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int lose;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int draw;
-                                                            public List<PlayerInventoryItem> activeInventory;
-    }
-
-    public class PlayerDataFriends : DataModelBase
+    public class PlayerDataFriends : DataModelBase, IDataModelBase
     {
         public Dictionary<string, FriendData> friends;
 
@@ -96,27 +133,48 @@ namespace SocialEdgeSDK.Server.Models
         }
     }
 
-    public class PlayerDataInfo : DataModelBase
+    public class PlayerDataInfo : DataModelBase, IDataModelBase
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int eloScore;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int trophies;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int trophies2;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int earnings;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesWon;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesLost;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int gamesDrawn;
-                                                            public List<PlayerInventoryItem> activeInventory;
+        #pragma warning disable format        
+        [BsonElement("eloScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _eloScore;
+        [BsonElement("trophies")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _trophies;
+        [BsonElement("trophies2")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                     public int _trophies2;
+        [BsonElement("earnings")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _earnings;
+        [BsonElement("gamesWon")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _gamesWon;
+        [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                     public int _gamesLost;
+        [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                    public int _gamesDrawn;
+        [BsonElement("activeInventory")]                                                                public List<PlayerInventoryItem> _activeInventory;
 
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int league;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int eloCompletedPlacementGames;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string editedName;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int totalGamesCount;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string tag;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)] public bool firstLongMatchCompleted;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)] public bool isSearchRegistered;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)] public bool isFBConnectRewardClaimed;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)] public bool careerLeagueSet;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string uploadedPicId;
+        [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                        public int _league;
+        [BsonElement("eloCompletedPlacementGames")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]    public int _eloCompletedPlacementGames;
+        [BsonElement("editedName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                   public string _editedName;
+        [BsonElement("totalGamesCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]               public int _totalGamesCount;
+        [BsonElement("tag")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                          public string _tag;
+        [BsonElement("firstLongMatchCompleted")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool _firstLongMatchCompleted;
+        [BsonElement("isSearchRegistered")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]          public bool _isSearchRegistered;
+        [BsonElement("isFBConnectRewardClaimed")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]    public bool _isFBConnectRewardClaimed;
+        [BsonElement("careerLeagueSet")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]             public bool _careerLeagueSet;
+        [BsonElement("uploadedPicId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                public string _uploadedPicId;
+        #pragma warning restore format
+
+        [BsonIgnore] public int eloScore { get => _eloScore; set { _eloScore = value; isDirty = true; } }
+        [BsonIgnore] public int trophies { get => _trophies; set { _trophies = value; isDirty = true; } }
+        [BsonIgnore] public int trophies2 { get => _trophies2; set { _trophies2 = value; isDirty = true; } }
+        [BsonIgnore] public int earnings { get => _earnings; set { _earnings = value; isDirty = true; } }
+        [BsonIgnore] public int gamesWon { get => _gamesWon; set { _gamesWon = value; isDirty = true; } }
+        [BsonIgnore] public int gamesLost { get => _gamesLost; set { _gamesLost = value; isDirty = true; } }
+        [BsonIgnore] public int gamesDrawn { get => _gamesDrawn; set { _gamesDrawn = value; isDirty = true; } }
+        [BsonIgnore] public List<PlayerInventoryItem> activeInventory { get => _activeInventory; set { _activeInventory = value; isDirty = true; } }
+        [BsonIgnore] public int league { get => _league; set { _league = value; isDirty = true; } }
+        [BsonIgnore] public int eloCompletedPlacementGames { get => _eloCompletedPlacementGames; set { _eloCompletedPlacementGames = value; isDirty = true; } }
+        [BsonIgnore] public string editedName { get => _editedName; set { _editedName = value; isDirty = true; } }
+        [BsonIgnore] public int totalGamesCount { get => _totalGamesCount; set { _totalGamesCount = value; isDirty = true; } }
+        [BsonIgnore] public string tag { get => _tag; set { _tag = value; isDirty = true; } }
+        [BsonIgnore] public bool firstLongMatchCompleted { get => _firstLongMatchCompleted; set { _firstLongMatchCompleted = value; isDirty = true; } }
+        [BsonIgnore] public bool isSearchRegistered { get => _isSearchRegistered; set { _isSearchRegistered = value; isDirty = true; } }
+        [BsonIgnore] public bool isFBConnectRewardClaimed { get => _isFBConnectRewardClaimed; set { _isFBConnectRewardClaimed = value; isDirty = true; } }
+        [BsonIgnore] public bool careerLeagueSet { get => _careerLeagueSet; set { _careerLeagueSet = value; isDirty = true; } }
+        [BsonIgnore] public string uploadedPicId { get => _uploadedPicId; set { _uploadedPicId = value; isDirty = true; } }
 
         public PlayerDataInfo()
         {
@@ -124,35 +182,60 @@ namespace SocialEdgeSDK.Server.Models
         }
     }
 
-    public class PlayerDataEconomy : DataModelBase
+    public class PlayerDataEconomy : DataModelBase, IDataModelBase
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)] public bool isPremium;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long removeAdsTimeStamp;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long removeAdsTimePeriod;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long subscriptionExpiryTime;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string subscriptionType;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string dynamicBundlePurchaseTier;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string dynamicBundleDisplayTier;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string dynamicBundlePurchaseTierNew;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int lastBundleUpdatePlayDay;
+        #pragma warning disable format        
+        [BsonElement("isPremium")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]                       public bool _isPremium;
+        [BsonElement("removeAdsTimeStamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]                public long _removeAdsTimeStamp;
+        [BsonElement("removeAdsTimePeriod")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]               public long _removeAdsTimePeriod;
+        [BsonElement("subscriptionExpiryTime")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]            public long _subscriptionExpiryTime;
+        [BsonElement("subscriptionType")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                 public string _subscriptionType;
+        [BsonElement("dynamicBundlePurchaseTier")][BsonRepresentation(MongoDB.Bson.BsonType.String)]        public string _dynamicBundlePurchaseTier;
+        [BsonElement("dynamicBundleDisplayTier")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _dynamicBundleDisplayTier;
+        [BsonElement("dynamicBundlePurchaseTierNew")][BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string _dynamicBundlePurchaseTierNew;
+        [BsonElement("lastBundleUpdatePlayDay")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]           public int _lastBundleUpdatePlayDay;
 
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int shopRvRewardClaimedCount;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int balloonRewardsClaimedCount;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int outOfGemsSessionCount;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int cpuPowerupUsedCount;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int totalPowerupUsageCount;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long chestUnlockTimestamp;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long rvUnlockTimestamp;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int piggyBankGems;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long piggyBankExpiryTimestamp;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long piggyBankDoublerExipryTimestamp;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long freePowerPlayExipryTimestamp;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long shopRvRewardCooldownTimestamp;
+        [BsonElement("shopRvRewardClaimedCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _shopRvRewardClaimedCount;
+        [BsonElement("balloonRewardsClaimedCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _balloonRewardsClaimedCount;
+        [BsonElement("outOfGemsSessionCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int _outOfGemsSessionCount;
+        [BsonElement("cpuPowerupUsedCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]               public int _cpuPowerupUsedCount;
+        [BsonElement("totalPowerupUsageCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _totalPowerupUsageCount;
+        [BsonElement("chestUnlockTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]              public long _chestUnlockTimestamp;
+        [BsonElement("rvUnlockTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]                 public long _rvUnlockTimestamp;
+        [BsonElement("piggyBankGems")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                     public int _piggyBankGems;
+        [BsonElement("piggyBankExpiryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]          public long _piggyBankExpiryTimestamp;
+        [BsonElement("piggyBankDoublerExipryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long _piggyBankDoublerExipryTimestamp;
+        [BsonElement("freePowerPlayExipryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]      public long _freePowerPlayExipryTimestamp;
+        [BsonElement("shopRvRewardCooldownTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]     public long _shopRvRewardCooldownTimestamp;
+        [BsonElement("lastWatchedVideoId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]               public string _lastWatchedVideoId;
+        [BsonElement("adsRewardData")]                                                                      public AdRewardsData _adsRewardData;
+        [BsonElement("jackpotNotCollectedCounter")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _jackpotNotCollectedCounter;
+        #pragma warning restore format
 
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string lastWatchedVideoId;
-                                                            public AdRewardsData adsRewardData;
-
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int jackpotNotCollectedCounter;
+        [BsonIgnore] public bool isPremium { get => _isPremium; set { _isPremium = value; isDirty = true; } }
+        [BsonIgnore] public long removeAdsTimeStamp { get => _removeAdsTimeStamp; set { _removeAdsTimeStamp = value; isDirty = true; } }
+        [BsonIgnore] public long removeAdsTimePeriod { get => _removeAdsTimePeriod; set { _removeAdsTimePeriod = value; isDirty = true; } }
+        [BsonIgnore] public long subscriptionExpiryTime { get => _subscriptionExpiryTime; set { _subscriptionExpiryTime = value; isDirty = true; } }
+        [BsonIgnore] public string subscriptionType { get => _subscriptionType; set { _subscriptionType = value; isDirty = true; } }
+        [BsonIgnore] public string dynamicBundlePurchaseTier { get => _dynamicBundlePurchaseTier; set { _dynamicBundlePurchaseTier = value; isDirty = true; } }
+        [BsonIgnore] public string dynamicBundleDisplayTier { get => _dynamicBundleDisplayTier; set { _dynamicBundleDisplayTier = value; isDirty = true; } }
+        [BsonIgnore] public string dynamicBundlePurchaseTierNew { get => _dynamicBundlePurchaseTierNew; set { _dynamicBundlePurchaseTierNew = value; isDirty = true; } }
+        [BsonIgnore] public int lastBundleUpdatePlayDay { get => _lastBundleUpdatePlayDay; set { _lastBundleUpdatePlayDay = value; isDirty = true; } }
+        [BsonIgnore] public int shopRvRewardClaimedCount { get => _shopRvRewardClaimedCount; set { _shopRvRewardClaimedCount = value; isDirty = true; } }
+        [BsonIgnore] public int balloonRewardsClaimedCount { get => _balloonRewardsClaimedCount; set { _balloonRewardsClaimedCount = value; isDirty = true; } }
+        [BsonIgnore] public int outOfGemsSessionCount { get => _outOfGemsSessionCount; set { _outOfGemsSessionCount = value; isDirty = true; } }
+        [BsonIgnore] public int cpuPowerupUsedCount { get => _cpuPowerupUsedCount; set { _cpuPowerupUsedCount = value; isDirty = true; } }
+        [BsonIgnore] public int totalPowerupUsageCount { get => _totalPowerupUsageCount; set { _totalPowerupUsageCount = value; isDirty = true; } }
+        [BsonIgnore] public long chestUnlockTimestamp { get => _chestUnlockTimestamp; set { _chestUnlockTimestamp = value; isDirty = true; } }
+        [BsonIgnore] public long rvUnlockTimestamp { get => _rvUnlockTimestamp; set { _rvUnlockTimestamp = value; isDirty = true; } }
+        [BsonIgnore] public int piggyBankGems { get => _piggyBankGems; set { _piggyBankGems = value; isDirty = true; } }
+        [BsonIgnore] public long piggyBankExpiryTimestamp { get => _piggyBankExpiryTimestamp; set { _piggyBankExpiryTimestamp = value; isDirty = true; } }
+        [BsonIgnore] public long piggyBankDoublerExipryTimestamp { get => _piggyBankDoublerExipryTimestamp; set { _piggyBankDoublerExipryTimestamp = value; isDirty = true; } }
+        [BsonIgnore] public long freePowerPlayExipryTimestamp { get => _freePowerPlayExipryTimestamp; set { _freePowerPlayExipryTimestamp = value; isDirty = true; } }
+        [BsonIgnore] public long shopRvRewardCooldownTimestamp { get => _shopRvRewardCooldownTimestamp; set { _shopRvRewardCooldownTimestamp = value; isDirty = true; } }
+        [BsonIgnore] public string lastWatchedVideoId { get => _lastWatchedVideoId; set { _lastWatchedVideoId = value; isDirty = true; } }
+        [BsonIgnore] public AdRewardsData adsRewardData { get => _adsRewardData; set { _adsRewardData = value; isDirty = true; } }
+        [BsonIgnore] public int jackpotNotCollectedCounter { get => _jackpotNotCollectedCounter; set { _jackpotNotCollectedCounter = value; isDirty = true; } }
 
         public PlayerDataEconomy()
         {
@@ -160,13 +243,21 @@ namespace SocialEdgeSDK.Server.Models
         }
     }
 
-    public class PlayerDataEvent : DataModelBase
+    public class PlayerDataEvent : DataModelBase, IDataModelBase
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long eventTimeStamp;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long dailyEventExpiryTimestamp;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int dailyEventProgress;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string dailyEventState;
-                                                            public DailyEventRewards dailyEventRewards;
+        #pragma warning disable format         
+        [BsonElement("eventTimeStamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]            public long _eventTimeStamp;
+        [BsonElement("dailyEventExpiryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)] public long _dailyEventExpiryTimestamp;
+        [BsonElement("dailyEventProgress")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _dailyEventProgress;
+        [BsonElement("dailyEventState")][BsonRepresentation(MongoDB.Bson.BsonType.String)]          public string _dailyEventState;
+        [BsonElement("dailyEventRewards")]                                                          public DailyEventRewards _dailyEventRewards;
+        #pragma warning restore format
+
+        [BsonIgnore] public long eventTimeStamp { get => _eventTimeStamp; set { _eventTimeStamp = value; isDirty = true; } }
+        [BsonIgnore] public long dailyEventExpiryTimestamp { get => _dailyEventExpiryTimestamp; set { _dailyEventExpiryTimestamp = value; isDirty = true; } }
+        [BsonIgnore] public int dailyEventProgress { get => _dailyEventProgress; set { _dailyEventProgress = value; isDirty = true; } }
+        [BsonIgnore] public string dailyEventState { get => _dailyEventState; set { _dailyEventState = value; isDirty = true; } }
+        [BsonIgnore] public DailyEventRewards dailyEventRewards { get => _dailyEventRewards; set { _dailyEventRewards = value; isDirty = true; } }
 
         public PlayerDataEvent()
         {
@@ -174,32 +265,82 @@ namespace SocialEdgeSDK.Server.Models
         }
     }
 
-    public class PlayerDataTournament : DataModelBase
+    public class PlayerDataTournament : DataModelBase, IDataModelBase
     { 
-        [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)] public bool isReportingInChampionship;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int reportingChampionshipCollectionIndex;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int tournamentMaxScore;
-        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]   public int playerTimeZoneSlot;
-                                                            public Dictionary<string, ActiveTournament> activeTournaments;
+        #pragma warning disable format 
+        [BsonElement("isReportingInChampionship")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]           public bool _isReportingInChampionship;
+        [BsonElement("reportingChampionshipCollectionIndex")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]  public int _reportingChampionshipCollectionIndex;
+        [BsonElement("tournamentMaxScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                    public int _tournamentMaxScore;
+        [BsonElement("playerTimeZoneSlot")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                    public int _playerTimeZoneSlot;
+        [BsonElement("activeTournaments")]                                                                      public Dictionary<string, ActiveTournament> _activeTournaments;
+        #pragma warning restore format
+
+        [BsonIgnore] public bool isReportingInChampionship { get => _isReportingInChampionship; set { _isReportingInChampionship = value; isDirty = true; } }
+        [BsonIgnore] public int reportingChampionshipCollectionIndex { get => _reportingChampionshipCollectionIndex; set { _reportingChampionshipCollectionIndex = value; isDirty = true; } }
+        [BsonIgnore] public int tournamentMaxScore { get => _tournamentMaxScore; set { _tournamentMaxScore = value; isDirty = true; } }
+        [BsonIgnore] public int playerTimeZoneSlot { get => _playerTimeZoneSlot; set { _playerTimeZoneSlot = value; isDirty = true; } }
+        [BsonIgnore] public Dictionary<string, ActiveTournament> activeTournaments { get => _activeTournaments; set { _activeTournaments = value; isDirty = true; } }
 
         public PlayerDataTournament()
         {
             reportingChampionshipCollectionIndex = -1;
             activeTournaments = new Dictionary<string, ActiveTournament>();
         }
+
+        public void RemoveActiveTournament(string id)
+        {
+            _activeTournaments.Remove(id);
+            isDirty = true;
+        }
+
+        public new virtual void PrepareCache()
+        {
+            foreach (var activeTournament in _activeTournaments)
+                activeTournament.Value._parent = this;
+        }
+
+        public ActiveTournament CreatePlayerActiveTournament(string tournamentId, TournamentData tournament, int playerRank)
+        {
+            ActiveTournament activeTournament = new ActiveTournament()
+            {
+                _parent = this,
+                shortCode = tournament.shortCode,
+                type = tournament.type,
+                name = tournament.name,
+                rank = playerRank,
+                grandPrize = tournament.rewards["0"],
+                startTime = tournament.startTime,
+                duration = tournament.duration,
+                score = 0,
+                matchesPlayedCount = 0
+            };
+
+            _activeTournaments.Add(tournamentId, activeTournament);
+            isDirty = true;
+
+            return activeTournament;
+        }
     }
 
-    public class PlayerDataChallenge : DataModelBase
-    {                                                       
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string currentChallengeId;
-                                                            public Dictionary<string, string> activeChallenges;
-                                                            public Dictionary<string, string> pendingChallenges;
+    public class PlayerDataChallenge : DataModelBase, IDataModelBase
+    {        
+        #pragma warning disable format                                                        
+        [BsonElement("currentChallengeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]   public string _currentChallengeId;
+        [BsonElement("activeChallenges")]                                                       public Dictionary<string, string> _activeChallenges;
+        [BsonElement("pendingChallenges")]                                                      public Dictionary<string, string> _pendingChallenges;
+        #pragma warning restore format
+
+        [BsonIgnore] public string currentChallengeId { get => _currentChallengeId; set { _currentChallengeId = value; isDirty = true; } }
+        [BsonIgnore] public Dictionary<string, string> activeChallenges { get => _activeChallenges; set { _activeChallenges = value; isDirty = true; } }
+        [BsonIgnore] public Dictionary<string, string> pendingChallenges { get => _pendingChallenges; set { _pendingChallenges = value; isDirty = true; } }
     }
 
     public class PlayerModelDocument
     {
-        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)] public string _id;
-        [BsonElement("PlayerDataModel")] public PlayerDataModel _model;
+        #pragma warning disable format                                                        
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]    public string _id;
+        [BsonElement("PlayerDataModel")]                        public PlayerDataModel _model;
+        #pragma warning restore format
     }
 
     public class PlayerDataModel
@@ -209,6 +350,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] private bool _isCached;
     
         // IMPORTANT: Field name have format '_<fieldname>' and Element name must have format '<fieldname>
+        #pragma warning disable format                                                        
         [JsonIgnore][BsonElement("meta")][BsonIgnoreIfNull]         public PlayerDataMeta _meta;
         [JsonIgnore][BsonElement("info")][BsonIgnoreIfNull]         public PlayerDataInfo _info;
         [JsonIgnore][BsonElement("economy")][BsonIgnoreIfNull]      public PlayerDataEconomy _economy;
@@ -216,6 +358,7 @@ namespace SocialEdgeSDK.Server.Models
         [JsonIgnore][BsonElement("tournament")][BsonIgnoreIfNull]   public PlayerDataTournament _tournament;
         [JsonIgnore][BsonElement("challenge")][BsonIgnoreIfNull]    public PlayerDataChallenge _challenge;
         [JsonIgnore][BsonElement("friends")][BsonIgnoreIfNull]      public PlayerDataFriends _friends;
+        #pragma warning restore format
 
         public PlayerDataMeta Meta { get => _meta != null && _meta.isCached ? _meta : _meta = Get<PlayerDataMeta>(nameof(_meta)); }
         public PlayerDataInfo Info { get => _info != null && _info.isCached ? _info : _info = Get<PlayerDataInfo>(nameof(_info)); }
@@ -226,15 +369,15 @@ namespace SocialEdgeSDK.Server.Models
         public PlayerDataFriends Friends { get => _friends != null && _friends.isCached ? _friends : _friends = Get<PlayerDataFriends>(nameof(_friends)); }
 
         public void ReadOnly() { _isCached = false; }
-        
+
         public PlayerDataModel(SocialEdgePlayerContext socialEdgePlayer)
         {
-            _socialEdgePlayer = socialEdgePlayer; 
+            _socialEdgePlayer = socialEdgePlayer;
             _socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.PLAYER_MODEL);
             _isCached = true;
-        } 
+        }
 
-        private T Get<T>(string fieldName)
+        private T Get<T>(string fieldName) where T : IDataModelBase
         {
             string elemName = fieldName.Substring(1);
             var collection = SocialEdge.DataService.GetCollection<PlayerModelDocument>(PLAYER_MODEL_COLLECTION);
@@ -242,22 +385,13 @@ namespace SocialEdgeSDK.Server.Models
             var taskT = collection.FindOneById<PlayerModelDocument>(_socialEdgePlayer.PlayerDBId, projection);
             taskT.Wait();
 
-            SocialEdge.Log.LogInformation("Task fetch PLAYER_MODEL:" + elemName + " " + (taskT.Result != null ? "(success)" : "(default)"));
+            var field = taskT.Result != null ? (T)taskT.Result._model.GetType().GetField(fieldName).GetValue(taskT.Result._model) : (T)Activator.CreateInstance(typeof(T));
+            field.PrepareCache();
 
-            return taskT.Result != null ? (T)taskT.Result._model.GetType().GetField(fieldName).GetValue(taskT.Result._model) : (T)Activator.CreateInstance(typeof(T));
+            SocialEdge.Log.LogInformation("Task fetch PLAYER_MODEL:" + elemName + " " + (taskT.Result != null ? "(success)" : "(default)"));
+            return field;
         }
 
-        public PlayerDataModel Fetch()
-        {
-            var collection = SocialEdge.DataService.GetCollection<PlayerModelDocument>(PLAYER_MODEL_COLLECTION);
-            var taskT = collection.FindOneById(_socialEdgePlayer.PlayerDBId);
-            taskT.Wait();
-            if (taskT.Result != null)
-                Fill(taskT.Result._model);
-
-            return this;
-        }       
-        
         internal bool CacheWrite()
         {
             if (_isCached == false)
@@ -267,34 +401,34 @@ namespace SocialEdgeSDK.Server.Models
             var update = Builders<PlayerDataModel>.Update;
             var updates = new List<UpdateDefinition<PlayerDataModel>>();
 
-            if (_meta != null)
+            if (_meta != null && _meta.isDirty)
                 updates.Add(update.Set<PlayerDataMeta>(typeof(PlayerDataModel).Name + ".meta", _meta));
-            if (_info != null)
+            if (_info != null && _info.isDirty)
                 updates.Add(update.Set<PlayerDataInfo>(typeof(PlayerDataModel).Name + ".info", _info));
-            if (_economy != null)
+            if (_economy != null && _economy.isDirty)
                 updates.Add(update.Set<PlayerDataEconomy>(typeof(PlayerDataModel).Name + ".economy", _economy));
-            if (_events != null)
-                 updates.Add(update.Set<PlayerDataEvent>(typeof(PlayerDataModel).Name + ".events", _events));
-            if (_tournament != null)
+            if (_events != null && _events.isDirty)
+                updates.Add(update.Set<PlayerDataEvent>(typeof(PlayerDataModel).Name + ".events", _events));
+            if (_tournament != null && _tournament.isDirty)
                 updates.Add(update.Set<PlayerDataTournament>(typeof(PlayerDataModel).Name + ".tournament", _tournament));
-            if (_challenge != null)
+            if (_challenge != null && _challenge.isDirty)
                 updates.Add(update.Set<PlayerDataChallenge>(typeof(PlayerDataModel).Name + ".challenge", _challenge));
-            if (_friends != null)
+            if (_friends != null && _friends.isDirty)
                 updates.Add(update.Set<PlayerDataFriends>(typeof(PlayerDataModel).Name + ".friends", _friends));
 
             if (updates.Count == 0)
                 return false;
 
             var taskT = collection.UpdateOneById(_socialEdgePlayer.PlayerDBId, update.Combine(updates), true);
-            taskT.Wait(); 
+            taskT.Wait();
             SocialEdge.Log.LogInformation("Task flush PLAYER_MODEL");
-            return taskT.Result.ModifiedCount != 0;       
+            return taskT.Result.ModifiedCount != 0;
         }
 
         public void CreateDefaults()
         {
             _meta = new PlayerDataMeta();
-            _info = new PlayerDataInfo ();
+            _info = new PlayerDataInfo();
             _economy = new PlayerDataEconomy();
             _events = new PlayerDataEvent();
             _tournament = new PlayerDataTournament();
@@ -302,22 +436,11 @@ namespace SocialEdgeSDK.Server.Models
             _friends = new PlayerDataFriends();
         }
 
-        private void Fill(PlayerDataModel model)
-        {
-            _meta = _meta == null && model._meta != null ? model._meta : _meta;
-            _info = _info == null && model._info != null ? model._info : _info;
-            _economy = _economy == null && model._economy != null ? model._economy : _economy;
-            _events = _events == null && model._events != null ? model._events : _events;
-            _tournament = _tournament == null && model._tournament != null ? model._tournament : _tournament;
-            _challenge = _challenge == null && model._challenge != null ? model._challenge : _challenge;
-            _friends = _friends == null && model._friends != null ? model._friends : _friends;
-        }
-
         public void Prefetch(List<string> fields)
         {
             var collection = SocialEdge.DataService.GetCollection<PlayerModelDocument>(PLAYER_MODEL_COLLECTION);
             var projection = Builders<PlayerModelDocument>.Projection.Include(fields[0]).Exclude("_id");
-            for(int i = 1; i < fields.Count; i++)
+            for (int i = 1; i < fields.Count; i++)
             {
                 projection = projection.Include(fields[i]);
             }
@@ -335,43 +458,46 @@ namespace SocialEdgeSDK.Server.Models
             _tournament = model._tournament != null ? model._tournament : _tournament;
             _challenge = model._challenge != null ? model._challenge : _challenge;
             _friends = _friends == null && model._friends != null ? model._friends : _friends;
+
+            if (_tournament != null)
+                _tournament.PrepareCache();
         }
 
-/*
-        private void Set<T>(string id, T val)
-        {
-            const string PLAYER_MODEL_COLLECTION = "playerModel";
-            var collection = SocialEdge.DataService.GetCollection<PlayerModel>(PLAYER_MODEL_COLLECTION);
-            var update = Builders<PlayerModel>.Update.Set<T>(typeof(T).Name, val);
+        /*
+                private void Set<T>(string id, T val)
+                {
+                    const string PLAYER_MODEL_COLLECTION = "playerModel";
+                    var collection = SocialEdge.DataService.GetCollection<PlayerModel>(PLAYER_MODEL_COLLECTION);
+                    var update = Builders<PlayerModel>.Update.Set<T>(typeof(T).Name, val);
 
-            var findT = collection.UpdateOneById<T>(id, typeof(T).Name, val);
-            findT.Wait();
-        } 
+                    var findT = collection.UpdateOneById<T>(id, typeof(T).Name, val);
+                    findT.Wait();
+                } 
 
-        public void Get(string id, List<string> fields)
-        {
-            const string PLAYER_MODEL_COLLECTION = "playerModel";
-            var collection = SocialEdge.DataService.GetCollection<PlayerModel>(PLAYER_MODEL_COLLECTION);
-            var projection = Builders<PlayerModel>.Projection.Include(fields[0]);
-            for(int i = 1; i < fields.Count; i++)
-            {
-                projection = projection.Include(fields[i]);
-            }
+                public void Get(string id, List<string> fields)
+                {
+                    const string PLAYER_MODEL_COLLECTION = "playerModel";
+                    var collection = SocialEdge.DataService.GetCollection<PlayerModel>(PLAYER_MODEL_COLLECTION);
+                    var projection = Builders<PlayerModel>.Projection.Include(fields[0]);
+                    for(int i = 1; i < fields.Count; i++)
+                    {
+                        projection = projection.Include(fields[i]);
+                    }
 
-            var findT = collection.FindOneById<PlayerModel>(id, projection);
-            findT.Wait();
-        }
+                    var findT = collection.FindOneById<PlayerModel>(id, projection);
+                    findT.Wait();
+                }
 
 
-        public static void Set(string id, List<string> fields)
-        {
-            const string PLAYER_MODEL_COLLECTION = "playerModel";
-            var collection = SocialEdge.DataService.GetCollection<PlayerModelDocument>(PLAYER_MODEL_COLLECTION);
-            var update = Builders<PlayerModelDocument>.Update.Set<Type.GetType(fields[0])>(Type.GetType(fields[0].ToString(), val);
+                public static void Set(string id, List<string> fields)
+                {
+                    const string PLAYER_MODEL_COLLECTION = "playerModel";
+                    var collection = SocialEdge.DataService.GetCollection<PlayerModelDocument>(PLAYER_MODEL_COLLECTION);
+                    var update = Builders<PlayerModelDocument>.Update.Set<Type.GetType(fields[0])>(Type.GetType(fields[0].ToString(), val);
 
-            var replaceT = collection.UpdateOneById(model._id, model, true);
-            replaceT.Wait();
-        }
-        */
+                    var replaceT = collection.UpdateOneById(model._id, model, true);
+                    replaceT.Wait();
+                }
+                */
     }
 }

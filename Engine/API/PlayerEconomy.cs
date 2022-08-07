@@ -58,7 +58,7 @@ namespace SocialEdgeSDK.Server.Context
                 Int32 piggyLimitAvailable = piggyBankMaxCap - piggyBankBalance;
                 Int32 piggyBankReward = piggyLimitAvailable >= piggyBankRewardPerGame ? piggyBankRewardPerGame : piggyLimitAvailable;
 
-                socialEdgePlayer.PlayerModel.Economy.piggyBankGems += piggyBankReward;
+                socialEdgePlayer.PlayerModel.Economy.piggyBankGems = socialEdgePlayer.PlayerModel.Economy.piggyBankGems + piggyBankReward;
                 //matchData.piggyBankReward = piggyBankReward;
 
                 if (socialEdgePlayer.PlayerModel.Economy.piggyBankGems >= piggyBankMaxCap)
@@ -80,7 +80,7 @@ namespace SocialEdgeSDK.Server.Context
 
             if (socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount > 0)
             {
-                socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount++;
+                socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount = socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount + 1;
 
                 if (socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount > (int)Settings.CommonSettings["dynamicBundleSwitchAfterSessions"])
                 {

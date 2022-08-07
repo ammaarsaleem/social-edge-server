@@ -18,10 +18,13 @@ namespace SocialEdgeSDK.Server.Context
 {
     public static class CacheTournamentDataSegments
     {
+        #pragma warning disable format 
         public const ulong NONE =               0x0000;
         public const ulong TOURNAMENT_ENTRY =   0x0001;
         public const ulong TOURNAMENT_LIVE  =   0x0002;
         public const ulong TOURNAMENT_MODEL =   0x0004;
+        #pragma warning restore format
+
         public const ulong MAX = TOURNAMENT_MODEL;
 
         public const ulong META = TOURNAMENT_LIVE;

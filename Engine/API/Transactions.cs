@@ -96,7 +96,7 @@ namespace SocialEdgeSDK.Server.Api
 
         public static int GrantTrophies(int qty, SocialEdgePlayerContext socialEdgePlayer)
         {
-            socialEdgePlayer.PlayerModel.Info.trophies += qty;
+            socialEdgePlayer.PlayerModel.Info.trophies = socialEdgePlayer.PlayerModel.Info.trophies + qty;
             return socialEdgePlayer.PlayerModel.Info.trophies;
         }
     }

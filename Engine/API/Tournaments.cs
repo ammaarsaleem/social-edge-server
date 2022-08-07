@@ -53,8 +53,7 @@ namespace SocialEdgeSDK.Server.Api
             var pool = TournamentPoolSample(tournamentShortCode, activeCollectionInfo.name, socialEdgePlayer, tournamentSlot, tournamentModel.joinedTime, liveTournament.maxPlayers - 1, null);
             tournamentModel.entryIds = pool;
             string tournamentId = socialEdgeTournament.TournamentModel.Id;
-            var playerActiveTournament = CreatePlayerActiveTournament(tournamentModel, 1);
-            socialEdgePlayer.PlayerModel.Tournament.activeTournaments.Add(tournamentId, playerActiveTournament);
+            var playerActiveTournament = socialEdgePlayer.PlayerModel.Tournament.CreatePlayerActiveTournament(tournamentId, tournamentModel, 1);
 
             return tournamentId;
         }
@@ -81,22 +80,6 @@ namespace SocialEdgeSDK.Server.Api
 
             return socialEdgeTournament.TournamentModel.Tournament;  
         } 
-
-        private static ActiveTournament CreatePlayerActiveTournament(TournamentData tournament, int playerRank)
-        {
-            return new ActiveTournament()
-            {
-                shortCode = tournament.shortCode,
-                type = tournament.type,
-                name = tournament.name,
-                rank = playerRank,
-                grandPrize = tournament.rewards["0"],
-                startTime = tournament.startTime,
-                duration = tournament.duration,
-                score = 0,
-                matchesPlayedCount = 0
-            };
-        }
 
         public static int GetPlayerRetentionDays(SocialEdgePlayerContext socialEdgePlayer)
         {
@@ -213,6 +196,7 @@ namespace SocialEdgeSDK.Server.Api
                 tournamentNewScore = activeTournament.score;
             }
 
+            tournamentModel.SetDirty();
             tournamentModel.concluded = true;
 
             List<TournamentReward> rewards = tournamentModel.rewards[socialEdgePlayer.PlayerModel.Info.league.ToString()];
@@ -274,7 +258,7 @@ namespace SocialEdgeSDK.Server.Api
 
             // Remove active tournaments marked for deletion
             foreach (string id in markedForDeletion)
-                socialEdgePlayer.PlayerModel.Tournament.activeTournaments.Remove(id);
+                socialEdgePlayer.PlayerModel.Tournament.RemoveActiveTournament(id);
 
             // Automatically join the next tournament
             if (activeTournaments.Count == 0)
@@ -311,7 +295,7 @@ namespace SocialEdgeSDK.Server.Api
             List<string> pool = TournamentPoolSample(tournamentData.shortCode, tournamentLiveData.collectionPrefix + tournamentData.tournamentCollectionIndex.ToString(), 
                                         socialEdgePlayer, tournamentData.tournamentSlot, tournamentData.joinedTime, remainPoolSize, alreadyIncludedArray);
             if (pool.Count > 0)
-                tournamentData.entryIds.AddRange(pool);
+                tournamentData.AppendEntryIds(pool);
         }
 
         public static bool HasTournamentEnded(TournamentData tournament)
@@ -334,12 +318,11 @@ namespace SocialEdgeSDK.Server.Api
                 // Calc score and reward trophies
                 float matchCoinsMultiplyer = float.Parse(Settings.CommonSettings["matchCoinsMultiplyer"].ToString());
                 score = (int)(challengePlayerModel.betValue * matchCoinsMultiplyer);
-                socialEdgePlayer.PlayerModel.Info.trophies += challengePlayerModel.powerMode ? leagueSettings.trophies.win * 2 : leagueSettings.trophies.win;
-
+                socialEdgePlayer.PlayerModel.Info.trophies = socialEdgePlayer.PlayerModel.Info.trophies + (challengePlayerModel.powerMode ? leagueSettings.trophies.win * 2 : leagueSettings.trophies.win);
                 // Update Allstars leaderboard
                 var taskT = Player.UpdatePlayerStatistics(socialEdgePlayer.PlayerId, "score", score);
 
-                 socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter++;
+                 socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter = socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter + 1;
                 // jackpot probablity = jackpot not collected counter divided by 10
                 // is jackpot = select a random number between 1 and 10, if random number is less or equal to the probability into 10
                 int randNumber = Utils.GetRandomInteger(1, 10);
@@ -389,14 +372,14 @@ namespace SocialEdgeSDK.Server.Api
                     if (socialEdgePlayer.PlayerModel.Info.trophies >= nextLeagueData.qualification.trophies)
                     {
                         socialEdgePlayer.PlayerModel.Info.league = nextLeague;
-                        socialEdgePlayer.PlayerModel.Info.trophies -= nextLeagueData.qualification.trophies;
+                        socialEdgePlayer.PlayerModel.Info.trophies = socialEdgePlayer.PlayerModel.Info.trophies - nextLeagueData.qualification.trophies;
                         Inbox.SetupLeaguePromotion(nextLeague.ToString(), true, socialEdgePlayer);
                     }
                 }
             }
             else if (!isDraw)
             {
-                socialEdgePlayer.PlayerModel.Info.trophies -= leagueSettings.trophies.loss;
+                socialEdgePlayer.PlayerModel.Info.trophies = socialEdgePlayer.PlayerModel.Info.trophies - leagueSettings.trophies.loss;
                 socialEdgePlayer.PlayerModel.Info.trophies = socialEdgePlayer.PlayerModel.Info.trophies < 0 ? 0 : socialEdgePlayer.PlayerModel.Info.trophies;
             }
         
@@ -408,7 +391,7 @@ namespace SocialEdgeSDK.Server.Api
 
                 if (score > 0) 
                 {
-                    activeTournament.score += score;
+                    activeTournament.score = activeTournament.score + score;
                 
                     // Report score to tournament collection entry
                     if (socialEdgePlayer.PlayerModel.Tournament.isReportingInChampionship) 
@@ -419,7 +402,7 @@ namespace SocialEdgeSDK.Server.Api
                     }
                 }
             
-                activeTournament.matchesPlayedCount++;
+                activeTournament.matchesPlayedCount = activeTournament.matchesPlayedCount + 1;
             }
         }
     }

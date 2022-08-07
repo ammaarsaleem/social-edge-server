@@ -16,11 +16,13 @@ namespace SocialEdgeSDK.Server.Models
 {
     public class PlayerMiniProfileData : DataModelBase
     {
+         #pragma warning disable format
         [BsonElement("0")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarId;
         [BsonElement("1")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarBgColor;
         [BsonElement("2")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _uploadPicId;
         [BsonElement("3")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _eventGlow;
         [BsonElement("4")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _league;
+        #pragma warning restore format
 
         [BsonIgnore] public string AvatarId { get => _avatarId; set { _avatarId = value; isDirty = true; }}
         [BsonIgnore] public string AvatarBgColor { get => _avatarBgColor; set { _avatarBgColor = value;  isDirty = true; }}
@@ -31,6 +33,7 @@ namespace SocialEdgeSDK.Server.Models
 
     public class TournamentEntryData : DataModelBase
     {
+        #pragma warning disable format
         [BsonElement("playerId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _playerId;
         [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _displayName;
         [BsonElement("country")][BsonRepresentation(MongoDB.Bson.BsonType.String)]          public string _country;
@@ -46,6 +49,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("joinTime")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]          public long _joinTime;
         [BsonElement("playerTimeZoneSlot")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]public int _playerTimeZoneSlot;
         [BsonElement("playerMiniProfile")]                                                  public PlayerMiniProfileData _playerMiniProfile;
+        #pragma warning restore format
 
         [BsonIgnore] public string playerId {get => _playerId; set {_playerId = value; isDirty = true;}}
         [BsonIgnore] public string displayName {get => _displayName; set {_displayName = value; isDirty = true;}}
@@ -76,12 +80,14 @@ namespace SocialEdgeSDK.Server.Models
 
     public class TournamentLeaderboardEntry
     {
+        #pragma warning disable format
         [BsonElement("playerId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string playerId;
         [BsonElement("score")][BsonRepresentation(MongoDB.Bson.BsonType.String)]        public int score;
         [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string displayName;
         [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int league;
         [BsonElement("country")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string country;
         [BsonElement("playerMiniProfile")]                                              public PlayerMiniProfileData playerMiniProfile;
+        #pragma warning restore format
 
         public TournamentLeaderboardEntry(string playerId, int score, PlayerMiniProfileData playerMiniProfile, string country, string displayName)
         {

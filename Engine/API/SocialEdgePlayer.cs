@@ -46,6 +46,7 @@ namespace SocialEdgeSDK.Server.Context
 
     public static class CachePlayerDataSegments
     {
+        #pragma warning disable format 
         public const ulong NONE =               0x0000;
         public const ulong PUBLIC_DATA =        0x0001;
         public const ulong INBOX =              0x0002;
@@ -60,10 +61,12 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong PLAYER_DATA =        0x0400;
         public const ulong PLAYER_MODEL =       0x0800;
         public const ulong MINI_PROFILE =       0x1000;
+        #pragma warning restore format
+        
         public const ulong MAX = MINI_PROFILE;
 
         public const ulong META = INBOX | CHAT | FRIENDS_PROFILES;
-        public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | INVENTORY;
+        public const ulong READONLY = FRIENDS | FRIENDS_PROFILES;
     }
 
     public class SocialEdgePlayerContext : ContextCacheBase

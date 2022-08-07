@@ -19,6 +19,7 @@ namespace SocialEdgeSDK.Server.Models
 {
     public class InboxDataMessage
     {
+        #pragma warning disable format   
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string msgId;
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string type;
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isDaily;
@@ -34,12 +35,15 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string league;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long startTime;
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long expireAt;
+        #pragma warning restore format
     }
 
     public class InboxDataDocument
     {
+        #pragma warning disable format  
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)][BsonIgnoreIfNull]    public ObjectId _id;
         [BsonElement("InboxData")]                                                public Dictionary<string, InboxDataMessage> _messages;
+        #pragma warning restore format
     }
 
     public static class Inbox
