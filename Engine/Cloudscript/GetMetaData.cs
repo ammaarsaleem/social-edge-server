@@ -71,6 +71,7 @@ namespace SocialEdgeSDK.Server.Requests
                 result.dynamicBundleToDisplay = SocialEdgePlayer.PlayerEconomy.ProcessDynamicDisplayBundle();
                 result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle().ToString();
                 result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC)
+                                                    .GetContentList()
                                                     .ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson})
                                                     .ToString();
                 result.playerDataModel = SocialEdgePlayer.PlayerModel;
