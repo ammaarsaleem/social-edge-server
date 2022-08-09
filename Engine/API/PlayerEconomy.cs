@@ -190,9 +190,9 @@ namespace SocialEdgeSDK.Server.Context
             var lastIndex = defaultBetIncrementSettings.Count - 1;
             var gamesPlayedIndex = GetGamesPlayedToday();
             gamesPlayedIndex = gamesPlayedIndex >= lastIndex ? lastIndex : gamesPlayedIndex;
-            var coinsToBet = socialEdgePlayer.VirtualCurrency["CN"] * (int)defaultBetIncrementSettings[gamesPlayedIndex];
+            var coinsToBet = (int)(socialEdgePlayer.VirtualCurrency["CN"] * (double)defaultBetIncrementSettings[gamesPlayedIndex]);
             var betIndex = GetBetIndex(coinsToBet, bettingIncrementSettings);
-            return bettingIncrementSettings[betIndex];
+            return (int)bettingIncrementSettings[betIndex];
         }
 
         private int GetBetIndex(int coinsToBet, BsonArray bettingIncrementSettings)
