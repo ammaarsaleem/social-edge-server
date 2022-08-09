@@ -143,5 +143,89 @@ namespace SocialEdgeSDK.Server.Context
         {
             var taskT = Player.SubtractVirtualCurrency(socialEdgePlayer.PlayerId, amount, currencyType);
         }
+
+        public void ProcessDailyEvent()
+        {
+            var currentTime = Utils.UTCNow();
+
+            if(socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp == 0 || socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp <= currentTime)
+            {
+                var hourToMilliseconds = 60 * 60 * 1000;
+                var expiryTimestamp = Utils.ToUTC(Utils.EndOfDay(DateTime.Now)) - (socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot * hourToMilliseconds);
+                var defaultBet = GetDefaultBet();
+
+                if(expiryTimestamp < currentTime)
+                {
+                    expiryTimestamp = expiryTimestamp + 24 * hourToMilliseconds;
+                }
+
+                socialEdgePlayer.MiniProfile.EventGlow = 0;
+                socialEdgePlayer.PlayerModel.Events.dailyEventProgress = 0;
+                socialEdgePlayer.PlayerModel.Events.dailyEventState = "running";
+                socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp = expiryTimestamp;
+                socialEdgePlayer.PlayerModel.Events.dailyEventRewards = _calculateDailyEventRewards(defaultBet);
+            }
+        }
+
+        private List<DailyEventRewards> _calculateDailyEventRewards(int defaultBet)
+        {
+            var rewards = new List<DailyEventRewards>();
+            var rewardSettings = Settings.Economy["DailyEventRewards"];
+            
+            for (var i = 0; i < rewardSettings.Count; i++)
+            {
+                var reward = new DailyEventRewards();
+                reward.gems = (int)rewardSettings[i]["gems"];
+                reward.coins = (int)((double)rewardSettings[i]["coinsRatio"] * defaultBet);
+                rewards.Add(reward);
+            }
+
+            return rewards;
+        }
+
+        private int GetDefaultBet()
+        {
+            var defaultBetIncrementSettings = Settings.Economy["DefaultBetIncrementByGamesPlayed"];
+            var bettingIncrementSettings = Settings.Economy["BettingIncrements"];
+            var lastIndex = defaultBetIncrementSettings.Count - 1;
+            var gamesPlayedIndex = GetGamesPlayedToday();
+            gamesPlayedIndex = gamesPlayedIndex >= lastIndex ? lastIndex : gamesPlayedIndex;
+            var coinsToBet = (int)(socialEdgePlayer.VirtualCurrency["CN"] * (double)defaultBetIncrementSettings[gamesPlayedIndex]);
+            var betIndex = GetBetIndex(coinsToBet, bettingIncrementSettings);
+            return (int)bettingIncrementSettings[betIndex];
+        }
+
+        private int GetBetIndex(int coinsToBet, BsonArray bettingIncrementSettings)
+        {
+            var betIndex = 0;
+
+            for(int i = 0; i < bettingIncrementSettings.Count; i++)
+            {
+                if(coinsToBet <= bettingIncrementSettings[i])
+                {
+                    if(i == 0)
+                    {
+                        betIndex = i;
+                        break;
+                    }
+
+                    var diff1 = Math.Abs(coinsToBet - (int)bettingIncrementSettings[i - 1]);
+                    var diff2 = Math.Abs(coinsToBet - (int)bettingIncrementSettings[i]);
+                    betIndex = diff1 < diff2 ? i - 1 : i;
+                    break;
+                }
+
+                betIndex = i;
+            }
+
+            return betIndex;
+        }
+
+        private int GetGamesPlayedToday()
+        {
+            var dateKey = DateTime.Now.ToShortDateString();
+            var todayGamesData = socialEdgePlayer.PlayerModel.Info.gamesPlayedPerDay.Where(g => g.Key.Equals(dateKey)).Select(g => g.Value).FirstOrDefault();
+            return todayGamesData != null ? todayGamesData.won + todayGamesData.lost + todayGamesData.drawn : 0;
+        }
     }
 }

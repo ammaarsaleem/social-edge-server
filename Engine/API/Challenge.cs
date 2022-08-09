@@ -6,6 +6,8 @@
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.Common;
+using System;
+using System.Linq;
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -90,10 +92,11 @@ namespace SocialEdgeSDK.Server.Api
             ChallengePlayerModel winnerChallengePlayerModel = challengeData.player1Data.playerId == challengeData.winnerId ? challengeData.player1Data : challengeData.player2Data;
             winnerPlayer.PlayerModel.Info.gamesWon = winnerPlayer.PlayerModel.Info.gamesWon + 1;
             winnerPlayer.PlayerModel.Info.eloScore = winnerPlayer.PlayerModel.Info.eloScore + winnerChallengePlayerModel.eloChange;
+            
             if (winnerChallengePlayerModel.isEventMatch)
             {
-                // TODO ProcessDailyEventExpiry(winnerPlayer);
-                if (winnerPlayer.PlayerModel.Events.dailyEventProgress < SocialEdge.TitleContext.GetTitleDataProperty("DailyEventRewards").length) 
+                winnerPlayer.PlayerEconomy.ProcessDailyEvent();
+                if (winnerPlayer.PlayerModel.Events.dailyEventProgress < winnerPlayer.PlayerModel.Events.dailyEventRewards.Count) 
                     winnerPlayer.PlayerModel.Events.dailyEventProgress = winnerPlayer.PlayerModel.Events.dailyEventProgress + 1;
             }
 
@@ -103,18 +106,27 @@ namespace SocialEdgeSDK.Server.Api
                 int rewardBet = (int)(winnerChallengePlayerModel.betValue * matchCoinsMultiplyer);
                 winnerPlayer.PlayerEconomy.AddVirtualCurrency("CN", rewardBet);
             }
+
+            var todayResults = GetTodaysGameResults(winnerPlayer);
+            todayResults.won++;
+            SetTodaysGamesResults(winnerPlayer, todayResults);
         }
 
         private static void LoseGame(ChallengeData challengeData, SocialEdgePlayerContext loserPlayer)
         {
             ChallengePlayerModel loserChallengePlayerModel = challengeData.player1Data.playerId == challengeData.winnerId ? challengeData.player2Data : challengeData.player1Data;
-            loserPlayer.PlayerModel.Info.gamesLost = loserPlayer.PlayerModel.Info.gamesLost - 1;
+            loserPlayer.PlayerModel.Info.gamesLost = loserPlayer.PlayerModel.Info.gamesLost + 1;
             loserPlayer.PlayerModel.Info.eloScore = loserPlayer.PlayerModel.Info.eloScore + loserChallengePlayerModel.eloChange;
+            
             if (loserChallengePlayerModel.isEventMatch) 
             {
-                // TODO ProcessDailyEventExpiry(loserPlayer);
+                loserPlayer.PlayerEconomy.ProcessDailyEvent();
                 loserPlayer.PlayerModel.Events.dailyEventState = "lost";
             }
+
+            var todayResults = GetTodaysGameResults(loserPlayer);
+            todayResults.lost++;
+            SetTodaysGamesResults(loserPlayer, todayResults);
         }
 
         private static void UpdateWinLoseGameFriendsInfo(SocialEdgePlayerContext winnerPlayer, SocialEdgePlayerContext loserPlayer)
@@ -153,6 +165,10 @@ namespace SocialEdgeSDK.Server.Api
 
             if (challengePlayerModel.betValue > 0)
                 player.PlayerEconomy.AddVirtualCurrency("CN", (int)challengePlayerModel.betValue);
+
+            var todayResults = GetTodaysGameResults(player);
+            todayResults.drawn++;
+            SetTodaysGamesResults(player, todayResults);
         }
 
         private static int[] CalcEloChange(int elo1, int elo2, bool isRanked, bool isEventMatch)
@@ -171,6 +187,36 @@ namespace SocialEdgeSDK.Server.Api
             }
 
             return ret;
+        }
+
+        private static GameResults GetTodaysGameResults(SocialEdgePlayerContext playerContext)
+        {
+            var dateKey = DateTime.Now.ToShortDateString();
+            var gamesPlayedPerDay = playerContext.PlayerModel.Info.gamesPlayedPerDay;
+            
+            if(gamesPlayedPerDay.ContainsKey(dateKey))
+            {
+                return gamesPlayedPerDay[dateKey];
+            }
+
+            var gameResults = new GameResults();
+            playerContext.PlayerModel.Info.gamesPlayedPerDay.Add(dateKey, gameResults);
+
+            //its only meant to store data for last three days
+            //removing the first element the dictionary
+            if(gamesPlayedPerDay.Count >= 4)
+            {
+                var firstElement = gamesPlayedPerDay.Keys.First();
+                gamesPlayedPerDay.Remove(firstElement);
+            }
+
+            return gameResults;
+        }
+
+        private static void SetTodaysGamesResults(SocialEdgePlayerContext playerContext, GameResults gameResults)
+        {
+            var dateKey = DateTime.Now.ToShortDateString();
+            playerContext.PlayerModel.Info.gamesPlayedPerDay[dateKey] = gameResults;
         }
     }
 }

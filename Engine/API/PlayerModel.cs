@@ -37,7 +37,19 @@ namespace SocialEdgeSDK.Server.Models
 
     public class DailyEventRewards
     {
+        #pragma warning disable format
+        [BsonElement("gems")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]              public int gems;
+        [BsonElement("coins")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int coins;
+        #pragma warning restore format
+    }
 
+    public class GameResults
+    {
+        #pragma warning disable format
+        [BsonElement("won")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]              public int won;
+        [BsonElement("lost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int lost;
+        [BsonElement("drawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int drawn;
+        #pragma warning restore format
     }
 
     public class FriendData
@@ -127,9 +139,10 @@ namespace SocialEdgeSDK.Server.Models
     {
         public Dictionary<string, FriendData> friends;
 
-        public PlayerDataFriends()
+        public PlayerDataFriends(bool isDirty = false)
         {
             friends = new Dictionary<string, FriendData>();
+            this.isDirty = isDirty;
         }
     }
 
@@ -155,6 +168,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("isFBConnectRewardClaimed")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]    public bool _isFBConnectRewardClaimed;
         [BsonElement("careerLeagueSet")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]             public bool _careerLeagueSet;
         [BsonElement("uploadedPicId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                public string _uploadedPicId;
+        [BsonElement("gamesPlayedPerDay")]                                                              public Dictionary<string, GameResults> _gamesPlayedPerDay;
         #pragma warning restore format
 
         [BsonIgnore] public int eloScore { get => _eloScore; set { _eloScore = value; isDirty = true; } }
@@ -175,10 +189,12 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public bool isFBConnectRewardClaimed { get => _isFBConnectRewardClaimed; set { _isFBConnectRewardClaimed = value; isDirty = true; } }
         [BsonIgnore] public bool careerLeagueSet { get => _careerLeagueSet; set { _careerLeagueSet = value; isDirty = true; } }
         [BsonIgnore] public string uploadedPicId { get => _uploadedPicId; set { _uploadedPicId = value; isDirty = true; } }
+        [BsonIgnore] public Dictionary<string, GameResults> gamesPlayedPerDay { get => _gamesPlayedPerDay; set {_gamesPlayedPerDay = value; isDirty = true; } }
 
         public PlayerDataInfo()
         {
             activeInventory = new List<PlayerInventoryItem>();
+            gamesPlayedPerDay = new Dictionary<string, GameResults>();
         }
     }
 
@@ -250,18 +266,18 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("dailyEventExpiryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)] public long _dailyEventExpiryTimestamp;
         [BsonElement("dailyEventProgress")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _dailyEventProgress;
         [BsonElement("dailyEventState")][BsonRepresentation(MongoDB.Bson.BsonType.String)]          public string _dailyEventState;
-        [BsonElement("dailyEventRewards")]                                                          public DailyEventRewards _dailyEventRewards;
+        [BsonElement("dailyEventRewards")]                                                          public List<DailyEventRewards> _dailyEventRewards;
         #pragma warning restore format
 
         [BsonIgnore] public long eventTimeStamp { get => _eventTimeStamp; set { _eventTimeStamp = value; isDirty = true; } }
         [BsonIgnore] public long dailyEventExpiryTimestamp { get => _dailyEventExpiryTimestamp; set { _dailyEventExpiryTimestamp = value; isDirty = true; } }
         [BsonIgnore] public int dailyEventProgress { get => _dailyEventProgress; set { _dailyEventProgress = value; isDirty = true; } }
         [BsonIgnore] public string dailyEventState { get => _dailyEventState; set { _dailyEventState = value; isDirty = true; } }
-        [BsonIgnore] public DailyEventRewards dailyEventRewards { get => _dailyEventRewards; set { _dailyEventRewards = value; isDirty = true; } }
+        [BsonIgnore] public List<DailyEventRewards> dailyEventRewards { get => _dailyEventRewards; set { _dailyEventRewards = value; isDirty = true; } }
 
         public PlayerDataEvent()
         {
-            dailyEventRewards = new DailyEventRewards();
+            dailyEventRewards = new List<DailyEventRewards>();
         }
     }
 
@@ -333,6 +349,11 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public string currentChallengeId { get => _currentChallengeId; set { _currentChallengeId = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> activeChallenges { get => _activeChallenges; set { _activeChallenges = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> pendingChallenges { get => _pendingChallenges; set { _pendingChallenges = value; isDirty = true; } }
+
+        public PlayerDataChallenge(bool isDirty = false)
+        {
+            this.isDirty = isDirty;
+        }
     }
 
     public class PlayerModelDocument
@@ -432,8 +453,8 @@ namespace SocialEdgeSDK.Server.Models
             _economy = new PlayerDataEconomy();
             _events = new PlayerDataEvent();
             _tournament = new PlayerDataTournament();
-            _challenge = new PlayerDataChallenge();
-            _friends = new PlayerDataFriends();
+            _challenge = new PlayerDataChallenge(isDirty:true);
+            _friends = new PlayerDataFriends(isDirty:true);
         }
 
         public void Prefetch(List<string> fields)

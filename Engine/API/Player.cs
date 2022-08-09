@@ -351,7 +351,7 @@ namespace SocialEdgeSDK.Server.Api
             PlayerMiniProfileData playerMiniProfile = new PlayerMiniProfileData();
             playerMiniProfile.AvatarId = avatar;
             playerMiniProfile.AvatarBgColor = avatarBgColor;
-            playerMiniProfile.UploadPicId = "XXX";
+            playerMiniProfile.UploadPicId = null;
             playerMiniProfile.EventGlow = 0;
             UpdatePlayerAvatarData(playerId, playerMiniProfile);
             //var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
