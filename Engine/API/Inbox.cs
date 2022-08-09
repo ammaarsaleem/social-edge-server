@@ -76,9 +76,8 @@ namespace SocialEdgeSDK.Server.Models
                 msg.time = msg.startTime;
                 socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
             }
-            else if (msg.tournamentId != null)
+            else // Remove 
             {
-                // TODO Tournaments.deleteTournament(sparkPlayer, msg.tournamentId);
                 InboxModel.Del(messageId, socialEdgePlayer);
             }
 
