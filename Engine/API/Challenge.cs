@@ -115,7 +115,7 @@ namespace SocialEdgeSDK.Server.Api
         private static void LoseGame(ChallengeData challengeData, SocialEdgePlayerContext loserPlayer)
         {
             ChallengePlayerModel loserChallengePlayerModel = challengeData.player1Data.playerId == challengeData.winnerId ? challengeData.player2Data : challengeData.player1Data;
-            loserPlayer.PlayerModel.Info.gamesLost = loserPlayer.PlayerModel.Info.gamesLost - 1;
+            loserPlayer.PlayerModel.Info.gamesLost = loserPlayer.PlayerModel.Info.gamesLost + 1;
             loserPlayer.PlayerModel.Info.eloScore = loserPlayer.PlayerModel.Info.eloScore + loserChallengePlayerModel.eloChange;
             
             if (loserChallengePlayerModel.isEventMatch) 
