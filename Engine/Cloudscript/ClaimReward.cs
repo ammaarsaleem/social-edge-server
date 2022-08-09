@@ -21,14 +21,24 @@ using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
 {
+    public class ClaimRewardResult
+    {
+        public string error;
+        public string claimRewardType;
+        public long chestUnlockTimestamp;
+        public int gems;
+        public int coins;
+        public long msgStartTime;
+        public Dictionary<string, int> rewards;
+    }
+
     public class ClaimReward : FunctionContext
     {
         public ClaimReward(ITitleContext titleContext) { Base(titleContext); }
 
         [FunctionName("ClaimReward")]
-        public async Task<object> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
-            ILogger log)
+        public ClaimRewardResult Run(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
@@ -51,6 +61,7 @@ namespace SocialEdgeSDK.Server.Requests
             };
 
             var rewardPoints = rewardsTable[rewardType];
+            ClaimRewardResult result = new ClaimRewardResult();
 
             // Coin chest and Gems chest
             if (rewardType == "chestCoinsReward" || rewardType == "chestGemsReward")
@@ -58,68 +69,57 @@ namespace SocialEdgeSDK.Server.Requests
                 Random rand = new Random();
                 rewardPoints = rand.Next((int)rewardPoints["min"].Value, (int)rewardPoints["max"].Value + 1);
 
-                return await RewardChest(rewardType, rewardPoints, data, SocialEdgePlayer);
+                result = RewardChest(SocialEdgePlayer, rewardType, rewardPoints, data, SocialEdgePlayer);
             }
 
             // Daily reward
             if (rewardType == "dailyReward")
             {
-                return await RewardDaily("dailyReward", (int)rewardPoints, data, SocialEdgePlayer);
+                result = RewardDaily("dailyReward", (int)rewardPoints, data, SocialEdgePlayer);
             }
             
-            return null;
+            CacheFlush();
+            return result;
         }
 
-        private async Task<object> RewardChest(string rewardType, int amount, dynamic data, SocialEdgePlayerContext playerContext)
+        private object RewardChest(SocialEdgePlayerContext socialEdgePlayer, string rewardType, int amount, dynamic data, SocialEdgePlayerContext playerContext)
         {
-            var userData = data["userData"];
-            var hotData = userData["hotData"];
             var economy = SocialEdge.TitleContext.GetTitleDataProperty("Economy");
             var ads = economy["Ads"];
-            long chestUnlockTimestamp = hotData["chestUnlockTimestamp"];
+            long chestUnlockTimestamp = socialEdgePlayer.PlayerModel.Economy.chestUnlockTimestamp;
             var chestCooldownTimeInMin = Convert.ToInt64(ads["chestCooldownTimeInMin"]);
 
-            Dictionary<string, object> result = new Dictionary<string, object>();
+            ClaimRewardResult result = new ClaimRewardResult();
 
             var currentTime = Utils.UTCNow();
             if (currentTime >= chestUnlockTimestamp)
             {
                 var chestCooldownTimeSec = chestCooldownTimeInMin * 60 * 1000;
-                
-                AddUserVirtualCurrencyRequest request = new AddUserVirtualCurrencyRequest();
-                request.Amount = amount;
-                request.PlayFabId = playerContext.PlayerId;
-                request.VirtualCurrency = rewardType == "chestCoinsReward" ? "CN" : "GM";
-
-                var resultT = await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
-                var chestUnlockTimestampUpdated = currentTime + chestCooldownTimeSec;
-                hotData["chestUnlockTimestamp"] = chestUnlockTimestampUpdated;
-
-                BsonDocument obj = new BsonDocument() { ["hotData"] = hotData.ToString() };
-                var resultUpdateT = await Player.UpdatePlayerData(playerContext.PlayerId, obj);
-
-                result.Add("claimRewardType", rewardType);
-                result.Add("reward", amount);
-                result.Add("chestUnlockTimestamp", chestUnlockTimestampUpdated);
+                SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency(rewardType == "chestCoinsReward" ? "CN" : "GM", amount);
+                socialEdgePlayer.PlayerModel.Economy.chestUnlockTimestamp = currentTime + chestCooldownTimeSec;
+                result.claimRewardType = rewardType;
+                result.rewards = new Dictionary<string, int>();
+                result.rewards.Add(rewardType == "chestCoinsReward" ? "coins" : "gems", amount);
+                result.chestUnlockTimestamp = socialEdgePlayer.PlayerModel.Economy.chestUnlockTimestamp;
             }
             else
             {
                 // TODO avoid unnecessary requests
                 var coins = playerContext.VirtualCurrency["CN"];
                 var gems = playerContext.VirtualCurrency["GM"];
-                result.Add("error", "invalidChestReward");
-                result.Add("claimRewardType", rewardType);
-                result.Add("coins", coins);
-                result.Add("gems", gems);
-                result.Add("chestUnlockTimestamp", chestUnlockTimestamp);
+                result.error = "invalidChestReward";
+                result.claimRewardType = rewardType;
+                result.coins = coins;
+                result.gems = gems;
+                result.chestUnlockTimestamp = chestUnlockTimestamp;
             }
                 
             return result;
         }
 
-        private async Task<object> RewardDaily(string rewardType, int amount, object data, SocialEdgePlayerContext socialEdgePlayer)
+        private object RewardDaily(string rewardType, int amount, object data, SocialEdgePlayerContext socialEdgePlayer)
         {
-            Dictionary<string, object> result = new Dictionary<string, object>();
+            ClaimRewardResult result = new ClaimRewardResult();
             string leagueDailyRewardMsgId = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
 
             if (leagueDailyRewardMsgId != null)
@@ -133,26 +133,31 @@ namespace SocialEdgeSDK.Server.Requests
                     {
                         msg.startTime = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
                         msg.time = msg.startTime;
-                        await InboxModel.Set(socialEdgePlayer.InboxId, socialEdgePlayer.Inbox);
+                        var taskInboxT = InboxModel.Set(socialEdgePlayer.InboxId, socialEdgePlayer.Inbox);
             
                         var reward = Leagues.GetDailyReward(socialEdgePlayer.PublicData["leag"].ToString());
                         var doubleReward = new BsonDocument() { ["gems"] = (int)reward["gems"] * 2, ["coins"] = (int)reward["coins"] * 2 };
-                        var granted = await Transactions.Grant(doubleReward, socialEdgePlayer);
+                        var taskT = Transactions.Grant(doubleReward, socialEdgePlayer);
+                        taskT.Wait();
+                        var granted = taskT.Result;
             
-                        result.Add("claimRewardType", rewardType);
-                        result.Add("reward", granted);
+                        result.claimRewardType = rewardType;
+                        result.rewards = new Dictionary<string, int>();
+                        if (granted.ContainsKey("coins"))
+                            result.rewards.Add("coins", (int)granted["coins"]);
+
+                        if (granted.ContainsKey("gems"))
+                            result.rewards.Add("gems", (int)granted["gems"]);
                     }
                     else
                     {
                         // TODO avoid unnecessary requests
-                        
-                        var playerinventoryResult = await Player.GetPlayerInventory(socialEdgePlayer.PlayerId);
                         var coins = socialEdgePlayer.VirtualCurrency["CN"];
                         var gems = socialEdgePlayer.VirtualCurrency["GM"];
-                        result.Add("error", "invalidDailyReward");
-                        result.Add("coins", coins);
-                        result.Add("gems", gems);
-                        result.Add("msgStartTime", msg.startTime);
+                        result.error = "invalidDailyReward";
+                        result.coins = coins;
+                        result.gems = gems;
+                        result.msgStartTime = msg.startTime;
                     }                                   
                 }
             }
