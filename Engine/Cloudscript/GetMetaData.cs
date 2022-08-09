@@ -56,6 +56,7 @@ namespace SocialEdgeSDK.Server.Requests
             SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.ALL);
             Inbox.Validate(SocialEdgePlayer);
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
+            SocialEdgePlayer.PlayerEconomy.ProcessDailyEvent();
 
             try
             {
