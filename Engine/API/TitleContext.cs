@@ -28,6 +28,7 @@ namespace SocialEdgeSDK.Server.DataService
         string GetShortCodeFromItemId(string itemId);
 
         LeagueSettingModel LeagueSettings { get; }
+        EconomySettingsModel EconomySettings { get; }
     }
 
     public class TitleContext : ITitleContext
@@ -42,12 +43,14 @@ namespace SocialEdgeSDK.Server.DataService
         private Dictionary<string, StoreItem> _storeItemsDict;
 
         private LeagueSettingModel _leagueSettings;
+        private EconomySettingsModel _economySettings;
 
         public GetTitleDataResult TitleData { get => _titleData; }
         public GetCatalogItemsResult CatalogItems { get => _catalogItems; } 
         public GetStoreItemsResult StoreItems { get => _storeItems; }
 
         public LeagueSettingModel LeagueSettings { get => _leagueSettings; }
+        public EconomySettingsModel EconomySettings { get => _economySettings; }
 
         public TitleContext()
         {
@@ -77,6 +80,9 @@ namespace SocialEdgeSDK.Server.DataService
 
             _leagueSettings = new LeagueSettingModel();
             _leagueSettings.leagues = BsonSerializer.Deserialize<Dictionary<string, LeagueSettingsData>>(_titleDataDict["Leagues"].ToString());
+
+            _economySettings = new EconomySettingsModel();
+            _economySettings = BsonSerializer.Deserialize<EconomySettingsModel>(_titleDataDict["Economy"].ToString());
 
             Console.WriteLine("****** *********************  *****");
             Console.WriteLine("****** ( FetchTitleContext )  *****");

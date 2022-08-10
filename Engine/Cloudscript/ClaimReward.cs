@@ -30,6 +30,8 @@ namespace SocialEdgeSDK.Server.Requests
         public int coins;
         public long msgStartTime;
         public Dictionary<string, int> rewards;
+        public long shopRvRewardCooldownTimestamp;
+        public int shopRvMaxReward;
     }
 
     public class ClaimReward : FunctionContext
@@ -60,22 +62,25 @@ namespace SocialEdgeSDK.Server.Requests
                 {"betCoinsReturn", rewardsData["betCoinsReturn"]}
             };
 
-            var rewardPoints = rewardsTable[rewardType];
             ClaimRewardResult result = new ClaimRewardResult();
 
             // Coin chest and Gems chest
             if (rewardType == "chestCoinsReward" || rewardType == "chestGemsReward")
             { 
                 Random rand = new Random();
+                var rewardPoints = rewardsTable[rewardType];
                 rewardPoints = rand.Next((int)rewardPoints["min"].Value, (int)rewardPoints["max"].Value + 1);
 
                 result = RewardChest(SocialEdgePlayer, rewardType, rewardPoints, data, SocialEdgePlayer);
             }
-
-            // Daily reward
-            if (rewardType == "dailyReward")
+            else if (rewardType == "dailyReward")
             {
+                var rewardPoints = rewardsTable[rewardType];
                 result = RewardDaily("dailyReward", (int)rewardPoints, data, SocialEdgePlayer);
+            }
+            else if (rewardType == "shopRvReward")
+            {
+                result = RewardShopRV(rewardType, SocialEdgePlayer);
             }
             
             CacheFlush();
@@ -95,7 +100,7 @@ namespace SocialEdgeSDK.Server.Requests
             if (currentTime >= chestUnlockTimestamp)
             {
                 var chestCooldownTimeSec = chestCooldownTimeInMin * 60 * 1000;
-                SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency(rewardType == "chestCoinsReward" ? "CN" : "GM", amount);
+                socialEdgePlayer.PlayerEconomy.AddVirtualCurrency(rewardType == "chestCoinsReward" ? "CN" : "GM", amount);
                 socialEdgePlayer.PlayerModel.Economy.chestUnlockTimestamp = currentTime + chestCooldownTimeSec;
                 result.claimRewardType = rewardType;
                 result.rewards = new Dictionary<string, int>();
@@ -117,7 +122,7 @@ namespace SocialEdgeSDK.Server.Requests
             return result;
         }
 
-        private object RewardDaily(string rewardType, int amount, object data, SocialEdgePlayerContext socialEdgePlayer)
+        private ClaimRewardResult RewardDaily(string rewardType, int amount, object data, SocialEdgePlayerContext socialEdgePlayer)
         {
             ClaimRewardResult result = new ClaimRewardResult();
             string leagueDailyRewardMsgId = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
@@ -161,6 +166,53 @@ namespace SocialEdgeSDK.Server.Requests
                     }                                   
                 }
             }
+            return result;
+        }
+
+        public ClaimRewardResult RewardShopRV(string rewardType, SocialEdgePlayerContext socialEdgePlayer)
+        {
+            ClaimRewardResult result = new ClaimRewardResult();
+            PlayerDataEconomy playerDataEconomy = socialEdgePlayer.PlayerModel.Economy;
+            EconomySettingsModel economySettings = SocialEdge.TitleContext.EconomySettings;
+
+            if (Utils.UTCNow() >= socialEdgePlayer.PlayerModel.Economy.shopRvRewardCooldownTimestamp)
+            {
+                int shopRvRewardNotClaimedDays = socialEdgePlayer.PlayerModel.Info.playDays - playerDataEconomy.shopRVRewardClaimedDay;
+                var rewardsProbablity = economySettings.balloonRewardsProbability;
+                //var rewardsProbablity = Settings.Economy["balloonRewardsProbability"];
+
+                var selectedRewardType = playerDataEconomy.shopRvRewardClaimedCount == 0 || shopRvRewardNotClaimedDays >= 5 ? "A" :
+                            rewardsProbablity[ Utils.GetRandomInteger(0, rewardsProbablity.Count - 1) ];
+                EconomyballoonReward selectedReward = economySettings.balloonRewards[selectedRewardType];
+                var defaultBet = playerDataEconomy.shopRvDefaultBet;
+                int rewardCoins = selectedReward.balloonCoins;
+    
+                if (defaultBet > 10000) 
+                    rewardCoins = (int)(defaultBet * selectedReward.coinsRewardRatio);
+                
+                playerDataEconomy.shopRvMaxReward = 0;
+                int shopRvMaxReward = socialEdgePlayer.PlayerEconomy.ProcessShopRvMaxReward();
+                
+                result.rewards = new Dictionary<string, int>();
+                socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", rewardCoins);
+                var coolDownTime = economySettings.ShopRVRewards.cooldownInMins * 60 * 1000;
+
+                playerDataEconomy.shopRvRewardClaimedCount = playerDataEconomy.shopRvRewardClaimedCount + 1;
+                playerDataEconomy.shopRvRewardCooldownTimestamp = Utils.UTCNow() + coolDownTime;
+                playerDataEconomy.shopRVRewardClaimedDay = socialEdgePlayer.PlayerModel.Info.playDays;
+
+                result.claimRewardType = rewardType;
+                result.rewards.Add("coins", rewardCoins);
+                result.shopRvRewardCooldownTimestamp = playerDataEconomy.shopRvRewardCooldownTimestamp;
+                result.shopRvMaxReward = shopRvMaxReward;
+            }
+            else
+            {
+                result.error = "invalidShopRvReward";
+                result.claimRewardType = rewardType;
+                result.shopRvRewardCooldownTimestamp = playerDataEconomy.shopRvRewardCooldownTimestamp;
+            }
+
             return result;
         }
     }

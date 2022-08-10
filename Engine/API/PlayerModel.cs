@@ -168,7 +168,9 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("isFBConnectRewardClaimed")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]    public bool _isFBConnectRewardClaimed;
         [BsonElement("careerLeagueSet")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]             public bool _careerLeagueSet;
         [BsonElement("uploadedPicId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                public string _uploadedPicId;
+        [BsonElement("playDays")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _playDays;
         [BsonElement("gamesPlayedPerDay")]                                                              public Dictionary<string, GameResults> _gamesPlayedPerDay;
+        
         #pragma warning restore format
 
         [BsonIgnore] public int eloScore { get => _eloScore; set { _eloScore = value; isDirty = true; } }
@@ -189,6 +191,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public bool isFBConnectRewardClaimed { get => _isFBConnectRewardClaimed; set { _isFBConnectRewardClaimed = value; isDirty = true; } }
         [BsonIgnore] public bool careerLeagueSet { get => _careerLeagueSet; set { _careerLeagueSet = value; isDirty = true; } }
         [BsonIgnore] public string uploadedPicId { get => _uploadedPicId; set { _uploadedPicId = value; isDirty = true; } }
+        [BsonIgnore] public int playDays { get => _playDays; set { _playDays = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, GameResults> gamesPlayedPerDay { get => _gamesPlayedPerDay; set {_gamesPlayedPerDay = value; isDirty = true; } }
 
         public PlayerDataInfo()
@@ -212,6 +215,9 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("lastBundleUpdatePlayDay")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]           public int _lastBundleUpdatePlayDay;
 
         [BsonElement("shopRvRewardClaimedCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _shopRvRewardClaimedCount;
+        [BsonElement("shopRVRewardClaimedDay")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _shopRVRewardClaimedDay;
+        [BsonElement("shopRvDefaultBet")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                  public int _shopRvDefaultBet;
+        [BsonElement("shopRvMaxReward")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                   public int _shopRvMaxReward;
         [BsonElement("balloonRewardsClaimedCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _balloonRewardsClaimedCount;
         [BsonElement("outOfGemsSessionCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int _outOfGemsSessionCount;
         [BsonElement("cpuPowerupUsedCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]               public int _cpuPowerupUsedCount;
@@ -226,6 +232,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("lastWatchedVideoId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]               public string _lastWatchedVideoId;
         [BsonElement("adsRewardData")]                                                                      public AdRewardsData _adsRewardData;
         [BsonElement("jackpotNotCollectedCounter")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _jackpotNotCollectedCounter;
+
         #pragma warning restore format
 
         [BsonIgnore] public bool isPremium { get => _isPremium; set { _isPremium = value; isDirty = true; } }
@@ -238,6 +245,9 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public string dynamicBundlePurchaseTierNew { get => _dynamicBundlePurchaseTierNew; set { _dynamicBundlePurchaseTierNew = value; isDirty = true; } }
         [BsonIgnore] public int lastBundleUpdatePlayDay { get => _lastBundleUpdatePlayDay; set { _lastBundleUpdatePlayDay = value; isDirty = true; } }
         [BsonIgnore] public int shopRvRewardClaimedCount { get => _shopRvRewardClaimedCount; set { _shopRvRewardClaimedCount = value; isDirty = true; } }
+        [BsonIgnore] public int shopRVRewardClaimedDay { get => _shopRVRewardClaimedDay; set { _shopRVRewardClaimedDay = value; isDirty = true; } }
+        [BsonIgnore] public int shopRvDefaultBet { get => _shopRvDefaultBet; set { _shopRvDefaultBet = value; isDirty = true; } }
+        [BsonIgnore] public int shopRvMaxReward { get => _shopRvMaxReward; set { _shopRvMaxReward = value; isDirty = true; } }
         [BsonIgnore] public int balloonRewardsClaimedCount { get => _balloonRewardsClaimedCount; set { _balloonRewardsClaimedCount = value; isDirty = true; } }
         [BsonIgnore] public int outOfGemsSessionCount { get => _outOfGemsSessionCount; set { _outOfGemsSessionCount = value; isDirty = true; } }
         [BsonIgnore] public int cpuPowerupUsedCount { get => _cpuPowerupUsedCount; set { _cpuPowerupUsedCount = value; isDirty = true; } }

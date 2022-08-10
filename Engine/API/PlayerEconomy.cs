@@ -227,5 +227,25 @@ namespace SocialEdgeSDK.Server.Context
             var todayGamesData = socialEdgePlayer.PlayerModel.Info.gamesPlayedPerDay.Where(g => g.Key.Equals(dateKey)).Select(g => g.Value).FirstOrDefault();
             return todayGamesData != null ? todayGamesData.won + todayGamesData.lost + todayGamesData.drawn : 0;
         }
+
+        public int ProcessShopRvMaxReward()
+        {
+            EconomySettingsModel economySettings = SocialEdge.TitleContext.EconomySettings;
+
+            if (socialEdgePlayer.PlayerModel.Economy.shopRvMaxReward == 0) 
+            {
+                string selectedRewardType =  "A" ;
+                var selectedReward = economySettings.balloonRewards[selectedRewardType];
+                int defaultBet = GetDefaultBet();
+                socialEdgePlayer.PlayerModel.Economy.shopRvDefaultBet = defaultBet;
+                int rewardCoins = selectedReward.balloonCoins;
+                if (defaultBet > rewardCoins) 
+                {
+                    rewardCoins = (int)(defaultBet * selectedReward.coinsRewardRatio);
+                }
+                socialEdgePlayer.PlayerModel.Economy.shopRvMaxReward = rewardCoins;
+            }
+            return socialEdgePlayer.PlayerModel.Economy.shopRvMaxReward;
+        }
     }
 }
