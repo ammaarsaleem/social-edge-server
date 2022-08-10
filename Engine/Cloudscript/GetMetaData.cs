@@ -57,7 +57,8 @@ namespace SocialEdgeSDK.Server.Requests
             Inbox.Validate(SocialEdgePlayer);
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
             SocialEdgePlayer.PlayerEconomy.ProcessDailyEvent();
-
+            SocialEdgePlayer.PlayerEconomy.ProcessPiggyBankExpiry();
+            
             try
             {
                 GetMetaDataResult result = new GetMetaDataResult();
