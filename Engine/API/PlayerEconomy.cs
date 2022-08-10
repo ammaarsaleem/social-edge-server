@@ -28,12 +28,23 @@ namespace SocialEdgeSDK.Server.Context
             socialEdgePlayer = _socialEdgePlayer;
         }
 
-        public static void HandlePiggyBankRewardPerPlayer(SocialEdgePlayerContext socialEdgePlayer)
+        public void ProcessPiggyBankExpiry()
         {
-            // if ((!matchData.tournamentId || matchData.tournamentId === "") && !matchData.isEventMatch) {
-            //     //Spark.getLog().debug("matchData: " + JSON.stringify(matchData));
-            //     return;
-            // }
+            if(socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp != 0 && Utils.UTCNow() >= socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp)
+            {
+                socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = 0;
+                socialEdgePlayer.PlayerModel.Economy.piggyBankGems = 0;
+            }
+        }
+
+        public int ProcessPiggyBankReward(ChallengePlayerModel matchData)
+        {
+            int piggyBankReward = 0;
+
+            if (string.IsNullOrEmpty(matchData.tournamentId) && !matchData.isEventMatch) {
+                return piggyBankReward;
+            }
+
             string playerId = socialEdgePlayer.PlayerId;
             long currentTime = Utils.UTCNow();
             Int32 piggyBankBalance = socialEdgePlayer.PlayerModel.Economy.piggyBankGems;
@@ -56,22 +67,21 @@ namespace SocialEdgeSDK.Server.Context
 
                 Int32 piggyBankMaxCap = (Int32)commonSettings["piggyBankMaxCap"];
                 Int32 piggyLimitAvailable = piggyBankMaxCap - piggyBankBalance;
-                Int32 piggyBankReward = piggyLimitAvailable >= piggyBankRewardPerGame ? piggyBankRewardPerGame : piggyLimitAvailable;
-
+                piggyBankReward = piggyLimitAvailable >= piggyBankRewardPerGame ? piggyBankRewardPerGame : piggyLimitAvailable;
                 socialEdgePlayer.PlayerModel.Economy.piggyBankGems = socialEdgePlayer.PlayerModel.Economy.piggyBankGems + piggyBankReward;
-                //matchData.piggyBankReward = piggyBankReward;
 
                 if (socialEdgePlayer.PlayerModel.Economy.piggyBankGems >= piggyBankMaxCap)
                 {
-
                     long piggyBankExpiry = (int)commonSettings["piggyBankExpirationInDays"] * 24 * 60 * 60 * 1000;
                     socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = currentTime + piggyBankExpiry;
                 }
             }
+
+            return piggyBankReward;
         }
         public string ProcessDynamicDisplayBundle()
         {
-            _setupDynamicBundleTier();
+            SetupDynamicBundleTier();
 
             if (socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier == null || socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier == "")
             {
@@ -93,7 +103,7 @@ namespace SocialEdgeSDK.Server.Context
             return shortCode;
         }
 
-        private void _setupDynamicBundleTier()
+        private void SetupDynamicBundleTier()
         {
             if (socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier == null || socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier == "")
             {
@@ -114,7 +124,7 @@ namespace SocialEdgeSDK.Server.Context
 
         public dynamic GetDynamicGemSpotBundle()
         {
-            _setupDynamicBundleTier();
+            SetupDynamicBundleTier();
             dynamic dynamicBundlePurchaseTier = Settings.DynamicGemSpotBundles[socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier];
             // Dictionary<string, object> dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(dynamicBundlePurchaseTier.ToString());
             // dictionary["pack1"] = Utils.GetShortCode(dictionary["pack1"].ToString());;
@@ -163,11 +173,11 @@ namespace SocialEdgeSDK.Server.Context
                 socialEdgePlayer.PlayerModel.Events.dailyEventProgress = 0;
                 socialEdgePlayer.PlayerModel.Events.dailyEventState = "running";
                 socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp = expiryTimestamp;
-                socialEdgePlayer.PlayerModel.Events.dailyEventRewards = _calculateDailyEventRewards(defaultBet);
+                socialEdgePlayer.PlayerModel.Events.dailyEventRewards = CalculateDailyEventRewards(defaultBet);
             }
         }
 
-        private List<DailyEventRewards> _calculateDailyEventRewards(int defaultBet)
+        private List<DailyEventRewards> CalculateDailyEventRewards(int defaultBet)
         {
             var rewards = new List<DailyEventRewards>();
             var rewardSettings = Settings.Economy["DailyEventRewards"];

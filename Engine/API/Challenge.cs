@@ -72,18 +72,24 @@ namespace SocialEdgeSDK.Server.Api
 
             }
 
-            if (!isAbandoned)
+            if (isAbandoned)
             {
-                socialEdgeChallenge.ChallengeModel.Challenge.player1Data.piggyBankReward = 0;
-                socialEdgeChallenge.ChallengeModel.Challenge.player2Data.piggyBankReward = 0;
-                // TODO HandlePiggyBankReward(player1, player2);
+                //TODO make both players loose 
             }
 
             if (player1 != null)
+            {
+                var player1MatchData = socialEdgeChallenge.ChallengeModel.Challenge.player1Data;
+                player1MatchData.piggyBankReward = player1.PlayerEconomy.ProcessPiggyBankReward(player1MatchData);
                 player1.PlayerModel.Challenge.currentChallengeId = null;
+            }
 
             if (player2 != null)
+            {
+                var player2MatchData = socialEdgeChallenge.ChallengeModel.Challenge.player2Data;
+                player2MatchData.piggyBankReward = player1.PlayerEconomy.ProcessPiggyBankReward(player2MatchData);
                 player2.PlayerModel.Challenge.currentChallengeId = null;
+            }
         }
 
         private static void WinGame(ChallengeData challengeData, SocialEdgePlayerContext winnerPlayer)
