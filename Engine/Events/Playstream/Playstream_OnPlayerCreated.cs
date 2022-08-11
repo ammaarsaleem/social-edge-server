@@ -33,10 +33,9 @@ namespace SocialEdgeSDK.Playfab
             [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            InitContext<PlayerPlayStreamFunctionExecutionContext<dynamic>>(req, log);
-            Player.NewPlayerInit(SocialEdgePlayer);
-
-            SocialEdgePlayer.CacheFlush();
+            // InitContext<PlayerPlayStreamFunctionExecutionContext<dynamic>>(req, log);
+            // Player.NewPlayerInit(SocialEdgePlayer);
+            // SocialEdgePlayer.CacheFlush();
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }

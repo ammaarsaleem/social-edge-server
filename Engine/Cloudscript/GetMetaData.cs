@@ -51,9 +51,17 @@ namespace SocialEdgeSDK.Server.Requests
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
+            
+            if(isNewlyCreated)
+            {
+                Player.NewPlayerInit(SocialEdgePlayer);
+            }
+            else
+            {
+                SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.ALL);
+            }
 
             SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
-            SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.ALL);
             Inbox.Validate(SocialEdgePlayer);
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
             SocialEdgePlayer.PlayerEconomy.ProcessDailyEvent();
