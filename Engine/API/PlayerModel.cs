@@ -201,6 +201,23 @@ namespace SocialEdgeSDK.Server.Models
         }
     }
 
+    public class BalloonReward : DataModelBase, IDataModelBase
+    {
+        #pragma warning disable format        
+        [BsonElement("balloonCoins")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _balloonCoins;
+        [BsonElement("balloonGems")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                       public int _balloonGems;
+        [BsonElement("balloonPowerPlayMins")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]              public int _balloonPowerPlayMins;
+        [BsonElement("balloonPiggyBankMins")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]              public int _balloonPiggyBankMins;
+        [BsonElement("coinsRewardRatio")][BsonRepresentation(MongoDB.Bson.BsonType.Double)]                 public double _coinsRewardRatio;
+        #pragma warning restore format
+
+        [BsonIgnore] public int balloonCoins { get => _balloonCoins; set { _balloonCoins = value; isDirty = true; } }
+        [BsonIgnore] public int balloonGems { get => _balloonGems; set { _balloonGems = value; isDirty = true; } }
+        [BsonIgnore] public int balloonPowerPlayMins { get => _balloonPowerPlayMins; set { _balloonPowerPlayMins = value; isDirty = true; } }
+        [BsonIgnore] public int balloonPiggyBankMins { get => _balloonPiggyBankMins; set { _balloonPiggyBankMins = value; isDirty = true; } }
+        [BsonIgnore] public double coinsRewardRatio { get => _coinsRewardRatio; set { _coinsRewardRatio = value; isDirty = true; } }
+    }
+
     public class PlayerDataEconomy : DataModelBase, IDataModelBase
     {
         #pragma warning disable format        
@@ -232,6 +249,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("lastWatchedVideoId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]               public string _lastWatchedVideoId;
         [BsonElement("adsRewardData")]                                                                      public AdRewardsData _adsRewardData;
         [BsonElement("jackpotNotCollectedCounter")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _jackpotNotCollectedCounter;
+        [BsonElement("balloonReward")]                                                                      public BalloonReward _balloonReward;
 
         #pragma warning restore format
 
@@ -262,6 +280,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public string lastWatchedVideoId { get => _lastWatchedVideoId; set { _lastWatchedVideoId = value; isDirty = true; } }
         [BsonIgnore] public AdRewardsData adsRewardData { get => _adsRewardData; set { _adsRewardData = value; isDirty = true; } }
         [BsonIgnore] public int jackpotNotCollectedCounter { get => _jackpotNotCollectedCounter; set { _jackpotNotCollectedCounter = value; isDirty = true; } }
+        [BsonIgnore] public BalloonReward balloonReward { get => _balloonReward; set { _balloonReward = value; isDirty = true; } }
 
         public PlayerDataEconomy()
         {

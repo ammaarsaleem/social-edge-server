@@ -16,6 +16,7 @@ using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Models;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SocialEdgeSDK.Server.Context
 {
@@ -177,22 +178,6 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
-        private List<DailyEventRewards> CalculateDailyEventRewards(int defaultBet)
-        {
-            var rewards = new List<DailyEventRewards>();
-            var rewardSettings = Settings.Economy["DailyEventRewards"];
-            
-            for (var i = 0; i < rewardSettings.Count; i++)
-            {
-                var reward = new DailyEventRewards();
-                reward.gems = (int)rewardSettings[i]["gems"];
-                reward.coins = (int)((double)rewardSettings[i]["coinsRatio"] * defaultBet);
-                rewards.Add(reward);
-            }
-
-            return rewards;
-        }
-
         private int GetDefaultBet()
         {
             var defaultBetIncrementSettings = Settings.Economy["DefaultBetIncrementByGamesPlayed"];
@@ -256,6 +241,123 @@ namespace SocialEdgeSDK.Server.Context
                 socialEdgePlayer.PlayerModel.Economy.shopRvMaxReward = rewardCoins;
             }
             return socialEdgePlayer.PlayerModel.Economy.shopRvMaxReward;
+        }
+
+        public int GetPlayerRetentionDays()
+        {
+            long creationTime = Utils.ToUTC(socialEdgePlayer.CombinedInfo.AccountInfo.Created);
+            long currentTime = Utils.UTCNow();
+            double retentionDays = ((currentTime - creationTime) / (60*60*24*1000));
+            retentionDays = Math.Floor(retentionDays);
+            return (int)retentionDays;
+        }
+
+        public bool IsValidForRVReward()
+        {
+            int retentionDay = GetPlayerRetentionDays();
+            int currentGems = socialEdgePlayer.VirtualCurrency["GM"];
+            int minRequiredGems = SocialEdge.TitleContext.EconomySettings.Ads.minGemsRequiredforRV;
+            int minPlayDays = SocialEdge.TitleContext.EconomySettings.Ads.minPlayDaysRequired;
+            return retentionDay >= minPlayDays && currentGems <= minRequiredGems;
+        }
+
+        public int GetNumVGoods(string itemId)
+        {
+            ItemInstance vGood = socialEdgePlayer.Inventory.Where(item => item.ItemId == itemId).FirstOrDefault();
+            return vGood != null ? (vGood.RemainingUses != null ? (int)vGood.RemainingUses : 0) : 0;
+        }
+
+        public bool Consume(string itemId, int qty)
+        {
+            var taskT = Player.ConsumeItem(socialEdgePlayer.PlayerId, itemId);
+            taskT.Wait();
+            return taskT.Result.Result.ItemInstanceId != null; 
+        }
+
+        public bool Grant(string itemId, int qty)
+        {
+            var taskT = Player.GrantItem(socialEdgePlayer.PlayerId, itemId);
+            taskT.Wait();
+            return taskT.Result.Result.ItemGrantResults.Count != 0;
+        }
+
+        public Dictionary<string, int> Grant(Dictionary<string, int> rewards)
+        {
+            Dictionary<string, int> rewarded = new Dictionary<string, int>();
+        
+            foreach(var item in rewards)
+            {
+                bool added = Grant(item.Key, (int)item.Value);
+                if (added)
+                {
+                    rewarded.Add(item.Key, (int)item.Value);
+                }
+            }
+        
+            return rewarded;
+        }
+
+        public double GetRealMoneyAmountSpent()
+        {
+            List<ItemInstance> vGoods = socialEdgePlayer.Inventory;
+
+            if (vGoods.Count == 0)
+                return 0;
+        
+            double dCost = 0;
+            foreach (ItemInstance theGood in vGoods) 
+            {
+                CatalogItem catalogItem = SocialEdge.TitleContext.GetCatalogItem(theGood.ItemId);
+                if (catalogItem != null && catalogItem.VirtualCurrencyPrices["GM"] > 0)
+                {
+                    double dollars = catalogItem.RealCurrencyPrices["RM"] / 100;
+                    int iap_count = theGood.RemainingUses != null ? (int)theGood.RemainingUses : 0;
+                    dCost += iap_count * dollars;
+                }
+            }
+
+            return dCost;
+        }
+
+        public long ProcessDailyEventExipryTimestamp()
+        {
+            long currentTime = Utils.UTCNow();
+            long hourToMilliseconds = 60 * 60 * 1000;
+        
+            if (socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp == 0 || 
+                socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp  <= currentTime) 
+            {
+                long expiryTimestamp = Utils.ToUTC(Utils.EndOfDay(new DateTime())) - (socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot * hourToMilliseconds);
+                int defaultBet = GetDefaultBet();
+
+                if (expiryTimestamp < currentTime)
+                {
+                    expiryTimestamp = expiryTimestamp + 24 * hourToMilliseconds;
+                }
+                
+                socialEdgePlayer.MiniProfile.EventGlow = 0;
+                socialEdgePlayer.PlayerModel.Events.dailyEventProgress = 0;
+                socialEdgePlayer.PlayerModel.Events.dailyEventRewards = CalculateDailyEventRewards(defaultBet);
+                socialEdgePlayer.PlayerModel.Events.dailyEventState = "running";
+                socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp = expiryTimestamp;
+            }
+        
+            return socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp;
+        }
+
+        public List<DailyEventRewards> CalculateDailyEventRewards(int betValue) 
+        {
+            List<DailyEventRewards> rewards = new List<DailyEventRewards>();
+            for (int i = 0; i < SocialEdge.TitleContext.EconomySettings.DailyEventRewards.Count; i++) 
+            {
+                rewards.Add(new DailyEventRewards() 
+                { 
+                    gems = SocialEdge.TitleContext.EconomySettings.DailyEventRewards[i].gems,
+                    coins = (int)(SocialEdge.TitleContext.EconomySettings.DailyEventRewards[i].coinsRatio * betValue)
+                });
+            }
+        
+            return rewards;
         }
     }
 }

@@ -150,7 +150,7 @@ namespace SocialEdgeSDK.Server.Context
         public double coinsRatio;
     }
 
-    public class EconomyballoonReward
+    public class EconomyBalloonReward
     {
         public int balloonCoins;
         public int balloonGems;
@@ -173,7 +173,7 @@ namespace SocialEdgeSDK.Server.Context
         public List<double> DefaultBetIncrementByGamesPlayed;
         public EconomyShopRVRewards ShopRVRewards;
         public List<EcomonyDailyEventReward> DailyEventRewards;
-        public Dictionary<string, EconomyballoonReward> balloonRewards;
+        public Dictionary<string, EconomyBalloonReward> balloonRewards;
         public List<string> balloonRewardsProbability;
     }
 }
