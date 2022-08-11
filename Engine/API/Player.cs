@@ -317,7 +317,7 @@ namespace SocialEdgeSDK.Server.Api
             //var playerPublicData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerPublicData"];
             //var playerData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerData"];
             //var coinsCredit = (int)SocialEdge.TitleContext.GetTitleDataProperty("Economy")["BettingIncrements"][0];
-            var coinsCredit = (int)Settings.Economy["BettingIncrements"][0];
+            var coinsCredit = SocialEdge.TitleContext.EconomySettings.BettingIncrements[0];
             var avatar = GenerateAvatar();
             var avatarBgColor = GenerateAvatarBgColor();
 
@@ -348,12 +348,12 @@ namespace SocialEdgeSDK.Server.Api
             //playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
 
             //String avatarInfo =  avatar + "," + avatarBgColor + "," + "XXX" + "," + "0";
-            PlayerMiniProfileData playerMiniProfile = new PlayerMiniProfileData();
-            playerMiniProfile.AvatarId = avatar;
-            playerMiniProfile.AvatarBgColor = avatarBgColor;
-            playerMiniProfile.UploadPicId = null;
-            playerMiniProfile.EventGlow = 0;
-            UpdatePlayerAvatarData(playerId, playerMiniProfile);
+            // PlayerMiniProfileData playerMiniProfile =  new PlayerMiniProfileData();
+            socialEdgePlayer.MiniProfile.AvatarId = avatar;
+            socialEdgePlayer.MiniProfile.AvatarBgColor = avatarBgColor;
+            socialEdgePlayer.MiniProfile.UploadPicId = null;
+            socialEdgePlayer.MiniProfile.EventGlow = 0;
+            UpdatePlayerAvatarData(playerId, socialEdgePlayer.MiniProfile);
             //var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
             var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);

@@ -84,7 +84,7 @@ namespace SocialEdgeSDK.Server.Context
         {
             SetupDynamicBundleTier();
 
-            if (socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier == null || socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier == "")
+            if (string.IsNullOrEmpty(socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier))
             {
                 socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier = "A";
             }
@@ -106,7 +106,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private void SetupDynamicBundleTier()
         {
-            if (socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier == null || socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier == "")
+            if (string.IsNullOrEmpty(socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier))
             {
                 socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier = "T1";
 
@@ -178,19 +178,20 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
+
         private int GetDefaultBet()
         {
-            var defaultBetIncrementSettings = Settings.Economy["DefaultBetIncrementByGamesPlayed"];
-            var bettingIncrementSettings = Settings.Economy["BettingIncrements"];
+            var defaultBetIncrementSettings = SocialEdge.TitleContext.EconomySettings.DefaultBetIncrementByGamesPlayed; 
+            var bettingIncrementSettings = SocialEdge.TitleContext.EconomySettings.BettingIncrements; 
             var lastIndex = defaultBetIncrementSettings.Count - 1;
             var gamesPlayedIndex = GetGamesPlayedToday();
             gamesPlayedIndex = gamesPlayedIndex >= lastIndex ? lastIndex : gamesPlayedIndex;
-            var coinsToBet = (int)(socialEdgePlayer.VirtualCurrency["CN"] * (double)defaultBetIncrementSettings[gamesPlayedIndex]);
+            var coinsToBet = (int)(socialEdgePlayer.VirtualCurrency["CN"] * defaultBetIncrementSettings[gamesPlayedIndex]);
             var betIndex = GetBetIndex(coinsToBet, bettingIncrementSettings);
-            return (int)bettingIncrementSettings[betIndex];
+            return bettingIncrementSettings[betIndex];
         }
 
-        private int GetBetIndex(int coinsToBet, BsonArray bettingIncrementSettings)
+        private int GetBetIndex(int coinsToBet, List<int> bettingIncrementSettings)
         {
             var betIndex = 0;
 
@@ -204,8 +205,8 @@ namespace SocialEdgeSDK.Server.Context
                         break;
                     }
 
-                    var diff1 = Math.Abs(coinsToBet - (int)bettingIncrementSettings[i - 1]);
-                    var diff2 = Math.Abs(coinsToBet - (int)bettingIncrementSettings[i]);
+                    var diff1 = Math.Abs(coinsToBet - bettingIncrementSettings[i - 1]);
+                    var diff2 = Math.Abs(coinsToBet - bettingIncrementSettings[i]);
                     betIndex = diff1 < diff2 ? i - 1 : i;
                     break;
                 }
