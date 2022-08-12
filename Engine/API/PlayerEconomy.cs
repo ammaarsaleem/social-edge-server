@@ -360,5 +360,37 @@ namespace SocialEdgeSDK.Server.Context
         
             return rewards;
         }
+
+        public void ProcessRvUnlockTimeStamp()
+        {
+            if (socialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp > 0)
+                return;
+
+            int playDays = socialEdgePlayer.PlayerModel.Info.playDays;
+            int minPlayDays = SocialEdge.TitleContext.EconomySettings.Ads.minPlayDaysRequired;
+        
+            if (playDays >= minPlayDays)
+            {
+                socialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp = Utils.UTCNow();
+            }
+        }
+
+        public void ProcessLobbyChestTimestamp()
+        {
+            if (socialEdgePlayer.PlayerModel.Economy.chestUnlockTimestamp <= 0)
+            {
+                long chestCooldownTimeSec = SocialEdge.TitleContext.EconomySettings.Ads.chestCooldownTimeInMin * 60 * 1000;
+                socialEdgePlayer.PlayerModel.Economy.chestUnlockTimestamp = Utils.UTCNow() + chestCooldownTimeSec;
+            }
+        }
+
+        public void ProcessEconomyInit()
+        {
+            ProcessLobbyChestTimestamp();
+            ProcessDailyEvent();
+            ProcessPiggyBankExpiry();
+            ProcessShopRvMaxReward();
+            ProcessRvUnlockTimeStamp();
+        }
     }
 }

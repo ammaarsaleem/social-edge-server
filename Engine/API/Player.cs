@@ -215,13 +215,11 @@ namespace SocialEdgeSDK.Server.Api
             request.PlayFabId = playerId;
             return await PlayFab.PlayFabServerAPI.GetUserAccountInfoAsync(request);
         }
-        public static async Task<PlayFabResult<PlayFab.ClientModels.PurchaseItemResult>> PurchaseItem(string itemID, int price, string vCurrency)
+        public static void PurchaseItem(string playerId, string itemId, int price, string vCurrency)
         {
-            var request = new PlayFab.ClientModels.PurchaseItemRequest();
-            request.ItemId = itemID;
-            request.Price = price;
-            request.VirtualCurrency = vCurrency;
-            return await PlayFab.PlayFabClientAPI.PurchaseItemAsync(request);
+            var taskGrantT = GrantItem(playerId, itemId);
+            var taskCurrencyT = SubtractVirtualCurrency(playerId, price, vCurrency);
+            Task.WaitAll(taskGrantT, taskCurrencyT);
         }
         public static async Task<PlayFabResult<PlayFab.ServerModels.GrantItemsToUserResult>> GrantItem(string playerId, string itemId)
         {

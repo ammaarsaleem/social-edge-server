@@ -148,7 +148,9 @@ namespace SocialEdgeSDK.Server.Models
 
             Task.WaitAll(tasks.ToArray());
 
-            SocialEdge.Log.LogInformation("Task flush CHALLENGE_MODEL");
+            if (tasks.Count > 0)
+                SocialEdge.Log.LogInformation("Task flush CHALLENGE_MODEL");
+                
             return true;       
         }
     }

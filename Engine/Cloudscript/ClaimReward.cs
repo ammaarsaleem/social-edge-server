@@ -97,7 +97,7 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (rewardType == "ratingBoostTier1")
             {   
-                string challengeId = data["challengeid"].ToString();
+                string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
                 int rewardPoints = int.Parse(rewardsTable[rewardType].ToString());
                 result = RewardRatingBoostTier1(rewardType, challengeId, rewardPoints, SocialEdgePlayer, SocialEdgeChallenge);
             }
@@ -108,9 +108,8 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (rewardType == "powerPlayReward" || rewardType == "ratingBoosterReward" || rewardType == "analysisReward") 
             {
-                string challengeId = data["challengeid"].ToString();
                 int rewardPoints = int.Parse(rewardsTable[rewardType].ToString());
-                result = ValidateFreeRVReward(rewardType, challengeId, rewardPoints, SocialEdgePlayer, SocialEdgeChallenge);
+                result = ValidateFreeRVReward(rewardType, data, rewardPoints, SocialEdgePlayer, SocialEdgeChallenge);
             }
             else if (rewardType == "freeFullGameAnalysis") 
             {
@@ -119,12 +118,12 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (rewardType == "betCoinsReturn") 
             {
-                string challengeId = data["challengeid"].ToString();
+                string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
                 result = BetCoinsReturn(rewardType, challengeId, SocialEdgePlayer, SocialEdgeChallenge);
             }
             else if(rewardType.Contains("bonusCoins")) 
             {
-                string challengeId = data["challengeid"].ToString();
+                string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
                 result = BonusCoins(rewardType, challengeId, SocialEdgePlayer, SocialEdgeChallenge);
             }
             else if (rewardType == "balloonRVRewards") 
@@ -164,6 +163,7 @@ namespace SocialEdgeSDK.Server.Requests
         private ClaimRewardResult RewardRatingBoostTier1(string rewardType, string challengeId, int rewardPoints, SocialEdgePlayerContext socialEdgePlayer, SocialEdgeChallengeContext socialEdgeChallenge)
         {
             ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
+            socialEdgeChallenge.ChallengeModel.ReadOnly(challengeId);
             ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
             int eloChange = playerChallengeData.eloChange;
             bool isRatingBoosterUsed = false;// playerChallengeData.ratingBoosterUsed;
@@ -185,15 +185,9 @@ namespace SocialEdgeSDK.Server.Requests
                 }
                 else 
                 {
-                    if (socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount == 0 && 
-                            socialEdgePlayer.VirtualCurrency["GM"] < int.Parse(Settings.CommonSettings["dynamicBundleMinGemsRequired"].ToString()))
-                    {
-                        socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount = 1;
-                    }
-
+                    Player.PurchaseItem(socialEdgePlayer.PlayerId, "SpecialItemRatingBooster", (int)ratingBoosterItem.VirtualCurrencyPrices["GM"], "GM");
                     socialEdgePlayer.PlayerModel.Info.eloScore = socialEdgePlayer.PlayerModel.Info.eloScore + rewardPoints;
                     //playerChallengeData.ratingBoosterUsed = true;
-                     
                     result.claimRewardType = rewardType;
                     result.ratingBoostTier1Reward = rewardPoints;
                     result.gems = (int)ratingBoosterItem.VirtualCurrencyPrices["GM"];
@@ -250,15 +244,13 @@ namespace SocialEdgeSDK.Server.Requests
                 {
                     InboxDataMessage msg = inbox[leagueDailyRewardMsgId];
                     long startTime = msg.startTime;
-                    if (false && Utils.UTCNow() >= startTime)
+                    if (Utils.UTCNow() >= startTime)
                     {
                         msg.startTime = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
                         msg.time = msg.startTime;
                         var taskInboxT = InboxModel.Set(socialEdgePlayer.InboxId, socialEdgePlayer.Inbox);
             
-                        var reward = Leagues.GetDailyReward(socialEdgePlayer.PublicData["leag"].ToString());
-                        var doubleReward = new BsonDocument() { ["gems"] = (int)reward["gems"] * 2, ["coins"] = (int)reward["coins"] * 2 };
-                        var taskT = Transactions.Grant(doubleReward, socialEdgePlayer);
+                        var reward = Leagues.GetDailyReward(socialEdgePlayer.MiniProfile.League.ToString());
                         int numCoins = (int)reward["coins"] * 2;
                         int numGems = (int)reward["gems"] * 2;
                         socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", numCoins);
@@ -331,7 +323,7 @@ namespace SocialEdgeSDK.Server.Requests
             return result;
         }
 
-        private ClaimRewardResult ValidateFreeRVReward(string rewardType, string challengeId, int rewardPoints, SocialEdgePlayerContext socialEdgePlayer, SocialEdgeChallengeContext socialEdgeChallenge)
+        private ClaimRewardResult ValidateFreeRVReward(string rewardType, dynamic data, int rewardPoints, SocialEdgePlayerContext socialEdgePlayer, SocialEdgeChallengeContext socialEdgeChallenge)
         {
             ClaimRewardResult result = new ClaimRewardResult();
             bool isValidForRVReward = socialEdgePlayer.PlayerEconomy.IsValidForRVReward();
@@ -339,13 +331,15 @@ namespace SocialEdgeSDK.Server.Requests
 
             if (Utils.UTCNow() >= socialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp && isValidForRVReward)
             {
-                ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
-                ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
-                bool isRatingBoosterUsed = false;// playerChallengeData.ratingBoosterUsed;
                 string rewardItemId = "SpecialItemPowerMode";
                 
                 if (rewardType == "ratingBoosterReward") 
                 {
+                    string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
+                    ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
+                    socialEdgeChallenge.ChallengeModel.ReadOnly(challengeId);
+                    ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
+                    bool isRatingBoosterUsed = false;// playerChallengeData.ratingBoosterUsed;
                     //var challengeData = getPlayerChallenge(challengeId);
                     rewardItemId = "SpecialItemRatingBooster";
                     //if (isRatingBoosterUsed(playerId, challengeData) == true) {
@@ -364,9 +358,10 @@ namespace SocialEdgeSDK.Server.Requests
                     rewardItemId = "FullGameAnalysis";
                 }
 
-                socialEdgePlayer.PlayerEconomy.Grant(rewardItemId, rewardPoints);
+                socialEdgePlayer.PlayerEconomy.Grant(rewardItemId, 1);
                 socialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp = Utils.UTCNow() + rvCooldownTimeSec;
 
+                result.rewards = new Dictionary<string, int>();
                 result.claimRewardType = rewardType;
                 result.rewards.Add(rewardItemId, rewardPoints);
                 result.rvUnlockTimestamp = socialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp;
@@ -386,12 +381,12 @@ namespace SocialEdgeSDK.Server.Requests
         public ClaimRewardResult FreeFullGameAnalysis(string rewardType, int rewardPoints, SocialEdgePlayerContext socialEdgePlayer)
         {
             ClaimRewardResult result = new ClaimRewardResult();
-            result.rewards = new Dictionary<string, int> ();
             string itemId = "FullGameAnalysis";
             int gameAnalysisBought = socialEdgePlayer.PlayerEconomy.GetNumVGoods(itemId);
 
             if (gameAnalysisBought < rewardPoints) 
             {
+                result.rewards = new Dictionary<string, int> ();
                 socialEdgePlayer.PlayerEconomy.Grant(itemId, 1);
                 result.claimRewardType = rewardType;
                 result.rewards.Add("FullGameAnalysis", 1);
@@ -407,13 +402,14 @@ namespace SocialEdgeSDK.Server.Requests
         public ClaimRewardResult BetCoinsReturn(string rewardType, string challengeId, SocialEdgePlayerContext socialEdgePlayer, SocialEdgeChallengeContext socialEdgeChallenge)
         {
             ClaimRewardResult result = new ClaimRewardResult();
-            result.rewards = new Dictionary<string, int> ();
             ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
             ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
 
-            var betValue = playerChallengeData.betValue;
-            var betReturn = Math.Round(betValue * double.Parse(Settings.CommonSettings["betLossAversionRatio"].ToString()));
+            long betValue = playerChallengeData.betValue;
+            int betReturn = (int)Math.Round(betValue * double.Parse(Settings.CommonSettings["betLossAversionRatio"].ToString()));
             socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", betReturn);
+
+            result.rewards = new Dictionary<string, int> ();
             result.claimRewardType = rewardType;;
             result.rewards.Add("coins", betReturn);
             return result;
@@ -422,7 +418,6 @@ namespace SocialEdgeSDK.Server.Requests
         public ClaimRewardResult BonusCoins(string rewardType, string challengeId, SocialEdgePlayerContext socialEdgePlayer, SocialEdgeChallengeContext socialEdgeChallenge)
         {
             ClaimRewardResult result = new ClaimRewardResult();
-            result.rewards = new Dictionary<string, int> ();
             ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
             ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
 
@@ -513,6 +508,8 @@ namespace SocialEdgeSDK.Server.Requests
             int coins = socialEdgePlayer.PlayerModel.Economy.balloonReward.balloonCoins;
             socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", coins);
             result.claimRewardType = rewardType;
+            
+            result.rewards = new Dictionary<string, int> ();
             result.rewards.Add("coins", coins);
             return result;
         }
@@ -523,6 +520,8 @@ namespace SocialEdgeSDK.Server.Requests
             int gems = socialEdgePlayer.PlayerModel.Economy.balloonReward.balloonGems;
             socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", gems);
             result.claimRewardType = rewardType;
+
+            result.rewards = new Dictionary<string, int> ();
             result.rewards.Add("gems", gems);
             return result;
         }
@@ -541,6 +540,7 @@ namespace SocialEdgeSDK.Server.Requests
                 socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp = Utils.UTCNow() + reward;
             }
         
+            result.rewardsLong = new Dictionary<string, long> ();
             result.claimRewardType = rewardType;
             result.rewardsLong.Add("freePowerPlayExipryTimestamp", socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp);
             return result;
@@ -560,6 +560,7 @@ namespace SocialEdgeSDK.Server.Requests
                 socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp = Utils.UTCNow() + reward;
             }
 
+            result.rewardsLong = new Dictionary<string, long>();
             result.claimRewardType = rewardType;
             result.rewardsLong.Add("piggyBankDoublerExipryTimestamp", socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp);
             return result;
@@ -602,6 +603,7 @@ namespace SocialEdgeSDK.Server.Requests
                 socialEdgePlayer.PlayerModel.Events.dailyEventState = "completed";
                 socialEdgePlayer.MiniProfile.EventGlow = socialEdgePlayer.PlayerModel.Events.dailyEventRewards.Count == socialEdgePlayer.PlayerModel.Events.dailyEventProgress ? 1 : 0;
             
+                result.rewards = new Dictionary<string, int>();
                 result.claimRewardType = rewardType;
                 result.rewards.Add("coins", rewardCoins);
                 result.rewards.Add("gems", rewardGems);
@@ -630,6 +632,7 @@ namespace SocialEdgeSDK.Server.Requests
             
             if (currentCoins < minCoins) 
             {
+                result.rewards = new Dictionary<string, int>();
                 socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", rewardPoints);
                 result.claimRewardType = rewardType;
                 result.rewards.Add("coins", rewardPoints);

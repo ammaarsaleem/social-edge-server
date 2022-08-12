@@ -64,8 +64,7 @@ namespace SocialEdgeSDK.Server.Requests
             SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
             Inbox.Validate(SocialEdgePlayer);
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
-            SocialEdgePlayer.PlayerEconomy.ProcessDailyEvent();
-            SocialEdgePlayer.PlayerEconomy.ProcessPiggyBankExpiry();
+            SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
             
             try
             {
