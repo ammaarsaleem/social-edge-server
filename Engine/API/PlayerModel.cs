@@ -158,7 +158,6 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                    public int _gamesDrawn;
         [BsonElement("activeInventory")]                                                                public List<PlayerInventoryItem> _activeInventory;
 
-        [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                        public int _league;
         [BsonElement("eloCompletedPlacementGames")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]    public int _eloCompletedPlacementGames;
         [BsonElement("editedName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                   public string _editedName;
         [BsonElement("totalGamesCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]               public int _totalGamesCount;
@@ -181,7 +180,6 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int gamesLost { get => _gamesLost; set { _gamesLost = value; isDirty = true; } }
         [BsonIgnore] public int gamesDrawn { get => _gamesDrawn; set { _gamesDrawn = value; isDirty = true; } }
         [BsonIgnore] public List<PlayerInventoryItem> activeInventory { get => _activeInventory; set { _activeInventory = value; isDirty = true; } }
-        [BsonIgnore] public int league { get => _league; set { _league = value; isDirty = true; } }
         [BsonIgnore] public int eloCompletedPlacementGames { get => _eloCompletedPlacementGames; set { _eloCompletedPlacementGames = value; isDirty = true; } }
         [BsonIgnore] public string editedName { get => _editedName; set { _editedName = value; isDirty = true; } }
         [BsonIgnore] public int totalGamesCount { get => _totalGamesCount; set { _totalGamesCount = value; isDirty = true; } }

@@ -41,9 +41,7 @@ namespace SocialEdgeSDK.Server.Requests
         public EconomyBalloonReward balloonReward;
         public string dailyEventState;
         public int dailyEventRing;
-        public long dailyEventExpiryTimestamp;
-        public int dailyEventProgress;
-        public List<DailyEventRewards> dailyEventRewards;
+        public PlayerDataEvent playerDataEvent;
     }
 
     public class ClaimReward : FunctionContext
@@ -128,8 +126,8 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (rewardType == "balloonRVRewards") 
             {
-                int defaultBet = int.Parse(data["defaultBet"].ToString());
-                result = BalloonRVRewards(rewardType, defaultBet, SocialEdgePlayer);
+                //int defaultBet = int.Parse(data["defaultBet"].ToString());
+                result = BalloonRVRewards(rewardType, SocialEdgePlayer);
             }
             else if (rewardType == "balloonCoins") 
             {
@@ -432,10 +430,11 @@ namespace SocialEdgeSDK.Server.Requests
             return result;
         }
 
-        public ClaimRewardResult BalloonRVRewards(string rewardType, int defaultBet, SocialEdgePlayerContext socialEdgePlayer)
+        public ClaimRewardResult BalloonRVRewards(string rewardType, SocialEdgePlayerContext socialEdgePlayer)
         {
             ClaimRewardResult result = new ClaimRewardResult();
 
+            int defaultBet = socialEdgePlayer.PlayerEconomy.GetDefaultBet();
             List<string> rewardsProbablity = SocialEdge.TitleContext.EconomySettings.balloonRewardsProbability;
             var selectedRewardType = socialEdgePlayer.PlayerModel.Economy.balloonRewardsClaimedCount == 0 ? "A" :
                         rewardsProbablity[ Utils.GetRandomInteger(0, rewardsProbablity.Count - 1) ];
@@ -455,16 +454,14 @@ namespace SocialEdgeSDK.Server.Requests
             selectedReward.coinsRewardRatio = -1;
 
             if ((socialEdgePlayer.PlayerEconomy.GetRealMoneyAmountSpent() <= 0) || 
-                    socialEdgePlayer.PlayerModel.Info.league < int.Parse(Settings.CommonSettings["piggyBankUnlocksAtLeague"].ToString()))   
+                    socialEdgePlayer.MiniProfile.League < int.Parse(Settings.CommonSettings["piggyBankUnlocksAtLeague"].ToString()))   
             {
                 selectedReward.balloonPiggyBankMins = -1;
             }
-            else if (socialEdgePlayer.Inventory.Where(item => item.ItemId == "PiggyBankv1").FirstOrDefault() != null || 
-                        socialEdgePlayer.Inventory.Where(item => item.ItemId == "PiggyBankv2").FirstOrDefault() != null ||
-                        socialEdgePlayer.Inventory.Where(item => item.ItemId == "PiggyBankv3").FirstOrDefault() != null)
+            else if (socialEdgePlayer.Inventory.Where(item => item.ItemId.Contains("PiggyBank")).FirstOrDefault() != null)
             {
-                int rand = Utils.GetRandomInteger(0, 1);
-                if (rand < 0.9)
+                int rand = Utils.GetRandomInteger(0, 10);
+                if (rand < 9)
                 {
                     selectedReward.balloonPowerPlayMins = -1;
                 }
@@ -475,8 +472,8 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else 
             {
-                int rand = Utils.GetRandomInteger(0, 1);
-                if (rand > 0.5)
+                int rand = Utils.GetRandomInteger(0, 10);
+                if (rand > 5)
                 {
                     selectedReward.balloonPowerPlayMins = -1;
                 }
@@ -612,12 +609,11 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else 
             {
+                socialEdgePlayer.PlayerEconomy.ProcessDailyEvent();
+
                 result.error = "invalidDailyEventReward";
                 result.claimRewardType = rewardType;
-                result.dailyEventExpiryTimestamp = socialEdgePlayer.PlayerEconomy.ProcessDailyEventExipryTimestamp();
-                result.dailyEventProgress = socialEdgePlayer.PlayerModel.Events.dailyEventProgress;
-                result.dailyEventState = socialEdgePlayer.PlayerModel.Events.dailyEventState;
-                result.dailyEventRewards = socialEdgePlayer.PlayerModel.Events.dailyEventRewards;
+                result.playerDataEvent = socialEdgePlayer.PlayerModel.Events;
             }
 
             return result;

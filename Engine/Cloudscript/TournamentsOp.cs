@@ -61,7 +61,7 @@ namespace SocialEdgeSDK.Server.Requests
                 Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
 
                 opResult.activeTournaments = SocialEdgePlayer.PlayerModel.Tournament.activeTournaments;
-                opResult.league = SocialEdgePlayer.PlayerModel.Info.league;
+                opResult.league = SocialEdgePlayer.MiniProfile.League;
                 opResult.trophies = SocialEdgePlayer.PlayerModel.Info.trophies;
                 opResult.trophies2 = SocialEdgePlayer.PlayerModel.Info.trophies2;
                 opResult.inbox = SocialEdgePlayer.InboxJson;

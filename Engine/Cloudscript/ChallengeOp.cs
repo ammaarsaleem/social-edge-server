@@ -36,12 +36,12 @@ namespace SocialEdgeSDK.Server.Requests
         public long piggyBankExipryTimestamp;
         public PlayerDataEvent dailyEventData;
 
-        public ChallengeEndPlayerModel (PlayerDataModel playerModel, ChallengePlayerModel playerChallengeData)
+        public ChallengeEndPlayerModel (PlayerDataModel playerModel, PlayerMiniProfileData miniProfile, ChallengePlayerModel playerChallengeData)
         {
             dailyEventData = playerModel.Events;
             eloChange = playerChallengeData.eloChange;
             eloScore = playerModel.Info.eloScore;
-            league = playerModel.Info.league;
+            league = miniProfile.League;
             piggyBankExipryTimestamp = playerModel.Economy.piggyBankExpiryTimestamp;
             piggyBankReward = playerChallengeData.piggyBankReward;
             totalGamesLost = playerModel.Info.gamesLost;
@@ -133,10 +133,10 @@ namespace SocialEdgeSDK.Server.Requests
                 opResult.challengeEndedInfo.playersData = new Dictionary<string, ChallengeEndPlayerModel>();
 
                 if (player1 != null)
-                    opResult.challengeEndedInfo.playersData.Add(player1.PlayerId, new ChallengeEndPlayerModel(player1.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player1Data));
+                    opResult.challengeEndedInfo.playersData.Add(player1.PlayerId, new ChallengeEndPlayerModel(player1.PlayerModel, player1.MiniProfile, SocialEdgeChallenge.ChallengeModel.Challenge.player1Data));
                 
                 if (player2 != null)
-                    opResult.challengeEndedInfo.playersData.Add(player2.PlayerId, new ChallengeEndPlayerModel(player2.PlayerModel, SocialEdgeChallenge.ChallengeModel.Challenge.player2Data));
+                    opResult.challengeEndedInfo.playersData.Add(player2.PlayerId, new ChallengeEndPlayerModel(player2.PlayerModel, player2.MiniProfile, SocialEdgeChallenge.ChallengeModel.Challenge.player2Data));
 
                 if (winnerId != null)
                 {

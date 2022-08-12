@@ -199,7 +199,7 @@ namespace SocialEdgeSDK.Server.Api
             tournamentModel.SetDirty();
             tournamentModel.concluded = true;
 
-            List<TournamentReward> rewards = tournamentModel.rewards[socialEdgePlayer.PlayerModel.Info.league.ToString()];
+            List<TournamentReward> rewards = tournamentModel.rewards[socialEdgePlayer.MiniProfile.League.ToString()];
             TournamentReward reward = rewards.Find(x => activeTournament.rank >= x.minRank && activeTournament.rank <= x.maxRank);
 
             var i = socialEdgePlayer.Inbox.GetEnumerator();
@@ -311,7 +311,7 @@ namespace SocialEdgeSDK.Server.Api
                 return;
 
             int score = 0;
-            LeagueSettingsData leagueSettings = SocialEdge.TitleContext.LeagueSettings.leagues[socialEdgePlayer.PlayerModel.Info.league.ToString()];
+            LeagueSettingsData leagueSettings = SocialEdge.TitleContext.LeagueSettings.leagues[socialEdgePlayer.MiniProfile.League.ToString()];
 
             if (isWin) 
             {
@@ -365,13 +365,13 @@ namespace SocialEdgeSDK.Server.Api
                     socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter = 0;
 
                 // Check for league promotion
-                int nextLeague = socialEdgePlayer.PlayerModel.Info.league + 1;
+                int nextLeague = socialEdgePlayer.MiniProfile.League + 1;
                 if (nextLeague < SocialEdge.TitleContext.LeagueSettings.leagues.Count)
                 {
                     LeagueSettingsData nextLeagueData = SocialEdge.TitleContext.LeagueSettings.leagues[nextLeague.ToString()];
                     if (socialEdgePlayer.PlayerModel.Info.trophies >= nextLeagueData.qualification.trophies)
                     {
-                        socialEdgePlayer.PlayerModel.Info.league = nextLeague;
+                        socialEdgePlayer.MiniProfile.League = nextLeague;
                         socialEdgePlayer.PlayerModel.Info.trophies = socialEdgePlayer.PlayerModel.Info.trophies - nextLeagueData.qualification.trophies;
                         Inbox.SetupLeaguePromotion(nextLeague.ToString(), true, socialEdgePlayer);
                     }

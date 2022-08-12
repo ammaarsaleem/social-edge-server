@@ -48,9 +48,9 @@ namespace SocialEdgeSDK.Server.Context
 
             string playerId = socialEdgePlayer.PlayerId;
             long currentTime = Utils.UTCNow();
-            Int32 piggyBankBalance = socialEdgePlayer.PlayerModel.Economy.piggyBankGems;
+            int piggyBankBalance = socialEdgePlayer.PlayerModel.Economy.piggyBankGems;
             long piggyBankExpiryTimestamp = socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp;
-            Int32 playerLeague = socialEdgePlayer.PlayerModel.Info.league;
+            int playerLeague = socialEdgePlayer.MiniProfile.League;
 
             dynamic commonSettings = Settings.CommonSettings;
 
@@ -63,11 +63,11 @@ namespace SocialEdgeSDK.Server.Context
 
             if (playerLeague >= commonSettings["piggyBankUnlocksAtLeague"] && piggyBankBalance < commonSettings["piggyBankMaxCap"])
             {
-                Int32 piggyBankRewardPerGameSetting = (Int32)commonSettings["piggyBankRewardPerGame"];
-                Int32 piggyBankRewardPerGame = piggyBankExpiryTimestamp > currentTime ? piggyBankRewardPerGameSetting * 2 : piggyBankRewardPerGameSetting;
+                int piggyBankRewardPerGameSetting = (int)commonSettings["piggyBankRewardPerGame"];
+                int piggyBankRewardPerGame = socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp > currentTime ? piggyBankRewardPerGameSetting * 2 : piggyBankRewardPerGameSetting;
 
-                Int32 piggyBankMaxCap = (Int32)commonSettings["piggyBankMaxCap"];
-                Int32 piggyLimitAvailable = piggyBankMaxCap - piggyBankBalance;
+                int piggyBankMaxCap = (int)commonSettings["piggyBankMaxCap"];
+                int piggyLimitAvailable = piggyBankMaxCap - piggyBankBalance;
                 piggyBankReward = piggyLimitAvailable >= piggyBankRewardPerGame ? piggyBankRewardPerGame : piggyLimitAvailable;
                 socialEdgePlayer.PlayerModel.Economy.piggyBankGems = socialEdgePlayer.PlayerModel.Economy.piggyBankGems + piggyBankReward;
 
@@ -179,7 +179,7 @@ namespace SocialEdgeSDK.Server.Context
         }
 
 
-        private int GetDefaultBet()
+        public int GetDefaultBet()
         {
             var defaultBetIncrementSettings = SocialEdge.TitleContext.EconomySettings.DefaultBetIncrementByGamesPlayed; 
             var bettingIncrementSettings = SocialEdge.TitleContext.EconomySettings.BettingIncrements; 
@@ -309,41 +309,15 @@ namespace SocialEdgeSDK.Server.Context
             foreach (ItemInstance theGood in vGoods) 
             {
                 CatalogItem catalogItem = SocialEdge.TitleContext.GetCatalogItem(theGood.ItemId);
-                if (catalogItem != null && catalogItem.VirtualCurrencyPrices["GM"] > 0)
+                if (catalogItem != null && catalogItem.RealCurrencyPrices.ContainsKey("RM") && catalogItem.RealCurrencyPrices["RM"] > 0)
                 {
                     double dollars = catalogItem.RealCurrencyPrices["RM"] / 100;
-                    int iap_count = theGood.RemainingUses != null ? (int)theGood.RemainingUses : 0;
+                    int iap_count = theGood.RemainingUses != null ? theGood.RemainingUses.Value : 1;
                     dCost += iap_count * dollars;
                 }
             }
 
             return dCost;
-        }
-
-        public long ProcessDailyEventExipryTimestamp()
-        {
-            long currentTime = Utils.UTCNow();
-            long hourToMilliseconds = 60 * 60 * 1000;
-        
-            if (socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp == 0 || 
-                socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp  <= currentTime) 
-            {
-                long expiryTimestamp = Utils.ToUTC(Utils.EndOfDay(new DateTime())) - (socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot * hourToMilliseconds);
-                int defaultBet = GetDefaultBet();
-
-                if (expiryTimestamp < currentTime)
-                {
-                    expiryTimestamp = expiryTimestamp + 24 * hourToMilliseconds;
-                }
-                
-                socialEdgePlayer.MiniProfile.EventGlow = 0;
-                socialEdgePlayer.PlayerModel.Events.dailyEventProgress = 0;
-                socialEdgePlayer.PlayerModel.Events.dailyEventRewards = CalculateDailyEventRewards(defaultBet);
-                socialEdgePlayer.PlayerModel.Events.dailyEventState = "running";
-                socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp = expiryTimestamp;
-            }
-        
-            return socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp;
         }
 
         public List<DailyEventRewards> CalculateDailyEventRewards(int betValue) 

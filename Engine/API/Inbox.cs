@@ -70,7 +70,7 @@ namespace SocialEdgeSDK.Server.Models
 
             if (msg.isDaily == true)
             {
-                var league = socialEdgePlayer.PlayerModel.Info.league;
+                var league = socialEdgePlayer.MiniProfile.League;
                 msg.reward = Leagues.GetDailyRewardDictionary(league.ToString());
                 msg.startTime = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
                 msg.time = msg.startTime;
@@ -122,7 +122,7 @@ namespace SocialEdgeSDK.Server.Models
             string msgInfo = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
             if (msgInfo == null)
             {
-                var leagueId = socialEdgePlayer.PlayerModel.Info.league.ToString();
+                var leagueId = socialEdgePlayer.MiniProfile.League.ToString();
                 var reward = Leagues.GetDailyReward(leagueId);
                 InboxDataMessage newMsgInfo = Inbox.CreateMessage();
                 newMsgInfo.type = "RewardDailyLeague";
