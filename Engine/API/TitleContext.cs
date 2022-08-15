@@ -29,11 +29,13 @@ namespace SocialEdgeSDK.Server.DataService
 
         LeagueSettingModel LeagueSettings { get; }
         EconomySettingsModel EconomySettings { get; }
+
+        bool AdminFetchBackBufferAndSwap();
     }
 
-    public class TitleContext : ITitleContext
+    internal class TitleContextDataBuffer
     {
-        public string version { get; set; }
+        private int _index;
         private GetTitleDataResult _titleData;
         private GetTitleDataResult _titleInternalData;
         private GetCatalogItemsResult _catalogItems;
@@ -45,27 +47,38 @@ namespace SocialEdgeSDK.Server.DataService
         private LeagueSettingModel _leagueSettings;
         private EconomySettingsModel _economySettings;
 
-        public GetTitleDataResult TitleData { get => _titleData; }
-        public GetCatalogItemsResult CatalogItems { get => _catalogItems; } 
-        public GetStoreItemsResult StoreItems { get => _storeItems; }
+        internal GetTitleDataResult titleData => _titleData;
+        internal GetTitleDataResult titleInternalData => _titleInternalData;
+        internal GetCatalogItemsResult catalogItems => _catalogItems;
+        internal GetStoreItemsResult storeItems => _storeItems;
 
-        public LeagueSettingModel LeagueSettings { get => _leagueSettings; }
-        public EconomySettingsModel EconomySettings { get => _economySettings; }
+        internal Dictionary<string, BsonDocument> titleDataDict => _titleDataDict;
+        internal Dictionary<string, CatalogItem> catalogItemsDict => _catalogItemsDict;
+        internal Dictionary<string, StoreItem> storeItemsDict => _storeItemsDict;
 
-        public TitleContext()
+        internal LeagueSettingModel leagueSettings => _leagueSettings;
+        internal EconomySettingsModel economySettings => _economySettings;
+
+        public TitleContextDataBuffer(int index)
         {
-            FetchTitleContext();
+            _index = index;
         }
 
-        private void FetchTitleContext()
+        internal bool Fetch()
         {
-            version = "0.0.0";
-            SocialEdge.Init();
             var titleDataTask = Title.GetTitleData();
+            titleDataTask.Wait();
+            if (titleDataTask.Result == null)
+                return false;
+
             _titleData = titleDataTask.Result.Result;
             _titleDataDict = _titleData.Data.ToDictionary(m => m.Key, m => BsonDocument.Parse(m.Value.ToString()));
 
             var titleInternalDataT = Title.GetTitleInternalData();
+            titleInternalDataT.Wait();
+            if (titleInternalDataT.Result == null)
+                return false;
+
             _titleInternalData = titleInternalDataT.Result.Result;
             var titleInternalDataDict = _titleInternalData.Data.ToDictionary(m => m.Key, m => BsonDocument.Parse(m.Value.ToString()));
             titleInternalDataDict.ToList().ForEach(x => _titleDataDict.Add(x.Key, x.Value));
@@ -73,6 +86,10 @@ namespace SocialEdgeSDK.Server.DataService
             string storeId = _titleDataDict["Economy"]["StoreId"].ToString();
             string catalogId = _titleDataDict["Economy"]["CatalogId"].ToString();
             var getShopTask = Shop.GetShop(storeId, catalogId);
+            getShopTask.Wait();
+            if (getShopTask.Result == null)
+                return false;
+
             _catalogItems = getShopTask.Result.catalogResult;
             _storeItems = getShopTask.Result.storeResult;
             _catalogItemsDict = _catalogItems.Catalog.ToDictionary(m => m.ItemId, m => m);
@@ -85,24 +102,65 @@ namespace SocialEdgeSDK.Server.DataService
             _economySettings = BsonSerializer.Deserialize<EconomySettingsModel>(_titleDataDict["Economy"].ToString());
 
             Console.WriteLine("****** *********************  *****");
-            Console.WriteLine("****** ( FetchTitleContext )  *****");
+            Console.WriteLine("*     ( FetchTitleContext[" + _index + "] )    *");
             Console.WriteLine("****** *********************  *****");
+
+            return true;
+        }
+    }
+
+    public class TitleContext : ITitleContext
+    {
+        public string version { get; set; }
+
+        private int _dataBufferIdx;
+        private TitleContextDataBuffer[] _dataBuffers;
+
+        public GetTitleDataResult TitleData { get => _dataBuffers[_dataBufferIdx].titleData; }
+        public GetCatalogItemsResult CatalogItems { get => _dataBuffers[_dataBufferIdx].catalogItems; } 
+        public GetStoreItemsResult StoreItems { get => _dataBuffers[_dataBufferIdx].storeItems; }
+
+        public LeagueSettingModel LeagueSettings { get => _dataBuffers[_dataBufferIdx].leagueSettings; }
+        public EconomySettingsModel EconomySettings { get => _dataBuffers[_dataBufferIdx].economySettings; }
+
+        private TitleContextDataBuffer CurrentBuffer { get => _dataBuffers[_dataBufferIdx]; }
+
+        public TitleContext()
+        {
+            SocialEdge.Init();
+
+            version = "0.0.0";
+            _dataBufferIdx = 0;
+            _dataBuffers = new TitleContextDataBuffer[2];
+            for (int i = 0; i < _dataBuffers.Length; i++)
+                _dataBuffers[i] = new TitleContextDataBuffer(i);
+
+            _dataBuffers[_dataBufferIdx].Fetch();
+        }
+
+        public bool AdminFetchBackBufferAndSwap()
+        {
+            bool status = _dataBuffers[1 - _dataBufferIdx].Fetch();
+            if (status == true)
+                _dataBufferIdx = 1 - _dataBufferIdx;
+
+            return status;
         }
 
         public dynamic GetTitleDataProperty(string key, dynamic dict = null)
         {
-            dict = dict == null ? _titleDataDict : dict;
+            dict = dict == null ? CurrentBuffer.titleDataDict : dict;
             return dict.ContainsKey(key) ? dict[key] : null;
         }
 
         public CatalogItem GetCatalogItem(string ItemId)
         {
-            return _catalogItemsDict.ContainsKey(ItemId) ? _catalogItemsDict[ItemId] : null;
+            return CurrentBuffer.catalogItemsDict.ContainsKey(ItemId) ? CurrentBuffer.catalogItemsDict[ItemId] : null;
         }
         
         public StoreItem GetStoreItem(string ItemId)
         {
-            return _storeItemsDict.ContainsKey(ItemId) ? _storeItemsDict[ItemId] : null;
+            return CurrentBuffer.storeItemsDict.ContainsKey(ItemId) ? CurrentBuffer.storeItemsDict[ItemId] : null;
         }
 
         public string GetShortCodeFromItemId(string itemId)

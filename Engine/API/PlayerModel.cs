@@ -48,7 +48,7 @@ namespace SocialEdgeSDK.Server.Models
         #pragma warning disable format
         [BsonElement("won")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]              public int won;
         [BsonElement("lost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int lost;
-        [BsonElement("drawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int drawn;
+        [BsonElement("drawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int drawn;
         #pragma warning restore format
     }
 

@@ -37,6 +37,15 @@ namespace SocialEdgeSDK.Server.Requests
             _cacheFlush = new List<CacheFlushFn>();
         }
 
+        public void InitContext(HttpRequestMessage req, ILogger log)
+        {
+            SocialEdge.Init(req, log, _titleContext, _dataService);
+            var readT = req.Content.ReadAsStringAsync();
+            readT.Wait();
+            _context = Newtonsoft.Json.JsonConvert.DeserializeObject(readT.Result);
+            _args = _context.ContainsKey("FunctionArgument") ? _context["FunctionArgument"] : new Dictionary<string, object>();
+        }
+
         public void InitContext<FunctionContextT>(HttpRequestMessage req, ILogger log)
         {
             SocialEdge.Init(req, log, _titleContext, _dataService);
