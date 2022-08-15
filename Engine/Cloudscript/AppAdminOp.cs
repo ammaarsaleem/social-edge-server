@@ -3,6 +3,7 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -12,7 +13,7 @@ using PlayFab.Samples;
 using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Context;
-
+using MongoDB.Bson;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -48,8 +49,12 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (op == "updateMaintenanceMode")
             {
-
+                 Dictionary<string, string> titleData = SocialEdge.TitleContext.TitleData.Data;
+                 var testing = titleData["Testing"];
+                 SocialEdge.Log.LogInformation("testing RESULT : " + testing.ToJson());
             }
+
+            SocialEdge.Log.LogInformation("AppAdminOp comleted!");
 
             return result;
         }

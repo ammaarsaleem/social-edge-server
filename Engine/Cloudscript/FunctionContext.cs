@@ -43,7 +43,9 @@ namespace SocialEdgeSDK.Server.Requests
             var readT = req.Content.ReadAsStringAsync();
             readT.Wait();
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject(readT.Result);
-            _args = _context.ContainsKey("FunctionArgument") ? _context["FunctionArgument"] : new Dictionary<string, object>();
+            _args = new Dictionary<string, object>();
+            if (_context != null)
+                _args = _context.ContainsKey("FunctionArgument") ? _context["FunctionArgument"] : _args;
         }
 
         public void InitContext<FunctionContextT>(HttpRequestMessage req, ILogger log)
