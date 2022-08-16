@@ -261,12 +261,6 @@ namespace SocialEdgeSDK.Server.Context
             return _combinedInfo != null;
         }
 
-        private bool CacheWriteReadOnlyError()
-        {
-            SocialEdge.Log.LogInformation("ERROR: Attempt to write read only cache data!");
-            return true;
-        }
-
         private bool CacheFillPublicData()
         {    
             if (_publicDataObjs == null || _publicDataObjs.ContainsKey("PublicProfileEx"))

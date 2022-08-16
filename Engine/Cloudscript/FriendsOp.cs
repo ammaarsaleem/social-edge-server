@@ -20,6 +20,10 @@ namespace SocialEdgeSDK.Server.Requests
     public class FriendsOpResult
     {
         public bool status;
+        public string op;
+        public string friendId;
+        public string friendType;
+        public int skip;
         public List<PlayerSearchDataModelDocument> searchList;
     }
 
@@ -32,29 +36,54 @@ namespace SocialEdgeSDK.Server.Requests
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
-            FriendsOpResult friendsOpResult = new FriendsOpResult();
-            string friendId = data["friendId"].ToString();
-            var op = data["op"];
+            FriendsOpResult result = new FriendsOpResult();
+            string friendId = data["friendId"].ToString().ToLower();
+            string op = result.op = data["op"].ToString();
 
-            if (op == "add")
+            if (op == "add" || op == "addFavourite")
             {
-                friendsOpResult.status = Friends.AddFriend(friendId, data["friendState"].ToString(), data["friendType"].ToString(), SocialEdgePlayer.PlayerId);
+                if (!SocialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friendId))
+                {
+                    bool status = Friends.AddFriend(friendId, data["friendState"].ToString(), data["friendType"].ToString(), SocialEdgePlayer.PlayerId);
+                    if (status == true)
+                    {
+                        if (!SocialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friendId))
+                        {
+                            FriendData friendData = SocialEdgePlayer.PlayerModel.Friends.CreateFriendData();
+                            SocialEdgePlayer.PlayerModel.Friends.Add(friendId, friendData);
+                        }
+
+                        result.friendId = friendId;
+                        result.friendType = data["friendType"].ToString();
+                        result.status = true;
+                    }
+                }
             }
             else if (op == "remove")
             {
-                friendsOpResult.status = Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
+                bool status = Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
+                if (status == true)
+                {
+                    if (SocialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friendId))
+                    {
+                        SocialEdgePlayer.PlayerModel.Friends.Remove(friendId);
+                    }
+
+                    result.friendId = friendId;
+                    result.status = true;
+                }
             }
             else if (op == "setstate")
             {
                 FriendInfo friend = SocialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
                 friend.Tags[0] = data["friendState"].ToString();
-                friendsOpResult.status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
+                result.status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
             }
             else if (op == "setfriendtype")
             {
                 FriendInfo friend = SocialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
                 friend.Tags[2] = data["friendType"].ToString();
-                friendsOpResult.status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
+                result.status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
             }
             else if (op == "search")
             {
@@ -63,12 +92,13 @@ namespace SocialEdgeSDK.Server.Requests
                 int searchMaxPage = 10;
 
                 List<PlayerSearchDataModelDocument> list = PlayerSearch.Search(matchString, skip, searchMaxPage);
-                friendsOpResult.searchList = list;
-                friendsOpResult.status = true;
+                result.searchList = list;
+                result.status = true;
+                result.skip = list.Count;
             }
 
-            SocialEdgePlayer.CacheFlush();
-            return friendsOpResult;
+            CacheFlush();
+            return result;
 
         }
     }

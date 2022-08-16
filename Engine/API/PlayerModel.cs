@@ -75,7 +75,7 @@ namespace SocialEdgeSDK.Server.Models
     public class FriendData
     {
         #pragma warning disable format
-        [JsonIgnore][BsonIgnore]                                                            public PlayerDataTournament _parent;
+        [JsonIgnore][BsonIgnore]                                                            public DataModelBase _parent;
         [BsonElement("gamesWon")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _gamesWon;
         [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _gamesLost;
         [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _gamesDrawn;
@@ -122,17 +122,18 @@ namespace SocialEdgeSDK.Server.Models
 
     public interface IDataModelBase
     {
+        bool isCached { get; set; }
         public void PrepareCache();
     }
 
     public class DataModelBase
     {
-        [JsonIgnore][BsonIgnore] public bool isCached;
+        [JsonIgnore][BsonIgnore] public bool isCached { get; set; }
         [JsonIgnore][BsonIgnore] public bool isDirty;
 
         public DataModelBase() { isCached = true; }
         public void SetDirty() { isDirty = true; }
-        public virtual void PrepareCache() {}
+        public virtual void PrepareCache() { }
     }
 
     public class PlayerDataMeta : DataModelBase, IDataModelBase
@@ -163,6 +164,31 @@ namespace SocialEdgeSDK.Server.Models
         {
             friends = new Dictionary<string, FriendData>();
             this.isDirty = isDirty;
+        }
+
+        public void Add(string friendId, FriendData friendData)
+        {
+            friends.Add(friendId, friendData);
+            isDirty = true;
+        }
+
+        public void Remove(string friendId)
+        {
+            friends.Remove(friendId);
+            isDirty = true;
+        }
+
+        public FriendData CreateFriendData()
+        {
+            FriendData friendData = new FriendData();
+            friendData._parent = this;
+            return friendData;
+        }
+
+        public new virtual void PrepareCache()
+        {
+            foreach (var friend in friends)
+                friend.Value._parent = this;
         }
     }
 
@@ -454,6 +480,7 @@ namespace SocialEdgeSDK.Server.Models
             taskT.Wait();
 
             var field = taskT.Result != null ? (T)taskT.Result._model.GetType().GetField(fieldName).GetValue(taskT.Result._model) : (T)Activator.CreateInstance(typeof(T));
+            field.isCached = true;
             field.PrepareCache();
 
             SocialEdge.Log.LogInformation("Task fetch PLAYER_MODEL:" + elemName + " " + (taskT.Result != null ? "(success)" : "(default)"));
