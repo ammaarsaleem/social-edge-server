@@ -53,7 +53,7 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong CHAT =               0x0004;
         public const ulong FRIENDS =            0x0008;
         public const ulong FRIENDS_PROFILES  =  0x0010;
-                                              //0x0020;
+        public const ulong FRIENDS_PROFILESEX = 0x0020;
         public const ulong INVENTORY =          0x0040;
         public const ulong ENTITY_TOKEN =       0x0080;
         public const ulong ENTITY_ID =          0x0100;
@@ -66,7 +66,7 @@ namespace SocialEdgeSDK.Server.Context
         public const ulong MAX = MINI_PROFILE;
 
         public const ulong META = INBOX | CHAT | FRIENDS_PROFILES;
-        public const ulong READONLY = FRIENDS | FRIENDS_PROFILES;
+        public const ulong READONLY = FRIENDS | FRIENDS_PROFILES | FRIENDS_PROFILESEX;
     }
 
     public class SocialEdgePlayerContext : ContextCacheBase
@@ -81,6 +81,7 @@ namespace SocialEdgeSDK.Server.Context
         private BsonDocument _publicData;
         private List<FriendInfo> _friends;
         private List<EntityProfileBody> _friendsProfiles;
+        private List<PublicProfileEx> _friendsProfilesEx;
         private List<ItemInstance> _inventory;
         private Dictionary<string, int> _virtualCurrencyBase;
         private Dictionary<string, int> _virtualCurrency;
@@ -109,6 +110,7 @@ namespace SocialEdgeSDK.Server.Context
         public BsonDocument Chat { get => (((_fillMask & CachePlayerDataSegments.CHAT) != 0) || (CacheFillSegment(CachePlayerDataSegments.CHAT))) ? _chat : null; }
         public List<FriendInfo> Friends { get => (((_fillMask & CachePlayerDataSegments.FRIENDS) != 0) || (CacheFillSegment(CachePlayerDataSegments.FRIENDS))) ? _friends : null; }
         public List<EntityProfileBody> FriendsProfiles { get => (((_fillMask & CachePlayerDataSegments.FRIENDS_PROFILES) != 0) || (CacheFillSegment(CachePlayerDataSegments.FRIENDS_PROFILES))) ? _friendsProfiles : null; }
+        public List<PublicProfileEx> FriendsProfilesEx { get => (((_fillMask & CachePlayerDataSegments.FRIENDS_PROFILESEX) != 0) || (CacheFillSegment(CachePlayerDataSegments.FRIENDS_PROFILESEX))) ? _friendsProfilesEx : null; }
         public List<ItemInstance> Inventory { get => (((_fillMask & CachePlayerDataSegments.INVENTORY) != 0) || (CacheFillSegment(CachePlayerDataSegments.INVENTORY))) ? _inventory : null; }
         public Dictionary<string, int> VirtualCurrency { get => (((_fillMask & CachePlayerDataSegments.INVENTORY) != 0) || (CacheFillSegment(CachePlayerDataSegments.INVENTORY))) ? _virtualCurrency : null; }
 
@@ -154,6 +156,7 @@ namespace SocialEdgeSDK.Server.Context
                 {CachePlayerDataSegments.CHAT, CacheFillChat},
                 {CachePlayerDataSegments.FRIENDS, CacheFillFriends},
                 {CachePlayerDataSegments.FRIENDS_PROFILES, CacheFillFriendProfiles},
+                {CachePlayerDataSegments.FRIENDS_PROFILESEX, CacheFillFriendProfilesEx},
                 {CachePlayerDataSegments.INVENTORY, CacheFillInventory},
                 {CachePlayerDataSegments.ENTITY_TOKEN, CacheFillEntityToken},
                 {CachePlayerDataSegments.ENTITY_ID, CacheFillEntityId},
@@ -170,6 +173,7 @@ namespace SocialEdgeSDK.Server.Context
                 {CachePlayerDataSegments.CHAT, CacheWriteChat},
                 {CachePlayerDataSegments.FRIENDS, CacheWriteReadOnlyError},
                 {CachePlayerDataSegments.FRIENDS_PROFILES, CacheWriteReadOnlyError},
+                {CachePlayerDataSegments.FRIENDS_PROFILESEX, CacheWriteReadOnlyError},
                 {CachePlayerDataSegments.INVENTORY, CacheWriteInventory},
                 {CachePlayerDataSegments.PLAYER_DATA, CacheWritePlayerData},
                 {CachePlayerDataSegments.PLAYER_MODEL, CacheWritePlayerModel},
@@ -362,6 +366,15 @@ namespace SocialEdgeSDK.Server.Context
             _fillMask |= _friendsProfiles != null ? CachePlayerDataSegments.FRIENDS_PROFILES : 0;
             SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILES");
             return _friendsProfiles != null;
+        }
+
+        private bool CacheFillFriendProfilesEx()
+        {
+            var friends = Friends;
+            _friendsProfilesEx = Player.GetFriendProfilesEx(_friends);
+            _fillMask |= _friendsProfilesEx != null ? CachePlayerDataSegments.FRIENDS_PROFILESEX : 0;
+            SocialEdge.Log.LogInformation("Task fetch FRIENDS_PROFILESEX");
+            return _friendsProfilesEx != null;
         }
 
         private bool CacheFillInventory()

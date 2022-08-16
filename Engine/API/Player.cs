@@ -12,6 +12,7 @@ using PlayFab.ProfilesModels;
 using PlayFab.AuthenticationModels;
 using PlayFab.DataModels;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Models;
@@ -84,6 +85,30 @@ namespace SocialEdgeSDK.Server.Api
             request.AuthenticationContext.EntityToken = etoken;
 
             return await PlayFabProfilesAPI.GetProfilesAsync(request);
+        }
+
+        public static List<PublicProfileEx> GetFriendProfilesEx(List<FriendInfo> friends)
+        {
+            List<string> friendsDBIds = new List<string>();
+            foreach (var friend in friends)
+            {
+                string friendDBId = friend.FriendPlayFabId.ToLower().PadLeft(24, '0'); 
+                friendsDBIds.Add(friendDBId);
+            }
+
+            const string PLAYERMODEL_COLLECTION_NAME = "playerModel";
+            var collection = SocialEdge.DataService.GetDatabase().GetCollection<PlayerModelDocument>(PLAYERMODEL_COLLECTION_NAME);
+            FilterDefinition<PlayerModelDocument> filter = Builders<PlayerModelDocument>.Filter.In<string>("_id", friendsDBIds);
+            var projection = Builders<PlayerModelDocument>.Projection.Expression(item => 
+                                                            new PublicProfileEx(
+                                                                    item._model.Info.eloScore, 
+                                                                    item._model.Info.trophies, 
+                                                                    item._model.Info.earnings,
+                                                                    item._model.Info.gamesWon,
+                                                                    item._model.Info.gamesLost,
+                                                                    item._model.Info.gamesDrawn));
+
+            return collection.Find(filter).Project(projection).ToList<PublicProfileEx>();
         }
 
         public static async Task<PlayFabResult<GetEntityTokenResponse>> GetTitleEntityToken()

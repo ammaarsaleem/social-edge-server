@@ -31,8 +31,8 @@ namespace SocialEdgeSDK.Server.Requests
         public int inboxCount;
         public Dictionary<string, InboxDataMessage> inbox;
         public List<FriendInfo> friends;
-        public GetTitleDataResult titleData;
         public List<EntityProfileBody> friendsProfiles;
+        public List<PublicProfileEx> friendsProfilesEx;
         public string dynamicBundleToDisplay;
         public string dynamicGemSpotBundle;
         public bool appVersionValid;
@@ -65,13 +65,15 @@ namespace SocialEdgeSDK.Server.Requests
             Inbox.Validate(SocialEdgePlayer);
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
             SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
+
+            //Friends.AddFriend("C70A814270978695", "UNBLOCKED", "SOCIAL", SocialEdgePlayer.PlayerId);
             
             try
             {
                 GetMetaDataResult result = new GetMetaDataResult();
-                result.titleData = SocialEdge.TitleContext.TitleData;
                 result.friends = SocialEdgePlayer.Friends;
                 result.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
+                result.friendsProfilesEx = SocialEdgePlayer.FriendsProfilesEx;
                 result.inbox = SocialEdgePlayer.Inbox;
                 result.chat = SocialEdgePlayer.ChatJson;
                 result.appVersionValid = true; // TODO

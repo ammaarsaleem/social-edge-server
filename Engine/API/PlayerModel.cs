@@ -30,6 +30,26 @@ namespace SocialEdgeSDK.Server.Models
         };
     }
 
+    public class PublicProfileEx
+    {
+        public int eloScore;
+        public int trophies;
+        public int earnings;
+        public int gamesWon;
+        public int gamesLost;
+        public int gamesDrawn; 
+
+        public PublicProfileEx(int eloScore, int trophies, int earnings, int gamesWon, int gamesLost, int gamesDrawn)
+        {
+            this.eloScore = eloScore;
+            this.trophies = trophies;
+            this.earnings = earnings;
+            this.gamesWon = gamesWon;
+            this.gamesLost = gamesLost;
+            this.gamesDrawn = gamesDrawn; 
+        }
+    }
+
     public class AdRewardsData
     {
 
