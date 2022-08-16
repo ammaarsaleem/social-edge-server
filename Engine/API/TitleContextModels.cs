@@ -119,6 +119,7 @@ namespace SocialEdgeSDK.Server.Context
         public bool removeInterAdsOnPurchase;
         public bool turnOnAdinmoAds;
         public bool removeRVOnPurchase;
+        public int waitForAdAvailibility;
         public List<string> adPlacements;
     }
 
