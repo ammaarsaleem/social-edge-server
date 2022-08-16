@@ -13,6 +13,6 @@ namespace SocialEdgeSDK.Server.DataService
     {
         Task<bool> Save(string fileName, byte[] stream);
         Uri GetServiceSasUriForBlob(string fileName, int expireMins, string storedPolicyName = null);
-        Dictionary<string, BlobFileInfo> GetContentList();
+        List<BlobFileInfo> GetContentList();
     }
 }
