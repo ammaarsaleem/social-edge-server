@@ -3,17 +3,18 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System;
+using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using PlayFab.ProfilesModels;
 using PlayFab.ServerModels;
+using PlayFab.Samples;
 using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Models;
-using PlayFab.Samples;
 
 namespace SocialEdgeSDK.Server.Context
 {
@@ -74,6 +75,7 @@ namespace SocialEdgeSDK.Server.Context
         private string _playerId;
         private string _entityToken;
         private string _entityId;
+        private DateTime _creationdDate;
         private PlayerMiniProfileData _miniProfile;
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private Dictionary<string, InboxDataMessage> _inbox;
@@ -91,6 +93,7 @@ namespace SocialEdgeSDK.Server.Context
         private PlayerEconomy _playerEconomy;
 
         public string PlayerId => _playerId;
+        public DateTime CreationDate => _creationdDate;
         public string InboxId { get => PlayerDBId; }
         public string ChatId { get => PlayerDBId; }
         public string PlayerDBId { get => _playerId.ToLower().PadLeft(24, '0'); }
@@ -118,6 +121,8 @@ namespace SocialEdgeSDK.Server.Context
         public string InboxJson { get => Inbox != null ? _inbox.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
         public string ChatJson { get => Chat != null ? _chat.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson}) : "{}"; }
 
+        public PlayerPublicProfile PublicProfile { get => Player.CreatePublicProfile(this); }
+
         public SocialEdgePlayerContext(string playerId)
         {
             _playerId = playerId;
@@ -129,6 +134,7 @@ namespace SocialEdgeSDK.Server.Context
             _context = context;
             _contextType = ContextType.FUNCTION_EXECUTION_API;
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
+            _creationdDate = context.CallerEntityProfile.Created;
             _entityId = context.CallerEntityProfile.Entity.Id;
             _publicDataObjs = context.CallerEntityProfile.Objects;
             _fillMask |= _entityId != null ? CachePlayerDataSegments.ENTITY_ID : 0;

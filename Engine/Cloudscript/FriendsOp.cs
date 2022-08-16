@@ -3,6 +3,7 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -12,12 +13,14 @@ using PlayFab.Samples;
 using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Api;
+using SocialEdgeSDK.Server.Models;
 
 namespace SocialEdgeSDK.Server.Requests
 {
     public class FriendsOpResult
     {
         public bool status;
+        public List<PlayerSearchDataModelDocument> searchList;
     }
 
     public class FriendsOp : FunctionContext
@@ -52,6 +55,16 @@ namespace SocialEdgeSDK.Server.Requests
                 FriendInfo friend = SocialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
                 friend.Tags[2] = data["friendType"].ToString();
                 friendsOpResult.status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
+            }
+            else if (op == "search")
+            {
+                string matchString = data["friendId"].ToString();
+                int skip = int.Parse(data["skip"].ToString());
+                int searchMaxPage = 10;
+
+                List<PlayerSearchDataModelDocument> list = PlayerSearch.Search(matchString, skip, searchMaxPage);
+                friendsOpResult.searchList = list;
+                friendsOpResult.status = true;
             }
 
             SocialEdgePlayer.CacheFlush();

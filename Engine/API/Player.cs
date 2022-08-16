@@ -399,5 +399,25 @@ namespace SocialEdgeSDK.Server.Api
 
             SocialEdge.Log.LogInformation("PlayerCurrenyChanged : socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount: " + socialEdgePlayer.PlayerModel.Economy.outOfGemsSessionCount);
         }
+
+        public static PlayerPublicProfile CreatePublicProfile(SocialEdgePlayerContext socialEdgePlayer)
+        {
+            PlayerPublicProfile playerPublicProfile = new PlayerPublicProfile();
+            playerPublicProfile._displayName = socialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
+            playerPublicProfile._location = socialEdgePlayer.CombinedInfo.PlayerProfile.Locations[0].CountryCode.ToString();
+            playerPublicProfile._created = socialEdgePlayer.CreationDate;
+            playerPublicProfile._lastLogin = DateTime.Now;
+            playerPublicProfile._activeInventory = socialEdgePlayer.PlayerModel.Info.activeInventory;
+            playerPublicProfile._earnings = socialEdgePlayer.PlayerModel.Info.earnings;
+            playerPublicProfile._eloScore = socialEdgePlayer.PlayerModel.Info.eloScore;
+            playerPublicProfile._gamesDrawn = socialEdgePlayer.PlayerModel.Info.gamesDrawn;
+            playerPublicProfile._gamesLost = socialEdgePlayer.PlayerModel.Info.gamesLost;
+            playerPublicProfile._gamesWon = socialEdgePlayer.PlayerModel.Info.gamesWon;
+            playerPublicProfile._trophies = socialEdgePlayer.PlayerModel.Info.trophies;
+            playerPublicProfile._trophies2 = socialEdgePlayer.PlayerModel.Info.trophies2;
+            playerPublicProfile.playerMiniProfile = socialEdgePlayer.MiniProfile;
+
+            return playerPublicProfile;
+        }
     }
 }

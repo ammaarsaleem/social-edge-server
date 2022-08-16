@@ -52,7 +52,7 @@ namespace SocialEdgeSDK.Server.Requests
             BsonDocument args = BsonDocument.Parse(Args);
             var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
             
-            if(isNewlyCreated)
+            if (isNewlyCreated)
             {
                 Player.NewPlayerInit(SocialEdgePlayer);
             }
@@ -65,6 +65,7 @@ namespace SocialEdgeSDK.Server.Requests
             Inbox.Validate(SocialEdgePlayer);
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
             SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
+            PlayerSearch.Register(SocialEdgePlayer);
 
             //Friends.AddFriend("C70A814270978695", "UNBLOCKED", "SOCIAL", SocialEdgePlayer.PlayerId);
             
