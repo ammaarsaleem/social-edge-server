@@ -34,9 +34,9 @@ namespace SocialEdgeSDK.Server.Requests
         public List<EntityProfileBody> friendsProfiles;
         public List<PublicProfileEx> friendsProfilesEx;
         public string dynamicBundleToDisplay;
-        public string dynamicGemSpotBundle;
+        public Dictionary<string, string> dynamicGemSpotBundle;
         public bool appVersionValid;
-        public string contentData;
+        public List<BlobFileInfo> contentData;
     }
 
     public class GetMetaData : FunctionContext
@@ -81,11 +81,8 @@ namespace SocialEdgeSDK.Server.Requests
                 result.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 result.liveTournaments = SocialEdgeTournament.TournamentLiveModel.Fetch();
                 result.dynamicBundleToDisplay = SocialEdgePlayer.PlayerEconomy.ProcessDynamicDisplayBundle();
-                result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle().ToString();
-                result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC)
-                                                    .GetContentList()
-                                                    .ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.RelaxedExtendedJson})
-                                                    .ToString();
+                result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle();
+                result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC).GetContentList();
                 result.playerDataModel = SocialEdgePlayer.PlayerModel;
 
                 if (isNewlyCreated == true)

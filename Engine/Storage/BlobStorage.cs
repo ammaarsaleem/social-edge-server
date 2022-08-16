@@ -75,24 +75,21 @@ namespace SocialEdgeSDK.Server.DataService
             }
         }
 
-        public Dictionary<string, BlobFileInfo> GetContentList()
+        public List<BlobFileInfo> GetContentList()
         {
             var blobs = _blobContainerClient.GetBlobs();
             if (blobs == null)
                 return null;
 
-            Dictionary<string, BlobFileInfo> data = new Dictionary<string, BlobFileInfo>();
+            List<BlobFileInfo> data = new List<BlobFileInfo>();
 
             foreach (var item in blobs)
             {
-                if (!data.ContainsKey(item.Name))
-                {
-                    BlobFileInfo dataItem = new BlobFileInfo();
-                    dataItem.shortCode = item.Name;
-                    dataItem.size = item.Properties.ContentLength.Value;
-                    dataItem.modifiedOn = item.Properties.LastModified.Value.ToUnixTimeMilliseconds();
-                    data.Add(item.Name, dataItem);
-                }
+                BlobFileInfo dataItem = new BlobFileInfo();
+                dataItem.shortCode = item.Name;
+                dataItem.size = item.Properties.ContentLength.Value;
+                dataItem.modifiedOn = item.Properties.LastModified.Value.ToUnixTimeMilliseconds();
+                data.Add(dataItem);
             }
 
             return data;
