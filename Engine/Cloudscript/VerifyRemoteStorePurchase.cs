@@ -33,9 +33,9 @@ namespace SocialEdgeSDK.Server.Requests
         public long addedCoins = 0;
         public int piggyBank = 0;
         public string dynamicBundleShortCode = "";
-        public dynamic dynamicGemSpotBundle = null;
+        public Dictionary<string, string> dynamicGemSpotBundle = null;
         public long rvUnlockTimestamp;
-        public dynamic boughtItem = null;
+        public Dictionary<string, object> boughtItem = null;
         public long piggyBankExpiryTimestamp;
     }
 
@@ -95,10 +95,9 @@ namespace SocialEdgeSDK.Server.Requests
                         SocialEdgePlayer.PlayerModel.Economy.piggyBankGems = 0;
                     }
 
-                    Dictionary<string, object>  boughtItem = new Dictionary<string, object>();
-                    boughtItem.Add("shortCode", SocialEdge.TitleContext.GetShortCodeFromItemId(remoteProductId));
-                    boughtItem.Add("quantity", invenotryObject.RemainingUses);
-                    result.boughtItem = boughtItem;
+                    result.boughtItem = new Dictionary<string, object>();
+                    result.boughtItem.Add("shortCode", SocialEdge.TitleContext.GetShortCodeFromItemId(remoteProductId));
+                    result.boughtItem.Add("quantity", invenotryObject.RemainingUses);
             
                     if(remoteProductId.Contains("subscription")) 
                     {
@@ -122,11 +121,8 @@ namespace SocialEdgeSDK.Server.Requests
                     } 
 
                     string tempItemId = Settings.DynamicDisplayBundles[SocialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier][SocialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier].ToString();
-                    string dynamicBundleShortCode  =  Utils.GetShortCode(tempItemId);
-                    dynamic dynamicGemSpotBundle   = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle().ToString();
-
-                    result.dynamicBundleShortCode = dynamicBundleShortCode;
-                    result.dynamicGemSpotBundle = dynamicGemSpotBundle;
+                    result.dynamicBundleShortCode = Utils.GetShortCode(tempItemId);
+                    result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle();
                     result.rvUnlockTimestamp = SocialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp;
                     result.piggyBankExpiryTimestamp = SocialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp; 
 

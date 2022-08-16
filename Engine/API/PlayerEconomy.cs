@@ -123,15 +123,11 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
-        public dynamic GetDynamicGemSpotBundle()
+        public Dictionary<string, string> GetDynamicGemSpotBundle()
         {
             SetupDynamicBundleTier();
-            dynamic dynamicBundlePurchaseTier = Settings.DynamicGemSpotBundles[socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier];
-            // Dictionary<string, object> dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(dynamicBundlePurchaseTier.ToString());
-            // dictionary["pack1"] = Utils.GetShortCode(dictionary["pack1"].ToString());;
-            // dictionary["pack2"] = Utils.GetShortCode(dictionary["pack2"].ToString());;
-            // dictionary["bundle"] = Utils.GetShortCode(dictionary["bundle"].ToString());;
-            return dynamicBundlePurchaseTier;
+            dynamic gemSpotBundleBson = Settings.DynamicGemSpotBundles[socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier];
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(gemSpotBundleBson.ToString());
         }
 
         public bool HasItemIdInInventory(string itemId)
