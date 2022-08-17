@@ -162,7 +162,7 @@ namespace SocialEdgeSDK.Server.Requests
         {
             ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
             socialEdgeChallenge.ChallengeModel.ReadOnly(challengeId);
-            ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
+            ChallengePlayerModel playerChallengeData = challengeData.playersData[socialEdgePlayer.PlayerId];
             int eloChange = playerChallengeData.eloChange;
             bool isRatingBoosterUsed = false;// playerChallengeData.ratingBoosterUsed;
 
@@ -336,7 +336,7 @@ namespace SocialEdgeSDK.Server.Requests
                     string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
                     ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
                     socialEdgeChallenge.ChallengeModel.ReadOnly(challengeId);
-                    ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
+                    ChallengePlayerModel playerChallengeData = challengeData.playersData[socialEdgePlayer.PlayerId];
                     bool isRatingBoosterUsed = false;// playerChallengeData.ratingBoosterUsed;
                     //var challengeData = getPlayerChallenge(challengeId);
                     rewardItemId = "SpecialItemRatingBooster";
@@ -401,7 +401,7 @@ namespace SocialEdgeSDK.Server.Requests
         {
             ClaimRewardResult result = new ClaimRewardResult();
             ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
-            ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
+            ChallengePlayerModel playerChallengeData = challengeData.playersData[socialEdgePlayer.PlayerId];
 
             long betValue = playerChallengeData.betValue;
             int betReturn = (int)Math.Round(betValue * double.Parse(Settings.CommonSettings["betLossAversionRatio"].ToString()));
@@ -417,7 +417,7 @@ namespace SocialEdgeSDK.Server.Requests
         {
             ClaimRewardResult result = new ClaimRewardResult();
             ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
-            ChallengePlayerModel playerChallengeData = challengeData.player1Data.playerId == socialEdgePlayer.PlayerId ? challengeData.player1Data : challengeData.player2Data;
+            ChallengePlayerModel playerChallengeData = challengeData.playersData[socialEdgePlayer.PlayerId];
 
             ChallengeWinnerBonusRewardsData bonusRewards = playerChallengeData.winnerBonusRewards;
         
