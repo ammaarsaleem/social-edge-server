@@ -15,6 +15,7 @@ using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Models;
 using MongoDB.Bson.Serialization;
+using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -125,7 +126,12 @@ namespace SocialEdgeSDK.Server.Requests
                 int skip = int.Parse(data["skip"].ToString());
                 int searchMaxPage = 10;
 
-                List<PlayerSearchDataModelDocument> list = PlayerSearch.Search(matchString, skip, searchMaxPage);
+                List<string> excludeIds = new List<string>();
+                excludeIds.Add(SocialEdgePlayer.PlayerDBId);
+                foreach(var block in SocialEdgePlayer.PlayerModel.Blocked.blocked)
+                    excludeIds.Add(Utils.DbIdFromPlayerId(block.Key));
+
+                List<PlayerSearchDataModelDocument> list = PlayerSearch.Search(matchString, skip, searchMaxPage, excludeIds);
                 result.searchList = list;
                 result.status = true;
                 result.skip = list.Count;

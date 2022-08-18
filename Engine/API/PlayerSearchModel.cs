@@ -88,12 +88,13 @@ namespace SocialEdgeSDK.Server.Models
             SocialEdge.Log.LogInformation("Task flush PLAYER_SEARCH_MODEL");
         }
 
-        public static List<PlayerSearchDataModelDocument> Search(string matchString, int skip, int size)
+        public static List<PlayerSearchDataModelDocument> Search(string matchString, int skip, int size, List<string> excludeIds)
         {
             var collection = SocialEdge.DataService.GetDatabase().GetCollection<PlayerSearchDataModelDocument>(COLLECTION);
             FieldDefinition<PlayerSearchDataModelDocument> field = "PlayerSearchData.publicProfile" + ".displayName";
             var filter = Builders<PlayerSearchDataModelDocument>.Filter.Regex(field, new BsonRegularExpression( "^"+matchString+".*", "i"));
             filter = filter | Builders<PlayerSearchDataModelDocument>.Filter.Eq("PlayerSearchData" + ".tag", matchString);
+            filter = filter & Builders<PlayerSearchDataModelDocument>.Filter.Nin("_id", excludeIds);
             return collection.Find(filter).Skip(skip).Limit(size).ToList();
         }
     }

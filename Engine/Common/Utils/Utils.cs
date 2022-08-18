@@ -89,5 +89,10 @@ namespace SocialEdgeSDK.Server.Common
         {
             return Math.Round(numToRound / numToRoundTo) * numToRoundTo;
         }
+
+        public static string DbIdFromPlayerId(string playerId)
+        {
+            return playerId.ToLower().PadLeft(24, '0');
+        }
     }
 }
