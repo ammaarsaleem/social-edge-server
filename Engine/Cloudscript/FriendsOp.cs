@@ -37,47 +37,50 @@ namespace SocialEdgeSDK.Server.Requests
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
             FriendsOpResult result = new FriendsOpResult();
-            string friendId = data["friendId"].ToString().ToLower();
+            string friendId = data["friendId"].ToString();
             string op = result.op = data["op"].ToString();
 
             if (op == "add" || op == "addFavourite")
             {
-                if (!SocialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friendId))
-                {
-                    bool status = Friends.AddFriend(friendId, data["friendState"].ToString(), data["friendType"].ToString(), SocialEdgePlayer.PlayerId);
-                    if (status == true)
-                    {
-                        if (!SocialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friendId))
-                        {
-                            FriendData friendData = SocialEdgePlayer.PlayerModel.Friends.CreateFriendData();
-                            SocialEdgePlayer.PlayerModel.Friends.Add(friendId, friendData);
-                        }
-
-                        result.friendId = friendId;
-                        result.friendType = data["friendType"].ToString();
-                        result.status = true;
-                    }
-                }
+                FriendData friendData = SocialEdgePlayer.PlayerModel.CreateFriendData();
+                friendData._friendType = data["friendType"].ToString();
+                SocialEdgePlayer.PlayerModel.AddFriend(friendId, friendData);
+                result.friendId = friendId;
+                result.friendType = data["friendType"].ToString();
+                bool status = Friends.AddFriend(friendId, SocialEdgePlayer.PlayerId);
+                result.status = true;
             }
             else if (op == "remove")
             {
+                SocialEdgePlayer.PlayerModel.RemoveFriend(friendId);
+                result.friendId = friendId;
                 bool status = Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
-                if (status == true)
-                {
-                    if (SocialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friendId))
-                    {
-                        SocialEdgePlayer.PlayerModel.Friends.Remove(friendId);
-                    }
-
-                    result.friendId = friendId;
-                    result.status = true;
-                }
+                result.status = status;
+            }
+            else if (op == "block")
+            {
+                FriendInfo friend = SocialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
+                bool status = Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
+                SocialEdgePlayer.PlayerModel.BlockFriend(friendId, friend.TitleDisplayName);
+                result.friendId = friendId;
+                result.status = status;
+            }
+            else if (op == "unblock")
+            {
+                SocialEdgePlayer.PlayerModel.UnblockFriend(friendId);
+                result.friendId = friendId;
+                result.status = true;
             }
             else if (op == "setstate")
             {
                 FriendInfo friend = SocialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
                 friend.Tags[0] = data["friendState"].ToString();
-                result.status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
+                bool status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
+                if (status == true)
+                {
+                    result.friendId = friendId;
+                    result.status = true;
+                }
             }
             else if (op == "setfriendtype")
             {

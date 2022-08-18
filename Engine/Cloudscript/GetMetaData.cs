@@ -67,13 +67,10 @@ namespace SocialEdgeSDK.Server.Requests
             SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
             PlayerSearch.Register(SocialEdgePlayer);
 
-            //Friends.AddFriend("C70A814270978695", "UNBLOCKED", "SOCIAL", SocialEdgePlayer.PlayerId);
-            
             try
             {
                 GetMetaDataResult result = new GetMetaDataResult();
                 result.friends = SocialEdgePlayer.Friends;
-                result.friendsProfiles = SocialEdgePlayer.FriendsProfiles;
                 result.friendsProfilesEx = SocialEdgePlayer.FriendsProfilesEx;
                 result.inbox = SocialEdgePlayer.Inbox;
                 result.chat = SocialEdgePlayer.ChatJson;

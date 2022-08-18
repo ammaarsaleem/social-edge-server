@@ -23,10 +23,11 @@ namespace SocialEdgeSDK.Server.Models
         public static string TOURNAMENT = typeof(PlayerDataModel).Name + ".tournament";
         public static string CHALLENGE = typeof(PlayerDataModel).Name + ".challenge";
         public static string FRIENDS = typeof(PlayerDataModel).Name + ".friends";
+        public static string BLOCKED = typeof(PlayerDataModel).Name + ".blocked";
 
         public static List<string> ALL = new List<string>()
         {
-            META, INFO, ECONOMY, EVENTS, TOURNAMENT, CHALLENGE, FRIENDS
+            META, INFO, ECONOMY, EVENTS, TOURNAMENT, CHALLENGE, FRIENDS, BLOCKED
         };
     }
 
@@ -76,11 +77,15 @@ namespace SocialEdgeSDK.Server.Models
     {
         #pragma warning disable format
         [JsonIgnore][BsonIgnore]                                                            public DataModelBase _parent;
+        [BsonElement("friendType")][BsonRepresentation(MongoDB.Bson.BsonType.String)]       public string _friendType;
+        [BsonElement("flagMask")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _flagMask;
         [BsonElement("gamesWon")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _gamesWon;
         [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _gamesLost;
         [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _gamesDrawn;
         #pragma warning restore format
 
+        [BsonIgnore] public string friendType { get => _friendType; set { _friendType = value; _parent.isDirty = true; } }
+        [BsonIgnore] public int flagMask { get => _flagMask; set { _flagMask = value; _parent.isDirty = true; } }
         [BsonIgnore] public int gamesWon { get => _gamesWon; set { _gamesWon = value; _parent.isDirty = true; } }
         [BsonIgnore] public int gamesLost { get => _gamesLost; set { _gamesLost = value; _parent.isDirty = true; } }
         [BsonIgnore] public int gamesDrawn { get => _gamesDrawn; set { _gamesDrawn = value; _parent.isDirty = true; } }
@@ -154,6 +159,23 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("kind")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string kind;
         [BsonElement("json")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string json;
         #pragma warning restore format
+    }
+
+    public class PlayerDataBlocked : DataModelBase, IDataModelBase
+    {
+        public Dictionary<string, string> blocked;
+        
+        public PlayerDataBlocked(bool isDirty = false)
+        {
+            blocked = new Dictionary<string, string>();
+            this.isDirty = isDirty;
+        }
+
+        // public new virtual void PrepareCache()
+        // {
+        //     foreach (var block in blocked)
+        //         block.Value._parent = this;
+        // }
     }
 
     public class PlayerDataFriends : DataModelBase, IDataModelBase
@@ -442,6 +464,9 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] private const string PLAYER_MODEL_COLLECTION = "playerModel";
         [BsonIgnore] private SocialEdgePlayerContext _socialEdgePlayer;
         [BsonIgnore] private bool _isCached;
+
+        [BsonIgnore] private UpdateDefinitionBuilder<PlayerDataModel> update = Builders<PlayerDataModel>.Update;
+        [BsonIgnore] private List<UpdateDefinition<PlayerDataModel>> updates = new List<UpdateDefinition<PlayerDataModel>>();
     
         // IMPORTANT: Field name have format '_<fieldname>' and Element name must have format '<fieldname>
         #pragma warning disable format                                                        
@@ -452,6 +477,7 @@ namespace SocialEdgeSDK.Server.Models
         [JsonIgnore][BsonElement("tournament")][BsonIgnoreIfNull]   public PlayerDataTournament _tournament;
         [JsonIgnore][BsonElement("challenge")][BsonIgnoreIfNull]    public PlayerDataChallenge _challenge;
         [JsonIgnore][BsonElement("friends")][BsonIgnoreIfNull]      public PlayerDataFriends _friends;
+        [JsonIgnore][BsonElement("blocked")][BsonIgnoreIfNull]      public PlayerDataBlocked _blocked;
         #pragma warning restore format
 
         public PlayerDataMeta Meta { get => _meta != null && _meta.isCached ? _meta : _meta = Get<PlayerDataMeta>(nameof(_meta)); }
@@ -461,6 +487,34 @@ namespace SocialEdgeSDK.Server.Models
         public PlayerDataTournament Tournament { get => _tournament != null && _tournament.isCached ? _tournament : _tournament = Get<PlayerDataTournament>(nameof(_tournament)); }
         public PlayerDataChallenge Challenge { get => _challenge != null && _challenge.isCached ? _challenge : _challenge = Get<PlayerDataChallenge>(nameof(_challenge)); }
         public PlayerDataFriends Friends { get => _friends != null && _friends.isCached ? _friends : _friends = Get<PlayerDataFriends>(nameof(_friends)); }
+        public PlayerDataBlocked Blocked { get => _blocked != null && _blocked.isCached ? _blocked : _blocked = Get<PlayerDataBlocked>(nameof(_blocked)); }
+
+        public void AddFriend(string friendId, FriendData friendData)
+        {
+            updates.Add(update.Set<FriendData>(typeof(PlayerDataModel).Name + ".friends.friends."+friendId, friendData));
+        }
+
+        public void RemoveFriend(string friendId)
+        {
+            updates.Add(update.Unset(typeof(PlayerDataModel).Name + ".friends.friends."+friendId));
+        }
+
+        public FriendData CreateFriendData()
+        {
+            FriendData friendData = new FriendData();
+            friendData._parent = _friends;
+            return friendData;
+        }
+
+        public void UnblockFriend(string friendId)
+        {
+            updates.Add(update.Unset(typeof(PlayerDataModel).Name + ".blocked.blocked."+friendId));
+        }
+
+        public void BlockFriend(string friendId, string displayName)
+        {
+            updates.Add(update.Set<string>(typeof(PlayerDataModel).Name + ".blocked.blocked."+friendId, displayName));
+        }
 
         public void ReadOnly() { _isCached = false; }
 
@@ -493,8 +547,8 @@ namespace SocialEdgeSDK.Server.Models
                 return false;
 
             var collection = SocialEdge.DataService.GetCollection<PlayerDataModel>(PLAYER_MODEL_COLLECTION);
-            var update = Builders<PlayerDataModel>.Update;
-            var updates = new List<UpdateDefinition<PlayerDataModel>>();
+            //var update = Builders<PlayerDataModel>.Update;
+            //var updates = new List<UpdateDefinition<PlayerDataModel>>();
 
             if (_meta != null && _meta.isDirty)
                 updates.Add(update.Set<PlayerDataMeta>(typeof(PlayerDataModel).Name + ".meta", _meta));
@@ -510,6 +564,8 @@ namespace SocialEdgeSDK.Server.Models
                 updates.Add(update.Set<PlayerDataChallenge>(typeof(PlayerDataModel).Name + ".challenge", _challenge));
             if (_friends != null && _friends.isDirty)
                 updates.Add(update.Set<PlayerDataFriends>(typeof(PlayerDataModel).Name + ".friends", _friends));
+            if (_blocked != null && _blocked.isDirty)
+                updates.Add(update.Set<PlayerDataBlocked>(typeof(PlayerDataModel).Name + ".blocked", _blocked));
 
             if (updates.Count == 0)
                 return false;
@@ -529,6 +585,7 @@ namespace SocialEdgeSDK.Server.Models
             _tournament = new PlayerDataTournament();
             _challenge = new PlayerDataChallenge(isDirty:true);
             _friends = new PlayerDataFriends(isDirty:true);
+            _blocked = new PlayerDataBlocked(isDirty:true);
         }
 
         public void Prefetch(List<string> fields)
@@ -553,6 +610,7 @@ namespace SocialEdgeSDK.Server.Models
             _tournament = model._tournament != null ? model._tournament : _tournament;
             _challenge = model._challenge != null ? model._challenge : _challenge;
             _friends = _friends == null && model._friends != null ? model._friends : _friends;
+            _blocked = _blocked == null && model._blocked != null ? model._blocked : _blocked;
 
             if (_tournament != null)
                 _tournament.PrepareCache();

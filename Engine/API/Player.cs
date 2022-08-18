@@ -68,24 +68,7 @@ namespace SocialEdgeSDK.Server.Api
             };
 
             return await PlayFabServerAPI.GetFriendsListAsync(request);
-        }
-
-        public static async Task<PlayFabResult<GetEntityProfilesResponse>> GetFriendProfiles(List<FriendInfo> friends, string etoken)
-        {
-            List<PlayFab.ProfilesModels.EntityKey> entities = new List<PlayFab.ProfilesModels.EntityKey>();
-            foreach (var friend in friends)
-            {
-                entities.Add(new PlayFab.ProfilesModels.EntityKey() { Id = friend.Tags[1], Type = "title_player_account" });
-            }
-
-            var request = new GetEntityProfilesRequest();
-            request.Entities = new List<PlayFab.ProfilesModels.EntityKey>();
-            request.AuthenticationContext = new PlayFabAuthenticationContext();
-            request.Entities = entities;
-            request.AuthenticationContext.EntityToken = etoken;
-
-            return await PlayFabProfilesAPI.GetProfilesAsync(request);
-        }
+        }   
 
         public static List<PublicProfileEx> GetFriendProfilesEx(List<FriendInfo> friends)
         {
