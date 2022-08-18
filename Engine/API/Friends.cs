@@ -6,9 +6,17 @@
 using System.Collections.Generic;
 using PlayFab;
 using PlayFab.ServerModels;
+using SocialEdgeSDK.Server.Context;
+using SocialEdgeSDK.Server.Common;
+using SocialEdgeSDK.Server.Models;
 
 namespace SocialEdgeSDK.Server.Api
 {
+    public static class FriendFlagMask
+    {
+        public const int RECENT_PLAYED = 0x1;
+    }
+
     public static class Friends
     {
         public static bool AddFriend(string friendId, string playerId)
@@ -33,15 +41,14 @@ namespace SocialEdgeSDK.Server.Api
             return requestT.Result.Error == null;
         }
 
-        public static bool SetFriendTags(string friendId, List<string> tags, string playerId)
+        public static void UpdateFriendsMatchTimestamp(string friendId, SocialEdgePlayerContext socialEdgePlayer)
         {
-            var request = new SetFriendTagsRequest();
-            request.FriendPlayFabId = friendId;
-            request.PlayFabId = playerId;
-            request.Tags = tags;
-            var requestT = PlayFabServerAPI.SetFriendTagsAsync(request);
-            requestT.Wait();
-            return requestT.Result.Error == null;
+            if (!socialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friendId))
+                return;
+
+            FriendData friendData = socialEdgePlayer.PlayerModel.Friends.friends[friendId];
+            friendData.lastMatchTimestamp = Utils.UTCNow();
+            friendData.flagMask = friendData.flagMask | FriendFlagMask.RECENT_PLAYED;
         }
     }
 }

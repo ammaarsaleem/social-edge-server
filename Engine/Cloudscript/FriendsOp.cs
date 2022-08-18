@@ -14,6 +14,7 @@ using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Models;
+using MongoDB.Bson.Serialization;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -27,6 +28,18 @@ namespace SocialEdgeSDK.Server.Requests
         public List<PlayerSearchDataModelDocument> searchList;
     }
 
+    public static class SubOpType
+    {
+        public const string REMOVE = "remove";
+        public const string REMOVE_RECENT = "removeRecent";
+    }
+
+    public class FriendsSubOp
+    {
+        public List<string> friendIds;
+        public string subOp;
+    }
+
     public class FriendsOp : FunctionContext
     {
         public FriendsOp(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
@@ -37,7 +50,7 @@ namespace SocialEdgeSDK.Server.Requests
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
             FriendsOpResult result = new FriendsOpResult();
-            string friendId = data["friendId"].ToString();
+            string friendId = data["friendId"] != null ? data["friendId"].ToString() : null;
             string op = result.op = data["op"].ToString();
 
             if (op == "add" || op == "addFavourite")
@@ -52,10 +65,45 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (op == "remove")
             {
-                SocialEdgePlayer.PlayerModel.RemoveFriend(friendId);
-                result.friendId = friendId;
-                bool status = Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
-                result.status = status;
+                if (!string.IsNullOrEmpty(friendId))
+                {
+                    SocialEdgePlayer.PlayerModel.RemoveFriend(friendId);
+                    result.friendId = friendId;
+                    bool status = Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
+                    result.status = status;
+                }
+
+                if (data.ContainsKey("opJson"))
+                {
+                    string subOpData = data["opJson"].ToString();
+                    FriendsSubOp friendsSubOp = BsonSerializer.Deserialize<FriendsSubOp>(subOpData);
+                    if (friendsSubOp.subOp == SubOpType.REMOVE_RECENT)
+                    {
+                        foreach (var id in friendsSubOp.friendIds) 
+                        {
+                            if (SocialEdgePlayer.PlayerModel.Friends.friends[id].friendType == "COMMNUNITY") 
+                            {
+                                SocialEdgePlayer.PlayerModel.RemoveFriend(id);
+                                Friends.RemoveFriend(id, SocialEdgePlayer.PlayerId);
+                            }
+                            else 
+                            {
+                                SocialEdgePlayer.PlayerModel.Friends.friends[id].flagMask = 
+                                        SocialEdgePlayer.PlayerModel.Friends.friends[id].flagMask & ~FriendFlagMask.RECENT_PLAYED;
+                            }
+                        }
+                    }
+                    if (friendsSubOp.subOp == SubOpType.REMOVE)
+                    {
+                        foreach (var id in friendsSubOp.friendIds) 
+                        {
+                            SocialEdgePlayer.PlayerModel.RemoveFriend(friendId);
+                            Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
+                        }
+                    }
+
+                    result.status = true;
+                }
             }
             else if (op == "block")
             {
@@ -71,23 +119,6 @@ namespace SocialEdgeSDK.Server.Requests
                 result.friendId = friendId;
                 result.status = true;
             }
-            else if (op == "setstate")
-            {
-                FriendInfo friend = SocialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
-                friend.Tags[0] = data["friendState"].ToString();
-                bool status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
-                if (status == true)
-                {
-                    result.friendId = friendId;
-                    result.status = true;
-                }
-            }
-            else if (op == "setfriendtype")
-            {
-                FriendInfo friend = SocialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
-                friend.Tags[2] = data["friendType"].ToString();
-                result.status = Friends.SetFriendTags(friendId, friend.Tags, SocialEdgePlayer.PlayerId);
-            }
             else if (op == "search")
             {
                 string matchString = data["friendId"].ToString();
@@ -102,7 +133,6 @@ namespace SocialEdgeSDK.Server.Requests
 
             CacheFlush();
             return result;
-
         }
     }
 }

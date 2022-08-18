@@ -78,6 +78,7 @@ namespace SocialEdgeSDK.Server.Models
         #pragma warning disable format
         [JsonIgnore][BsonIgnore]                                                            public DataModelBase _parent;
         [BsonElement("friendType")][BsonRepresentation(MongoDB.Bson.BsonType.String)]       public string _friendType;
+        [BsonElement("lastMatchTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]public long _lastMatchTimestamp;
         [BsonElement("flagMask")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _flagMask;
         [BsonElement("gamesWon")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _gamesWon;
         [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _gamesLost;
@@ -85,6 +86,7 @@ namespace SocialEdgeSDK.Server.Models
         #pragma warning restore format
 
         [BsonIgnore] public string friendType { get => _friendType; set { _friendType = value; _parent.isDirty = true; } }
+        [BsonIgnore] public long lastMatchTimestamp { get => _lastMatchTimestamp; set { _lastMatchTimestamp = value; _parent.isDirty = true; } }
         [BsonIgnore] public int flagMask { get => _flagMask; set { _flagMask = value; _parent.isDirty = true; } }
         [BsonIgnore] public int gamesWon { get => _gamesWon; set { _gamesWon = value; _parent.isDirty = true; } }
         [BsonIgnore] public int gamesLost { get => _gamesLost; set { _gamesLost = value; _parent.isDirty = true; } }
