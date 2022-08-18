@@ -80,23 +80,18 @@ namespace SocialEdgeSDK.Server.Requests
                                                                             
                 var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
                 var challengeId = SocialEdgeChallenge.ChallengeModel.Create(challengeData);
-
                 SocialEdgeChallenge.ChallengeModel.ReadOnly();
-                SocialEdgePlayer.PlayerModel.Challenge.currentChallengeId = challengeId;
 
-                if(challengeData.player1Data.betValue > 0)
+                foreach(var player in challengeData.playersData)
                 {
-                    SocialEdgePlayer.PlayerEconomy.SubtractVirtualCurrency("CN",  (int)challengeData.player1Data.betValue);
-                }
-
-                if (!challengeData.player2Data.isBot)
-                {
-                    var socialEdgePlayer2 = LoadPlayer(challengeData.player2Data.playerId);
-                    socialEdgePlayer2.PlayerModel.Challenge.currentChallengeId = challengeId;
-
-                    if(challengeData.player2Data.betValue > 0)
+                    if(!player.Value.isBot)
                     {
-                        socialEdgePlayer2.PlayerEconomy.SubtractVirtualCurrency("CN",  (int)challengeData.player2Data.betValue);
+                        var socialEdgePlayer = player.Key == SocialEdgePlayer.PlayerId ? SocialEdgePlayer : LoadPlayer(player.Key);
+                        socialEdgePlayer.PlayerModel.Challenge.currentChallengeId = challengeId;
+                        if(player.Value.betValue > 0)
+                        {
+                            socialEdgePlayer.PlayerEconomy.SubtractVirtualCurrency("CN", (int)player.Value.betValue);
+                        }
                     }
                 }
 
@@ -116,32 +111,28 @@ namespace SocialEdgeSDK.Server.Requests
                 string gameEndReason = data["gameEndReason"].ToString();
 
                 ChallengeData challengeData = SocialEdgeChallenge.ChallengeModel.Get(challengeId);
-                SocialEdgePlayerContext player1 = SocialEdgePlayer;
-                SocialEdgePlayerContext player2 = null;
-                if (!challengeData.player2Data.isBot)
-                {
-                    player2 = challengeData.player1Data.playerId == player1.PlayerId ? 
-                                                                        LoadPlayer(challengeData.player2Data.playerId) :
-                                                                        LoadPlayer(challengeData.player1Data.playerId);
-                }
-
-                Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, player1, player2, gameEndReason, winnerId);
-
+                SocialEdgeChallenge.ChallengeModel.Challenge.winnerId = winnerId;
+                SocialEdgeChallenge.ChallengeModel.Challenge.gameEndReason = gameEndReason;
+                
                 opResult.status = true;
                 opResult.challengeId = challengeId;
                 opResult.challengeEndedInfo = new ChallengeEndDataModel();
                 opResult.challengeEndedInfo.playersData = new Dictionary<string, ChallengeEndPlayerModel>();
 
-                if (player1 != null)
-                    opResult.challengeEndedInfo.playersData.Add(player1.PlayerId, new ChallengeEndPlayerModel(player1.PlayerModel, player1.MiniProfile, SocialEdgeChallenge.ChallengeModel.Challenge.player1Data));
-                
-                if (player2 != null)
-                    opResult.challengeEndedInfo.playersData.Add(player2.PlayerId, new ChallengeEndPlayerModel(player2.PlayerModel, player2.MiniProfile, SocialEdgeChallenge.ChallengeModel.Challenge.player2Data));
-
-                if (winnerId != null)
+                foreach(var player in challengeData.playersData)
                 {
-                    ChallengePlayerModel winnerChallengeModel = SocialEdgeChallenge.ChallengeModel.Challenge.player1Data.playerId == player1.PlayerId ?
-                                                                    SocialEdgeChallenge.ChallengeModel.Challenge.player1Data : SocialEdgeChallenge.ChallengeModel.Challenge.player2Data;
+                    if(!player.Value.isBot)
+                    {
+                        var socialEdgePlayer = player.Key == SocialEdgePlayer.PlayerId ? SocialEdgePlayer : LoadPlayer(player.Key);
+                        Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, socialEdgePlayer, gameEndReason, winnerId);
+                        opResult.challengeEndedInfo.playersData.Add(player.Key, new ChallengeEndPlayerModel(socialEdgePlayer.PlayerModel, socialEdgePlayer.MiniProfile, player.Value));
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(winnerId))
+                {
+                    ChallengePlayerModel winnerChallengeModel = SocialEdgeChallenge.ChallengeModel.Challenge.playersData[winnerId];
+
                     if (winnerChallengeModel.winnerBonusRewards != null)
                     {
                         opResult.challengeEndedInfo.winnerBonusRewards = new Dictionary<string, int>();

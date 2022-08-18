@@ -35,7 +35,6 @@ namespace SocialEdgeSDK.Server.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool powerMode;
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string tournamentId;
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isBot;
-        [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string playerId;
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string playerColor;
 
         [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int eloScore;
@@ -54,8 +53,7 @@ namespace SocialEdgeSDK.Server.Models
         #pragma warning disable format
         [BsonRepresentation(MongoDB.Bson.BsonType.Int64)]       public long matchDuration;
         [BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool isRanked;
-        [BsonElement("player1Data")]                            public ChallengePlayerModel player1Data;
-        [BsonElement("player2Data")]                            public ChallengePlayerModel player2Data;
+        [BsonElement("playersData")]                            public Dictionary<string, ChallengePlayerModel> playersData;
 
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string gameEndReason; 
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string winnerId; 
