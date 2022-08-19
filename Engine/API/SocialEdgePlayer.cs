@@ -400,7 +400,7 @@ namespace SocialEdgeSDK.Server.Context
         {
             SocialEdge.Log.LogInformation("Parse MINI_PROFILE");
 
-            string avatarURL = _context != null && _context.CallerEntityProfile.AvatarUrl != null ? _context.CallerEntityProfile.AvatarUrl.ToString() : CombinedInfo.PlayerProfile.AvatarUrl.ToString();
+            string avatarURL = _context != null && _context.CallerEntityProfile.AvatarUrl != null ? _context.CallerEntityProfile.AvatarUrl.ToString() : CombinedInfo.PlayerProfile.AvatarUrl;
             _miniProfile = avatarURL != null ? BsonSerializer.Deserialize<PlayerMiniProfileData>(avatarURL) : new PlayerMiniProfileData();
             _fillMask |= _miniProfile != null ? CachePlayerDataSegments.MINI_PROFILE : 0;
             // Force write call. Dirty is controlled by mini profile internal data structure
