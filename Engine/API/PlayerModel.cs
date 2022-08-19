@@ -167,7 +167,14 @@ namespace SocialEdgeSDK.Server.Models
     {
         public Dictionary<string, string> blocked;
         
-        public PlayerDataBlocked(bool isDirty = false)
+        // Note: Default constructor must be defined when there is another constructor defined. 
+        // Otherwiese mongo driver does not call the base constructor
+        public PlayerDataBlocked() 
+        {
+            blocked = new Dictionary<string, string>();
+        }
+
+        public PlayerDataBlocked(bool isDirty)
         {
             blocked = new Dictionary<string, string>();
             this.isDirty = isDirty;
@@ -184,9 +191,16 @@ namespace SocialEdgeSDK.Server.Models
     {
         public Dictionary<string, FriendData> friends;
 
-        public PlayerDataFriends(bool isDirty = false)
+        // Note: Default constructor must be defined when there is another constructor defined. 
+        // Otherwiese mongo driver does not call the base constructor
+        public PlayerDataFriends() 
         {
-            friends = new Dictionary<string, FriendData>();
+            friends = new Dictionary<string, FriendData> ();
+        }
+
+        public PlayerDataFriends(bool isDirty)
+        {
+            friends = new Dictionary<string, FriendData> ();
             this.isDirty = isDirty;
         }
 
@@ -447,8 +461,18 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public Dictionary<string, string> activeChallenges { get => _activeChallenges; set { _activeChallenges = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> pendingChallenges { get => _pendingChallenges; set { _pendingChallenges = value; isDirty = true; } }
 
-        public PlayerDataChallenge(bool isDirty = false)
+        // Note: Default constructor must be defined when there is another constructor defined. 
+        // Otherwiese mongo driver does not call the base constructor
+        public PlayerDataChallenge() 
         {
+            _activeChallenges = new Dictionary<string, string>();
+            _pendingChallenges = new Dictionary<string, string>();
+        }
+
+        public PlayerDataChallenge(bool isDirty)
+        {
+            _activeChallenges = new Dictionary<string, string>();
+            _pendingChallenges = new Dictionary<string, string>();
             this.isDirty = isDirty;
         }
     }
