@@ -338,7 +338,7 @@ namespace SocialEdgeSDK.Server.Api
             socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
             CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinDark");
-            PlayerInventoryItem skinItem = new PlayerInventoryItem();
+            PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
             skinItem.kind = defaultSkin.Tags[0];
             skinItem.key = defaultSkin.ItemId;
             socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);

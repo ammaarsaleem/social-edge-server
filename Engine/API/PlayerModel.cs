@@ -287,11 +287,18 @@ namespace SocialEdgeSDK.Server.Models
             gamesPlayedPerDay = new Dictionary<string, GameResults>();
         }
 
+        public PlayerInventoryItem CreatePlayerInventoryItem()
+        {
+            PlayerInventoryItem item = new PlayerInventoryItem();
+            item._parent = this;
+            return item;
+        }
+
         public new virtual void PrepareCache()
         {
             foreach (var item in _activeInventory)
                 item._parent = this;
-        }
+        } 
     }
 
     public class BalloonReward : DataModelBase, IDataModelBase
