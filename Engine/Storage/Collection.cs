@@ -380,8 +380,7 @@ namespace SocialEdgeSDK.Server.DataService{
         {
             try
             {
-                var T = _collection.InsertOneAsync(document);
-                T.Wait();
+                await _collection.InsertOneAsync(document);
                 return true;
             }
             catch(Exception e)

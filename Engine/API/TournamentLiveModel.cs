@@ -77,7 +77,6 @@ namespace SocialEdgeSDK.Server.Models
     public class TournamentLiveModel
     {
         [BsonIgnore] private string LIVE_TOURNAMENTS_COLLECTION = "tournamentsLive";
-        [BsonIgnore] private bool _isCached;
         [BsonIgnore] Dictionary<string, TournamentLiveData> _cache;
 
         public TournamentLiveModel()

@@ -319,7 +319,7 @@ namespace SocialEdgeSDK.Server.Common
             if (string.IsNullOrWhiteSpace(hash))
                 return new int[0];
 
-            var alphabet = string.Copy(this.alphabet);
+            var alphabet =  this.alphabet.Clone().ToString();
             var ret = new List<int>();
             int i = 0;
 

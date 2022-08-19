@@ -59,14 +59,14 @@ namespace SocialEdgeSDK.Server.Models
             };
         }
 
-        public static async Task<Dictionary<string, int>> Collect(string messageId, SocialEdgePlayerContext socialEdgePlayer)
+        public static Dictionary<string, int> Collect(string messageId, SocialEdgePlayerContext socialEdgePlayer)
         {
             Dictionary<string, InboxDataMessage> inbox = socialEdgePlayer.Inbox;
             var msg = inbox.ContainsKey(messageId) ? inbox[messageId] : null;
             if (msg == null)
                 return null;
 
-            var granted = await Transactions.Grant(msg.reward, socialEdgePlayer);
+            var granted = socialEdgePlayer.PlayerEconomy.Grant(msg.reward);
 
             if (msg.isDaily == true)
             {

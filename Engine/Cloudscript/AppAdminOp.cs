@@ -4,13 +4,10 @@
 /// Proprietary and confidential
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
-using PlayFab.Samples;
-using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Context;
 using MongoDB.Bson;
@@ -28,7 +25,7 @@ namespace SocialEdgeSDK.Server.Requests
         public AppAdminOp(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
         [FunctionName("AppAdminOp")]
-        public async Task<AppAdminOpResult> Run(
+        public AppAdminOpResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
         {
             // Expected Input Parameters in format:

@@ -337,7 +337,7 @@ namespace SocialEdgeSDK.Server.Requests
                     ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
                     socialEdgeChallenge.ChallengeModel.ReadOnly(challengeId);
                     ChallengePlayerModel playerChallengeData = challengeData.playersData[socialEdgePlayer.PlayerId];
-                    bool isRatingBoosterUsed = false;// playerChallengeData.ratingBoosterUsed;
+                    //bool isRatingBoosterUsed = false;// playerChallengeData.ratingBoosterUsed;
                     //var challengeData = getPlayerChallenge(challengeId);
                     rewardItemId = "SpecialItemRatingBooster";
                     //if (isRatingBoosterUsed(playerId, challengeData) == true) {

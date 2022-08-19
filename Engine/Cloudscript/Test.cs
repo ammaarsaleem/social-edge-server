@@ -16,7 +16,7 @@ namespace SocialEdgeSDK.Server.Requests
 {
     public class Test
     {
-        IDbHelper _dbHelper;
+        //IDbHelper _dbHelper;
         IDataService _dataService;
         public Test(IDataService dataService)
         {

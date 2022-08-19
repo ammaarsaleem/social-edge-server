@@ -46,7 +46,7 @@ namespace SocialEdgeSDK.Server.Requests
         public FriendsOp(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
         [FunctionName("FriendsOp")]
-        public async Task<FriendsOpResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
+        public FriendsOpResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
