@@ -166,7 +166,9 @@ namespace SocialEdgeSDK.Server.Context
                     expiryTimestamp = expiryTimestamp + 24 * hourToMilliseconds;
                 }
 
-                socialEdgePlayer.MiniProfile.EventGlow = 0;
+                if (socialEdgePlayer.MiniProfile.EventGlow != 0)
+                    socialEdgePlayer.MiniProfile.EventGlow = 0;
+                    
                 socialEdgePlayer.PlayerModel.Events.dailyEventProgress = 0;
                 socialEdgePlayer.PlayerModel.Events.dailyEventState = "running";
                 socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp = expiryTimestamp;

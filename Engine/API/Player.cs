@@ -359,6 +359,7 @@ namespace SocialEdgeSDK.Server.Api
             socialEdgePlayer.MiniProfile.AvatarBgColor = avatarBgColor;
             socialEdgePlayer.MiniProfile.UploadPicId = null;
             socialEdgePlayer.MiniProfile.EventGlow = 0;
+            socialEdgePlayer.MiniProfile.isDirty = false;
             UpdatePlayerAvatarData(playerId, socialEdgePlayer.MiniProfile);
             //var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
