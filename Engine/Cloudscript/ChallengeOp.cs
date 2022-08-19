@@ -14,6 +14,7 @@ using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Models;
 using MongoDB.Bson.Serialization;
 using SocialEdgeSDK.Server.Context;
+using System.Linq;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -35,8 +36,8 @@ namespace SocialEdgeSDK.Server.Requests
         public long piggyBankReward;
         public long piggyBankExipryTimestamp;
         public PlayerDataEvent dailyEventData;
-
-        public ChallengeEndPlayerModel (PlayerDataModel playerModel, PlayerMiniProfileData miniProfile, ChallengePlayerModel playerChallengeData)
+        public FriendData friendData;
+        public ChallengeEndPlayerModel (PlayerDataModel playerModel, PlayerMiniProfileData miniProfile, ChallengePlayerModel playerChallengeData, FriendData friend)
         {
             dailyEventData = playerModel.Events;
             eloChange = playerChallengeData.eloChange;
@@ -48,6 +49,7 @@ namespace SocialEdgeSDK.Server.Requests
             totalGamesWon = playerModel.Info.gamesWon;
             totalGamesDrawn = playerModel.Info.gamesDrawn;
             trophies = playerModel.Info.trophies;
+            friendData = friend;
         }
     }
 
@@ -124,8 +126,10 @@ namespace SocialEdgeSDK.Server.Requests
                     if(!player.Value.isBot)
                     {
                         var socialEdgePlayer = player.Key == SocialEdgePlayer.PlayerId ? SocialEdgePlayer : LoadPlayer(player.Key);
-                        Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, socialEdgePlayer, gameEndReason, winnerId);
-                        opResult.challengeEndedInfo.playersData.Add(player.Key, new ChallengeEndPlayerModel(socialEdgePlayer.PlayerModel, socialEdgePlayer.MiniProfile, player.Value));
+                        var otherPlayerId = challengeData.playersData.Where(p => p.Key != socialEdgePlayer.PlayerId).Select(p => p.Key).FirstOrDefault();
+                        Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, socialEdgePlayer, gameEndReason, winnerId, otherPlayerId);
+                        var friendData = socialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(otherPlayerId) ? socialEdgePlayer.PlayerModel.Friends.friends[otherPlayerId] : null;
+                        opResult.challengeEndedInfo.playersData.Add(player.Key, new ChallengeEndPlayerModel(socialEdgePlayer.PlayerModel, socialEdgePlayer.MiniProfile, player.Value, friendData));
                     }
                 }
 

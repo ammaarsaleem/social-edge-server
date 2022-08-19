@@ -13,13 +13,12 @@ namespace SocialEdgeSDK.Server.Api
 {
     public static class Challenge
     {
-        public static void EndGame(SocialEdgeChallengeContext socialEdgeChallenge, SocialEdgeTournamentContext socialEdgeTournament, SocialEdgePlayerContext socialEdgePlayer, string gameEndReason, string winnerId)
+        public static void EndGame(SocialEdgeChallengeContext socialEdgeChallenge, SocialEdgeTournamentContext socialEdgeTournament, SocialEdgePlayerContext socialEdgePlayer, string gameEndReason, string winnerId, string otherPlayerId)
         {
             bool winLoseGame = !string.IsNullOrEmpty(winnerId);
             bool isAbandoned = !winLoseGame && string.IsNullOrEmpty(gameEndReason);
             bool playerWins = socialEdgePlayer.PlayerId == winnerId;
             var playersData = socialEdgeChallenge.ChallengeModel.Challenge.playersData;
-            string otherPlayerId = playersData.Where(p => p.Key != socialEdgePlayer.PlayerId).Select(p => p.Key).FirstOrDefault();
             ChallengePlayerModel currentPlayerData = playersData[socialEdgePlayer.PlayerId];
             ChallengePlayerModel otherPlayerData = playersData[otherPlayerId];
 
@@ -41,6 +40,7 @@ namespace SocialEdgeSDK.Server.Api
                 if (!currentPlayerData.isBot && !otherPlayerData.isBot)
                 {
                     UpdateWinLoseGameFriendsInfo(socialEdgePlayer, otherPlayerId, playerWins);
+                    Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
                 }
             }
             else
@@ -51,6 +51,7 @@ namespace SocialEdgeSDK.Server.Api
                 if (!currentPlayerData.isBot && !otherPlayerData.isBot)
                 {
                     UpdateDrawGameFriendsInfo(socialEdgePlayer, otherPlayerId);
+                    Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
                 }
             }
 
