@@ -399,7 +399,9 @@ namespace SocialEdgeSDK.Server.Context
         private bool CacheFillMiniProfile()
         {
             SocialEdge.Log.LogInformation("Parse MINI_PROFILE");
-            _miniProfile = _context.CallerEntityProfile.AvatarUrl != null ? BsonSerializer.Deserialize<PlayerMiniProfileData>(_context.CallerEntityProfile.AvatarUrl.ToString()) : new PlayerMiniProfileData();
+
+            string avatarURL = _context != null && _context.CallerEntityProfile.AvatarUrl != null ? _context.CallerEntityProfile.AvatarUrl.ToString() : CombinedInfo.PlayerProfile.AvatarUrl.ToString();
+            _miniProfile = avatarURL != null ? BsonSerializer.Deserialize<PlayerMiniProfileData>(avatarURL) : new PlayerMiniProfileData();
             _fillMask |= _miniProfile != null ? CachePlayerDataSegments.MINI_PROFILE : 0;
             // Force write call. Dirty is controlled by mini profile internal data structure
             SetDirtyBit(CachePlayerDataSegments.MINI_PROFILE);
