@@ -40,7 +40,6 @@ namespace SocialEdgeSDK.Server.Api
                 if (!currentPlayerData.isBot && !otherPlayerData.isBot)
                 {
                     UpdateWinLoseGameFriendsInfo(socialEdgePlayer, otherPlayerId, playerWins);
-                    Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
                 }
             }
             else
@@ -51,7 +50,6 @@ namespace SocialEdgeSDK.Server.Api
                 if (!currentPlayerData.isBot && !otherPlayerData.isBot)
                 {
                     UpdateDrawGameFriendsInfo(socialEdgePlayer, otherPlayerId);
-                    Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
                 }
             }
 
