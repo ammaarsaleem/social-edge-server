@@ -157,10 +157,15 @@ namespace SocialEdgeSDK.Server.Models
     public class PlayerInventoryItem
     {
         #pragma warning disable format
-        [BsonElement("key")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string key;
-        [BsonElement("kind")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string kind;
-        [BsonElement("json")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string json;
+        [JsonIgnore][BsonIgnore]                                                public DataModelBase _parent;
+        [BsonElement("key")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string _key;
+        [BsonElement("kind")][BsonRepresentation(MongoDB.Bson.BsonType.String)] public string _kind;
+        [BsonElement("json")][BsonRepresentation(MongoDB.Bson.BsonType.String)] public string _json;
         #pragma warning restore format
+
+        [BsonIgnore] public string key { get => _key; set { _key = value; _parent.isDirty = true; } }
+        [BsonIgnore] public string kind { get => _kind; set { _kind = value; _parent.isDirty = true; } }
+        [BsonIgnore] public string json { get => _json; set { _json = value; _parent.isDirty = true; } }
     }
 
     public class PlayerDataBlocked : DataModelBase, IDataModelBase
@@ -280,6 +285,12 @@ namespace SocialEdgeSDK.Server.Models
         {
             activeInventory = new List<PlayerInventoryItem>();
             gamesPlayedPerDay = new Dictionary<string, GameResults>();
+        }
+
+        public new virtual void PrepareCache()
+        {
+            foreach (var item in _activeInventory)
+                item._parent = this;
         }
     }
 
