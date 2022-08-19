@@ -33,14 +33,14 @@ namespace SocialEdgeSDK.Server.Requests
             var data = Args["data"];
             var result = new UpdateActiveInventoryResult();
 
-            if (data.ContainsKey("activeChessSkinsId"))
+            if (data.ContainsKey("activeSkinId"))
             {
-                string activeChessSkinsId = data["activeChessSkinsId"].ToString();
+                string activeSkinId = data["activeSkinId"].ToString();
                 List<PlayerInventoryItem> activeInventory = SocialEdgePlayer.PlayerModel.Info.activeInventory;
                 PlayerInventoryItem item = activeInventory.Where<PlayerInventoryItem>(item => item.kind == "Skin").FirstOrDefault();
                 if (item != null)
                 {
-                    item.key = activeChessSkinsId;
+                    item.key = activeSkinId;
                     result.status = true;
                 }
             }
