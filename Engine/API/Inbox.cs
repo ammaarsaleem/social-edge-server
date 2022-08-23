@@ -81,6 +81,12 @@ namespace SocialEdgeSDK.Server.Models
                 InboxModel.Del(messageId, socialEdgePlayer);
             }
 
+            if(msg.trophies > 0)
+            {
+                socialEdgePlayer.PlayerModel.Info.trophies2 = socialEdgePlayer.PlayerModel.Info.trophies2 + msg.trophies;
+                granted.Add("trophies2", msg.trophies);
+            }
+
             return granted;
         }
 

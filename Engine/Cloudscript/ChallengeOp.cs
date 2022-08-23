@@ -128,8 +128,7 @@ namespace SocialEdgeSDK.Server.Requests
                         var socialEdgePlayer = player.Key == SocialEdgePlayer.PlayerId ? SocialEdgePlayer : LoadPlayer(player.Key);
                         var otherPlayerId = challengeData.playersData.Where(p => p.Key != socialEdgePlayer.PlayerId).Select(p => p.Key).FirstOrDefault();
                         Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, socialEdgePlayer, gameEndReason, winnerId, otherPlayerId);
-                        Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
-                        var friendData = socialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(otherPlayerId) ? socialEdgePlayer.PlayerModel.Friends.friends[otherPlayerId] : null;
+                        var friendData = Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
                         opResult.challengeEndedInfo.playersData.Add(player.Key, new ChallengeEndPlayerModel(socialEdgePlayer.PlayerModel, socialEdgePlayer.MiniProfile, player.Value, friendData));
                     }
                 }

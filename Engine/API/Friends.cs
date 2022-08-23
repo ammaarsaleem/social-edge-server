@@ -41,14 +41,15 @@ namespace SocialEdgeSDK.Server.Api
             return requestT.Result.Error == null;
         }
 
-        public static void UpdateFriendsMatchTimestamp(string friendId, SocialEdgePlayerContext socialEdgePlayer)
+        public static FriendData UpdateFriendsMatchTimestamp(string friendId, SocialEdgePlayerContext socialEdgePlayer)
         {
             if (!socialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friendId))
-                return;
+                return null;
 
             FriendData friendData = socialEdgePlayer.PlayerModel.Friends.friends[friendId];
             friendData.lastMatchTimestamp = Utils.UTCNow();
             friendData.flagMask = friendData.flagMask | FriendFlagMask.RECENT_PLAYED;
+            return friendData;
         }
     }
 }
