@@ -74,7 +74,7 @@ namespace SocialEdgeSDK.Server.Requests
                     result.status = status;
                 }
 
-                if (data.ContainsKey("opJson"))
+                if (data.ContainsKey("opJson") && data["opJson"] != null)
                 {
                     string subOpData = data["opJson"].ToString();
                     FriendsSubOp friendsSubOp = BsonSerializer.Deserialize<FriendsSubOp>(subOpData);
