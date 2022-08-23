@@ -286,11 +286,20 @@ namespace SocialEdgeSDK.Server.Context
         
             foreach(var item in rewards)
             {
-                bool added = Grant(item.Key, (int)item.Value);
-                if (added)
+                if(item.Equals("coins"))
                 {
-                    rewarded.Add(item.Key, (int)item.Value);
+                    AddVirtualCurrency("CN", item.Value);
                 }
+                else if(item.Equals("gems"))
+                {
+                    AddVirtualCurrency("GM", item.Value);
+                }
+                else
+                {
+                    Grant(item.Key, item.Value);
+                }
+                
+                rewarded.Add(item.Key, item.Value);
             }
         
             return rewarded;
