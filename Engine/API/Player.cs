@@ -323,7 +323,6 @@ namespace SocialEdgeSDK.Server.Api
             //var playerPublicData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerPublicData"];
             //var playerData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerData"];
             //var coinsCredit = (int)SocialEdge.TitleContext.GetTitleDataProperty("Economy")["BettingIncrements"][0];
-            var coinsCredit = SocialEdge.TitleContext.EconomySettings.BettingIncrements[0];
             var avatar = GenerateAvatar();
             var avatarBgColor = GenerateAvatarBgColor();
 
@@ -343,7 +342,7 @@ namespace SocialEdgeSDK.Server.Api
             skinItem.key = defaultSkin.ItemId;
             socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
 
-            var addInventoryT = GrantItem(playerId, defaultSkin.ItemId);
+            var addInventoryT = GrantItem(playerId, "DefaultOwnedItems");
 
             //playerData["coldData"]["isInitialized"] = true;
             //playerPublicData["PublicProfileEx"]["tag"] = newTag;
@@ -362,13 +361,12 @@ namespace SocialEdgeSDK.Server.Api
             socialEdgePlayer.MiniProfile.isDirty = false;
             UpdatePlayerAvatarData(playerId, socialEdgePlayer.MiniProfile);
             //var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
-            var addVirualCurrencyT = AddVirtualCurrency(playerId, coinsCredit, "CN");
             var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
             //var UpdatePublicDataT = UpdatePublicData(entityToken, entityId, playerPublicData);
 
             //Task.WaitAll(UpdatePlayerDataT, addVirualCurrencyT, updateDisplayNameT, UpdatePublicDataT);
             //Task.WaitAll(addVirualCurrencyT, updateDisplayNameT);
-            Task.WaitAll(addVirualCurrencyT, updateDisplayNameT, addInventoryT);
+            Task.WaitAll(updateDisplayNameT, addInventoryT);
         }
         public static void PlayerCurrenyChanged(SocialEdgePlayerContext socialEdgePlayer, ILogger log)
         {
