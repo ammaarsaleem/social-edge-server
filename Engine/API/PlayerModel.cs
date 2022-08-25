@@ -257,6 +257,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("careerLeagueSet")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]             public bool _careerLeagueSet;
         [BsonElement("uploadedPicId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                public string _uploadedPicId;
         [BsonElement("playDays")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _playDays;
+        [BsonElement("lastPlayDay")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]                public DateTime _lastPlayDay;
         [BsonElement("gamesPlayedPerDay")]                                                              public Dictionary<string, GameResults> _gamesPlayedPerDay;
         
         #pragma warning restore format
@@ -279,6 +280,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public bool careerLeagueSet { get => _careerLeagueSet; set { _careerLeagueSet = value; isDirty = true; } }
         [BsonIgnore] public string uploadedPicId { get => _uploadedPicId; set { _uploadedPicId = value; isDirty = true; } }
         [BsonIgnore] public int playDays { get => _playDays; set { _playDays = value; isDirty = true; } }
+        [BsonIgnore] public DateTime lastPlayDay { get => _lastPlayDay; set { _lastPlayDay = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, GameResults> gamesPlayedPerDay { get => _gamesPlayedPerDay; set {_gamesPlayedPerDay = value; isDirty = true; } }
 
         public PlayerDataInfo()

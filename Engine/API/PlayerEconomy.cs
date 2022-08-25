@@ -244,11 +244,7 @@ namespace SocialEdgeSDK.Server.Context
 
         public int GetPlayerRetentionDays()
         {
-            long creationTime = Utils.ToUTC(socialEdgePlayer.CombinedInfo.AccountInfo.Created);
-            long currentTime = Utils.UTCNow();
-            double retentionDays = ((currentTime - creationTime) / (60*60*24*1000));
-            retentionDays = Math.Floor(retentionDays);
-            return (int)retentionDays;
+            return (int)(DateTime.UtcNow - socialEdgePlayer.CombinedInfo.AccountInfo.Created).TotalDays;
         }
 
         public bool IsValidForRVReward()
@@ -365,8 +361,18 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
+        private void ProcessPlayDays()
+        {
+            if((DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.lastPlayDay).TotalDays > 1)
+            {
+                socialEdgePlayer.PlayerModel.Info.playDays = socialEdgePlayer.PlayerModel.Info.playDays + 1;
+                socialEdgePlayer.PlayerModel.Info.lastPlayDay = DateTime.UtcNow;
+            }
+        }
+
         public void ProcessEconomyInit()
         {
+            ProcessPlayDays();
             ProcessLobbyChestTimestamp();
             ProcessDailyEvent();
             ProcessPiggyBankExpiry();

@@ -388,7 +388,7 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile._displayName = socialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
             playerPublicProfile._location = socialEdgePlayer.CombinedInfo.PlayerProfile.Locations[0].CountryCode.ToString();
             playerPublicProfile._created = socialEdgePlayer.CreationDate;
-            playerPublicProfile._lastLogin = DateTime.Now;
+            playerPublicProfile._lastLogin = DateTime.UtcNow;
             playerPublicProfile._activeInventory = socialEdgePlayer.PlayerModel.Info.activeInventory;
             playerPublicProfile._earnings = socialEdgePlayer.PlayerModel.Info.earnings;
             playerPublicProfile._eloScore = socialEdgePlayer.PlayerModel.Info.eloScore;
