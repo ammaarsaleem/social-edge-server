@@ -4,6 +4,7 @@
 /// Proprietary and confidential
 
 using System;
+using System.Linq;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -66,6 +67,7 @@ namespace SocialEdgeSDK.Server.Requests
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
             SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
             PlayerSearch.Register(SocialEdgePlayer);
+            Challenge.ProcessAbandonedGame(SocialEdgePlayer, SocialEdgeChallenge, SocialEdgeTournament, this);
 
             try
             {
@@ -94,6 +96,6 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 throw e;
             }
-        }    
+        }
     }  
 }

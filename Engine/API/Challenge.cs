@@ -3,6 +3,7 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using SocialEdgeSDK.Server.Requests;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.Common;
@@ -22,7 +23,7 @@ namespace SocialEdgeSDK.Server.Api
             ChallengePlayerModel currentPlayerData = playersData[socialEdgePlayer.PlayerId];
             ChallengePlayerModel otherPlayerData = playersData[otherPlayerId];
 
-            if (winLoseGame)
+            if (winLoseGame || isAbandoned)
             {
                 // Set elo score changes first
                 currentPlayerData.eloChange = CalcEloChange(currentPlayerData.eloScore, otherPlayerData.eloScore, socialEdgeChallenge.ChallengeModel.Challenge.isRanked, currentPlayerData.isEventMatch)[playerWins ? 0 : 1];
@@ -51,11 +52,6 @@ namespace SocialEdgeSDK.Server.Api
                 {
                     UpdateDrawGameFriendsInfo(socialEdgePlayer, otherPlayerId);
                 }
-            }
-
-            if (isAbandoned)
-            {
-                //TODO make both players loose 
             }
 
             currentPlayerData.piggyBankReward = socialEdgePlayer.PlayerEconomy.ProcessPiggyBankReward(currentPlayerData);
@@ -186,6 +182,27 @@ namespace SocialEdgeSDK.Server.Api
         {
             var dateKey = DateTime.Now.ToShortDateString();
             playerContext.PlayerModel.Info.gamesPlayedPerDay[dateKey] = gameResults;
+        }
+
+        public static void ProcessAbandonedGame(SocialEdgePlayerContext SocialEdgePlayer, SocialEdgeChallengeContext SocialEdgeChallenge, SocialEdgeTournamentContext SocialEdgeTournament, FunctionContext functionContext)
+        {
+            if (string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Challenge.currentChallengeId))
+                return;
+
+            ChallengeData challengeData = SocialEdgeChallenge.ChallengeModel.Get(SocialEdgePlayer.PlayerModel.Challenge.currentChallengeId);
+            SocialEdgeChallenge.ChallengeModel.Challenge.winnerId = null;
+            SocialEdgeChallenge.ChallengeModel.Challenge.gameEndReason = "ABANDONED";
+
+            foreach (var player in challengeData.playersData)
+            {
+                if (!player.Value.isBot)
+                {
+                    var socialEdgePlayer = player.Key == SocialEdgePlayer.PlayerId ? SocialEdgePlayer : functionContext.LoadPlayer(player.Key);
+                    var otherPlayerId = challengeData.playersData.Where(p => p.Key != socialEdgePlayer.PlayerId).Select(p => p.Key).FirstOrDefault();
+                    Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, socialEdgePlayer, null, null, otherPlayerId);
+                    Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
+                }
+            }
         }
     }
 }
