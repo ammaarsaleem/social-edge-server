@@ -246,7 +246,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                     public int _gamesLost;
         [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                    public int _gamesDrawn;
         [BsonElement("activeInventory")]                                                                public List<PlayerInventoryItem> _activeInventory;
-
+        [BsonElement("videosProgress")]                                                                 public Dictionary<string, float> _videosProgress;
         [BsonElement("eloCompletedPlacementGames")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]    public int _eloCompletedPlacementGames;
         [BsonElement("editedName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                   public string _editedName;
         [BsonElement("totalGamesCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]               public int _totalGamesCount;
@@ -270,6 +270,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int gamesLost { get => _gamesLost; set { _gamesLost = value; isDirty = true; } }
         [BsonIgnore] public int gamesDrawn { get => _gamesDrawn; set { _gamesDrawn = value; isDirty = true; } }
         [BsonIgnore] public List<PlayerInventoryItem> activeInventory { get => _activeInventory; set { _activeInventory = value; isDirty = true; } }
+        [BsonIgnore] public Dictionary<string, float> videosProgress { get => _videosProgress; set { _videosProgress = value; isDirty = true; } }
         [BsonIgnore] public int eloCompletedPlacementGames { get => _eloCompletedPlacementGames; set { _eloCompletedPlacementGames = value; isDirty = true; } }
         [BsonIgnore] public string editedName { get => _editedName; set { _editedName = value; isDirty = true; } }
         [BsonIgnore] public int totalGamesCount { get => _totalGamesCount; set { _totalGamesCount = value; isDirty = true; } }
@@ -287,6 +288,7 @@ namespace SocialEdgeSDK.Server.Models
         {
             activeInventory = new List<PlayerInventoryItem>();
             gamesPlayedPerDay = new Dictionary<string, GameResults>();
+            videosProgress = new Dictionary<string, float>();
         }
 
         public PlayerInventoryItem CreatePlayerInventoryItem()
