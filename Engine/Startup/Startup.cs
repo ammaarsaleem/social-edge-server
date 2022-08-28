@@ -14,6 +14,7 @@ using SocialEdgeSDK.Server.Db;
 using SocialEdgeSDK.Server.DataService;
 using StackExchange.Redis;
 using Azure.Storage.Blobs;
+using SocialEdgeSDK.Server.MessageService;
 
 [assembly: FunctionsStartup(typeof(SocialEdgeSDK.Playfab.Startup))]
 
@@ -83,6 +84,7 @@ namespace SocialEdgeSDK.Playfab
             builder.Services.AddSingleton<IDbHelper,DbHelper>();
             builder.Services.AddSingleton<IDataService,DataService>();
             builder.Services.AddSingleton<ITitleContext, TitleContext>();
+            builder.Services.AddSingleton<IMessageService, MessageService>();
         }
     }
 }

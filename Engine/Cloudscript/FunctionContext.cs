@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.DataService;
+using SocialEdgeSDK.Server.MessageService;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -16,9 +17,13 @@ namespace SocialEdgeSDK.Server.Requests
     {
         private ITitleContext _titleContext;
         private IDataService _dataService;
+        private IMessageService _messageService;
+
         private SocialEdgePlayerContext _socialEdgePlayer;
         private SocialEdgeTournamentContext _socialEdgeTournament;
         private SocialEdgeChallengeContext _socialEdgeChallenge;
+        private SocialEdgeMessageContext _socialEdgeMesssage;
+
         private dynamic _args;
         private dynamic _context;
 
@@ -28,18 +33,21 @@ namespace SocialEdgeSDK.Server.Requests
         public SocialEdgePlayerContext SocialEdgePlayer { get => _socialEdgePlayer; }
         public SocialEdgeTournamentContext SocialEdgeTournament { get => _socialEdgeTournament; }
         public SocialEdgeChallengeContext SocialEdgeChallenge { get => _socialEdgeChallenge; }
+        public SocialEdgeMessageContext SocialEdgeMessage { get => _socialEdgeMesssage; }
+
         public dynamic Args { get => _args; }
 
-        public void Base(ITitleContext titleContext, IDataService dataService = null)
+        public void Base(ITitleContext titleContext, IDataService dataService = null, IMessageService messageService = null)
         {
             _titleContext = titleContext;
             _dataService = dataService;
+            _messageService = messageService;
             _cacheFlush = new List<CacheFlushFn>();
         }
 
         public void InitContext(HttpRequestMessage req, ILogger log)
         {
-            SocialEdge.Init(req, log, _titleContext, _dataService);
+            SocialEdge.Init(req, log, _titleContext, _dataService, _messageService);
             var readT = req.Content.ReadAsStringAsync();
             readT.Wait();
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject(readT.Result);
@@ -50,7 +58,7 @@ namespace SocialEdgeSDK.Server.Requests
 
         public void InitContext<FunctionContextT>(HttpRequestMessage req, ILogger log)
         {
-            SocialEdge.Init(req, log, _titleContext, _dataService);
+            SocialEdge.Init(req, log, _titleContext, _dataService, _messageService);
             var readT = req.Content.ReadAsStringAsync();
             readT.Wait();
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionContextT>(readT.Result);
@@ -59,6 +67,7 @@ namespace SocialEdgeSDK.Server.Requests
             _socialEdgePlayer.CacheFill(CachePlayerDataSegments.NONE);
             _socialEdgeTournament = new SocialEdgeTournamentContext(_context);
             _socialEdgeChallenge = new SocialEdgeChallengeContext(_context);
+            _socialEdgeMesssage = new SocialEdgeMessageContext(_socialEdgePlayer.PlayerId);
 
             RegisterCacheFlush(SocialEdgePlayer.CacheFlush);
             RegisterCacheFlush(SocialEdgeTournament.CacheFlush);
