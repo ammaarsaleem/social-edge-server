@@ -23,8 +23,8 @@ namespace SocialEdgeSDK.Server.Requests
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
-            var videoId = data["videoId"];
-            var progress = data["progress"];
+            var videoId = data["videoId"].Value.ToString();
+            var progress = (float)data["progress"].Value;
 
             if(SocialEdgePlayer.PlayerModel.Info.videosProgress.ContainsKey(videoId))
             {
