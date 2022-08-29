@@ -33,8 +33,8 @@ namespace SocialEdgeSDK.Server.DataService
         public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn, BlobServiceClient serviceClient)
         {
             _dbClient = mongoClient;
-            _database = _dbClient.GetDatabase(ConfigConstants.DATABASE);
-            _redis = redisConn;
+            _database = _dbClient.GetDatabase(ConfigConstants.MONGO_DATABASE_NAME);           
+             _redis = redisConn;
             _cacheDb = _redis.GetDatabase();
             _blobServerClient = serviceClient;
         }

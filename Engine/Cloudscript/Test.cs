@@ -1,17 +1,13 @@
-using System;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.Net.Http;
 using Newtonsoft.Json;
-using SocialEdgeSDK.Server.Context;
-using PlayFab.Samples;
-using System.Collections.Generic;
-using SocialEdgeSDK.Server.Db;
 using SocialEdgeSDK.Server.DataService;
-// using SocialEdgeSDK.Server.Realtime;
-using MongoDB.Bson;
+
 namespace SocialEdgeSDK.Server.Requests
 {
     public class Test
@@ -29,26 +25,22 @@ namespace SocialEdgeSDK.Server.Requests
         /// <param name="name">the name of the user to fetch</param>
         /// <returns>serialiazed json</returns>
         [FunctionName("Test")]
-        public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
+        public  async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            SocialEdge.Init(req);
-            var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
-            dynamic args = context.FunctionArgument;
-            string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
-            var collection = _dataService.GetCollection<BsonDocument>("BooksTest");
-            //var res = await collection.FindOneById("1",null);
-            try
-            {
-            //     Realtime.PubSub.AddToGroup()
-            //     string message = "abc";
-            //    Realtime.PubSub.SendToUser("FromTest",playerId,message );
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            string userId = req.Query["userId"];
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            dynamic data = JsonConvert.DeserializeObject(requestBody);
+            userId = userId ?? data?.userId;
+
+            string responseMessage = string.IsNullOrEmpty(userId)
+                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
+                : $"Hello, {userId}. This HTTP triggered function executed successfully.";
+
+            return new OkObjectResult(responseMessage);
         }
     }
 }

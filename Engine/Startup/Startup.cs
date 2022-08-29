@@ -15,6 +15,7 @@ using SocialEdgeSDK.Server.DataService;
 using StackExchange.Redis;
 using Azure.Storage.Blobs;
 using SocialEdgeSDK.Server.MessageService;
+using SocialEdgeSDK.Server.Context;
 
 [assembly: FunctionsStartup(typeof(SocialEdgeSDK.Playfab.Startup))]
 
@@ -36,7 +37,8 @@ namespace SocialEdgeSDK.Playfab
 
             builder.Services.AddSingleton((s) =>
             {
-                MongoClient client = new MongoClient("mongodb+srv://MyMongoDBUser:MyMongoDBUserPassword@socialedgecluster.hsxfp.mongodb.net/Development?retryWrites=true&w=majority");
+                MongoClient client = new MongoClient(ConfigConstants.MONGO_CONNECTION_STRING);
+                //MongoClient client = new MongoClient("mongodb+srv://MyMongoDBUser:MyMongoDBUserPassword@socialedgecluster.hsxfp.mongodb.net/Development?retryWrites=true&w=majority");
                 // MongoClient client = new MongoClient("mongodb+srv://MyMongoDBUser:MyMongoDBUserPassword@socialedgecluster.hsxfp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority");
                 // string connString = Environment.GetEnvironmentVariable(ConfigConstants.MONGO_CONNECTION_STRING, EnvironmentVariableTarget.Process);
                 // MongoClient client = new MongoClient(connString);
@@ -45,7 +47,8 @@ namespace SocialEdgeSDK.Playfab
 
             builder.Services.AddSingleton((r) =>
             {
-                string connString = "socialedgeserver.redis.cache.windows.net:6380,password=Gf7aTTxpvRfk+IKGqCbQwW7j+bWIKcr5B6bXAqj+ZSQ=,ssl=True,abortConnect=False";
+                string connString  = ConfigConstants.REDIS_CONNECTION_STRING;
+                //string connString = "socialedgeserver.redis.cache.windows.net:6380,password=Gf7aTTxpvRfk+IKGqCbQwW7j+bWIKcr5B6bXAqj+ZSQ=,ssl=True,abortConnect=False";
                 //string connString = Environment.GetEnvironmentVariable(ConfigConstants.REDIS_CONNECTION_STRING, EnvironmentVariableTarget.Process);
                 ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connString);
                 return redis;
@@ -72,7 +75,8 @@ namespace SocialEdgeSDK.Playfab
 
             builder.Services.AddSingleton((t) =>
             {
-                string connString = "DefaultEndpointsProtocol=https;AccountName=storageaccountchess812e;AccountKey=Y4gMwGaJVvdin1xywKyyLVCUbiN0zy6WAg3NW9owPD+l7TPdj/i5dJKr+MRlCEhVGOO3LhcjBKbmMcTZYWxQnQ==;EndpointSuffix=core.windows.net";
+                string connString = ConfigConstants.AZURE_STORAGE;
+                //string connString = "DefaultEndpointsProtocol=https;AccountName=storageaccountchess812e;AccountKey=Y4gMwGaJVvdin1xywKyyLVCUbiN0zy6WAg3NW9owPD+l7TPdj/i5dJKr+MRlCEhVGOO3LhcjBKbmMcTZYWxQnQ==;EndpointSuffix=core.windows.net";
                 //string connContainer = "dlc";
                 //string connString = "DefaultEndpointsProtocol=https;AccountName=chessstarsblobstorage;AccountKey=9UE+ONgiQuIt9/vrUQtN2VUuDGSkMiLEi6qLlpNL8koLMHo4d68xmTMx4T/CMiiuNj7143VCawev+AStDkzjTw==;EndpointSuffix=core.windows.net";
                 //string connContainer = "profilepics";

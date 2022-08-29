@@ -29,7 +29,7 @@ namespace SocialEdgeSDK.Server.Db
         {
             SocialEdge.Init();
             _dbClient = dbclient;
-            string dbName = ConfigConstants.DATABASE;
+            string dbName = ConfigConstants.MONGO_DATABASE_NAME;
             _database = _dbClient.GetDatabase(dbName);
             _playerCollection = _database.GetCollection<BsonDocument>(Constants.PLAYER_COLLECTION);                     
         }
