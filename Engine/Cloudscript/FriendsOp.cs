@@ -16,6 +16,7 @@ using SocialEdgeSDK.Server.Api;
 using SocialEdgeSDK.Server.Models;
 using MongoDB.Bson.Serialization;
 using SocialEdgeSDK.Server.Common;
+using SocialEdgeSDK.Server.MessageService;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -43,7 +44,7 @@ namespace SocialEdgeSDK.Server.Requests
 
     public class FriendsOp : FunctionContext
     {
-        public FriendsOp(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
+        public FriendsOp(ITitleContext titleContext, IDataService dataService, IMessageService messageService) { Base(titleContext, dataService, messageService); }
 
         [FunctionName("FriendsOp")]
         public FriendsOpResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
@@ -80,23 +81,23 @@ namespace SocialEdgeSDK.Server.Requests
                     FriendsSubOp friendsSubOp = BsonSerializer.Deserialize<FriendsSubOp>(subOpData);
                     if (friendsSubOp.subOp == SubOpType.REMOVE_RECENT)
                     {
-                        foreach (var id in friendsSubOp.friendIds) 
+                        foreach (var id in friendsSubOp.friendIds)
                         {
-                            if (SocialEdgePlayer.PlayerModel.Friends.friends[id].friendType == "COMMNUNITY") 
+                            if (SocialEdgePlayer.PlayerModel.Friends.friends[id].friendType == "COMMNUNITY")
                             {
                                 SocialEdgePlayer.PlayerModel.RemoveFriend(id);
                                 Friends.RemoveFriend(id, SocialEdgePlayer.PlayerId);
                             }
-                            else 
+                            else
                             {
-                                SocialEdgePlayer.PlayerModel.Friends.friends[id].flagMask = 
+                                SocialEdgePlayer.PlayerModel.Friends.friends[id].flagMask =
                                         SocialEdgePlayer.PlayerModel.Friends.friends[id].flagMask & ~FriendFlagMask.RECENT_PLAYED;
                             }
                         }
                     }
                     if (friendsSubOp.subOp == SubOpType.REMOVE)
                     {
-                        foreach (var id in friendsSubOp.friendIds) 
+                        foreach (var id in friendsSubOp.friendIds)
                         {
                             SocialEdgePlayer.PlayerModel.RemoveFriend(friendId);
                             Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
@@ -128,13 +129,42 @@ namespace SocialEdgeSDK.Server.Requests
 
                 List<string> excludeIds = new List<string>();
                 excludeIds.Add(SocialEdgePlayer.PlayerDBId);
-                foreach(var block in SocialEdgePlayer.PlayerModel.Blocked.blocked)
+                foreach (var block in SocialEdgePlayer.PlayerModel.Blocked.blocked)
                     excludeIds.Add(Utils.DbIdFromPlayerId(block.Key));
 
                 List<PlayerSearchDataModelDocument> list = PlayerSearch.Search(matchString, skip, searchMaxPage, excludeIds);
                 result.searchList = list;
                 result.status = true;
                 result.skip = list.Count;
+            }
+            else if (op == "matchinvite")
+            {
+                string opponentId = data["opponentId"].ToString();
+                string actionCode = data["actionCode"].ToString();
+                string challengerDisplayName = data["challengerDisplayName"].ToString();
+
+                Dictionary<string, string> msgDict = new Dictionary<string, string>()
+                {
+                    {"Challenge1", " wants a 1 minute game."},
+                    {"Challenge3", " wants a 3 minute game."},
+                    {"Challenge",  " wants a 5 minute game."},
+                    {"Challenge10", " wants a 10 minute game."},
+                    {"Challenge30", " wants a 30 minute game."}
+                };
+                string msg = msgDict.ContainsKey(actionCode) ? msgDict[actionCode] : string.Empty;
+
+                if (msg != string.Empty)
+                {
+                    MatchInviteMessageData msgData = new MatchInviteMessageData();
+                    msgData.creationTimestamp = Utils.UTCNow();
+                    msgData.senderMiniProfile = SocialEdgePlayer.MiniProfile;
+                    msgData.senderPlayerId = SocialEdgePlayer.PlayerId;
+                    msgData.title = challengerDisplayName + msg;
+                    msgData.body = "Make your move.";
+                    msgData.actionCode = actionCode;
+
+                    SocialEdgeMessage socialEdgeMessage = new SocialEdgeMessage(SocialEdgePlayer.PlayerId, msgData, nameof(MatchInviteMessageData), opponentId);
+                }
             }
 
             CacheFlush();

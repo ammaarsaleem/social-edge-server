@@ -16,6 +16,7 @@ namespace SocialEdgeSDK.Server.Api
         public string title; 
         public string body; 
         public string senderPlayerId; 
+        public string actionCode;
         public PlayerMiniProfileData senderMiniProfile;
         public long creationTimestamp;
     }
