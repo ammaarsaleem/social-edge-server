@@ -3,35 +3,39 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
-using MongoDB.Bson;
-using MongoDB.Bson.IO;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using PlayFab.ProfilesModels;
-using PlayFab.ServerModels;
-using SocialEdgeSDK.Server.Api;
-using SocialEdgeSDK.Server.Common;
+using MongoDB.Bson;
 using SocialEdgeSDK.Server.Models;
-using PlayFab.Samples;
-using SocialEdgeSDK.Server.MessageService;
+using SocialEdgeSDK.Server.Context;
 
-namespace SocialEdgeSDK.Server.Context
+namespace SocialEdgeSDK.Server.Api
 {
+    public class MatchInviteMessageData
+    {
+        public string title; 
+        public string body; 
+        public string senderPlayerId; 
+        public PlayerMiniProfileData senderMiniProfile;
+        public long creationTimestamp;
+    }
+
     public class SocialEdgeMessage
     {
         public string msgType;
         public string senderPlayerId;
-        public object msgData; 
+        public string msgDataType;
+        public string msgData; 
 
         private List<string> toPlayerIds;
 
-        public SocialEdgeMessage(string senderPlayerId, object msgData, params string[] toPlayerIds)
+        public SocialEdgeMessage(string senderPlayerId, object msgData, string msgDataType, params string[] toPlayerIds)
         {
             this.msgType = "UserMessage";
             this.senderPlayerId = senderPlayerId;
             this.toPlayerIds = toPlayerIds.ToList();
-            this.msgData = msgData;
+            this.msgData = msgData.ToJson();
+            this.msgDataType = msgDataType;
         }
 
         public void Send()
