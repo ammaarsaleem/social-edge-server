@@ -5,9 +5,10 @@
 
 using System.Linq;
 using System.Collections.Generic;
-using MongoDB.Bson;
+using Newtonsoft.Json;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.Context;
+
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -35,7 +36,7 @@ namespace SocialEdgeSDK.Server.Api
             this.msgType = "UserMessage";
             this.senderPlayerId = senderPlayerId;
             this.toPlayerIds = toPlayerIds.ToList();
-            this.msgData = msgData.ToJson();
+            this.msgData = JsonConvert.SerializeObject(msgData);
             this.msgDataType = msgDataType;
         }
 
