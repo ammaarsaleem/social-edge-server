@@ -660,8 +660,29 @@ namespace SocialEdgeSDK.Server.Models
             _friends = _friends == null && model._friends != null ? model._friends : _friends;
             _blocked = _blocked == null && model._blocked != null ? model._blocked : _blocked;
 
+            if (_meta != null)
+                _meta.PrepareCache();
+
+            if (_info != null)
+                _info.PrepareCache();
+
+            if (_economy != null)
+                _economy.PrepareCache();
+
+            if (_events != null)
+                _events.PrepareCache();
+
             if (_tournament != null)
                 _tournament.PrepareCache();
+
+            if (_challenge != null)
+                _challenge.PrepareCache();
+
+            if (_friends != null)
+                _friends.PrepareCache();
+
+            if (_blocked != null)
+                _blocked.PrepareCache();
         }
 
         /*
