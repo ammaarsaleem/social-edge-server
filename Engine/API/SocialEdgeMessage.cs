@@ -5,6 +5,7 @@
 
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using PlayFab.ProfilesModels;
@@ -17,43 +18,28 @@ using SocialEdgeSDK.Server.MessageService;
 
 namespace SocialEdgeSDK.Server.Context
 {
-    public class Message
+    public class SocialEdgeMessage
     {
         public string msgType;
-        public string senderUserId;
-        public object msgData;   
-    }
+        public string senderPlayerId;
+        public object msgData; 
 
-    public class SocialEdgeMessageContext
-    {
-        private string _playerId;
-        private List<string> _toPlayerIds;
+        private List<string> toPlayerIds;
 
-        public SocialEdgeMessageContext(string playerId)
+        public SocialEdgeMessage(string senderPlayerId, object msgData, params string[] toPlayerIds)
         {
-            _playerId = playerId;
-            _toPlayerIds = new List<string>();
+            this.msgType = "UserMessage";
+            this.senderPlayerId = senderPlayerId;
+            this.toPlayerIds = toPlayerIds.ToList();
+            this.msgData = msgData;
         }
 
-        public Message Create()
+        public void Send()
         {
-            Message message = new Message();
-            message.msgType = "UserMessage";
-            message.senderUserId = _playerId;
-            return message;
-        }
-
-        public void SetToPlayerIds(List<string> toPlayerIds)
-        {
-            _toPlayerIds = toPlayerIds;
-        }
-
-        public void Send(Message message)
-        {
-            if (_toPlayerIds.Count == 1)
-                SocialEdge.MessageService.Send(_toPlayerIds[0], message);
+            if (toPlayerIds.Count == 1)
+                SocialEdge.MessageService.Send(toPlayerIds[0], this);
             else
-                SocialEdge.MessageService.Send(_toPlayerIds, message);
+                SocialEdge.MessageService.Send(toPlayerIds, this);
         }
     }
 }

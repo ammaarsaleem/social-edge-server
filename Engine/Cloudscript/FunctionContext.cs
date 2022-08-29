@@ -22,7 +22,6 @@ namespace SocialEdgeSDK.Server.Requests
         private SocialEdgePlayerContext _socialEdgePlayer;
         private SocialEdgeTournamentContext _socialEdgeTournament;
         private SocialEdgeChallengeContext _socialEdgeChallenge;
-        private SocialEdgeMessageContext _socialEdgeMesssage;
 
         private dynamic _args;
         private dynamic _context;
@@ -33,7 +32,6 @@ namespace SocialEdgeSDK.Server.Requests
         public SocialEdgePlayerContext SocialEdgePlayer { get => _socialEdgePlayer; }
         public SocialEdgeTournamentContext SocialEdgeTournament { get => _socialEdgeTournament; }
         public SocialEdgeChallengeContext SocialEdgeChallenge { get => _socialEdgeChallenge; }
-        public SocialEdgeMessageContext SocialEdgeMessage { get => _socialEdgeMesssage; }
 
         public dynamic Args { get => _args; }
 
@@ -67,7 +65,6 @@ namespace SocialEdgeSDK.Server.Requests
             _socialEdgePlayer.CacheFill(CachePlayerDataSegments.NONE);
             _socialEdgeTournament = new SocialEdgeTournamentContext(_context);
             _socialEdgeChallenge = new SocialEdgeChallengeContext(_context);
-            _socialEdgeMesssage = new SocialEdgeMessageContext(_socialEdgePlayer.PlayerId);
 
             RegisterCacheFlush(SocialEdgePlayer.CacheFlush);
             RegisterCacheFlush(SocialEdgeTournament.CacheFlush);
