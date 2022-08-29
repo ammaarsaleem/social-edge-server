@@ -163,7 +163,7 @@ namespace SocialEdgeSDK.Server.Requests
                     msgData.body = "Make your move.";
                     msgData.actionCode = actionCode;
 
-                    SocialEdgeMessage socialEdgeMessage = new SocialEdgeMessage(SocialEdgePlayer.PlayerId, msgData, nameof(MatchInviteMessageData), opponentId);
+                    new SocialEdgeMessage(SocialEdgePlayer.PlayerId, msgData, nameof(MatchInviteMessageData), opponentId).Send();
                 }
             }
 
