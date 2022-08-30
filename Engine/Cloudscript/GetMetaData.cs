@@ -50,8 +50,9 @@ namespace SocialEdgeSDK.Server.Requests
             ILogger log)
         {
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
-            BsonDocument args = BsonDocument.Parse(Args);
-            var isNewlyCreated = args.Contains("isNewlyCreated") ? args["isNewlyCreated"].AsBoolean : false;
+            var data = Args["data"];
+            BsonDocument args = BsonDocument.Parse(data["parameters"].ToString());
+            var isNewlyCreated = args.Contains("isNewlyCreated") ? (bool)args["isNewlyCreated"] : false;
             
             if (isNewlyCreated)
             {
