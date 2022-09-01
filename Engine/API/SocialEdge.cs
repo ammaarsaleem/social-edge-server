@@ -5,10 +5,13 @@
 
 using System;
 using PlayFab;
-using System.Net.Http;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.MessageService;
 using Microsoft.Extensions.Logging;
+using  SocialEdgeSDK.Server.Models;
+using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Context
 {
@@ -18,11 +21,14 @@ namespace SocialEdgeSDK.Server.Context
         private static IMessageService _messageService = null;
         private static ITitleContext _titleContext = null;
         private static ILogger _log = null;
+        public static int _todayGamesCount = 70000;
 
         public static ITitleContext TitleContext { get => _titleContext; }
         public static IDataService DataService { get => _dataService; }
         public static IMessageService MessageService { get => _messageService; }
         public static ILogger Log { get => _log; }
+        public static int TodayGamesCount { get => _todayGamesCount; }
+
 
         public static void Init(ILogger logger = null,
                                 ITitleContext titleContext = null,
@@ -59,6 +65,16 @@ namespace SocialEdgeSDK.Server.Context
             {
                 _log = logger;
             }
+        }
+
+        public static async void FetchTodayGamesCount()
+        {
+            const string COLLECTION = "challenges";
+            long utcSeconds = (Utils.UTCNow() / 1000) - (24 * 60 * 60);
+            string timeStampObjectId = utcSeconds.ToString("X").ToLower().PadRight(24, '0');
+            var collection = _dataService.GetCollection<ChallengeModelDocument>(COLLECTION);
+            var filter = Builders<ChallengeModelDocument>.Filter.Gt("_id", ObjectId.Parse(timeStampObjectId));
+            _todayGamesCount = (int)(await collection.Count(filter));
         }
     }
 }

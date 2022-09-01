@@ -21,10 +21,16 @@ namespace SocialEdgeSDK.Server.DataService{
 
         public long EstimatedDocumentCount{ get => GetEstimatedDocs();}
         public long DocumentCount{ get => GetCount();}
+
         private long GetCount()
         {
             var filter = Builders<BsonDocument>.Filter;
             return _collection.CountDocuments(new BsonDocument());
+        }
+
+        public async Task<long> Count(FilterDefinition<T> filter)
+        {
+            return await _collection.CountDocumentsAsync(filter);
         }
 
         private long GetEstimatedDocs()

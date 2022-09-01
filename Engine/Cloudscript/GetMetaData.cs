@@ -38,6 +38,7 @@ namespace SocialEdgeSDK.Server.Requests
         public Dictionary<string, string> dynamicGemSpotBundle;
         public bool appVersionValid;
         public List<BlobFileInfo> contentData;
+        public int todayGamesCount;
     }
 
     public class GetMetaData : FunctionContext
@@ -84,6 +85,7 @@ namespace SocialEdgeSDK.Server.Requests
                 result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle();
                 result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC).GetContentList();
                 result.playerDataModel = SocialEdgePlayer.PlayerModel;
+                result.todayGamesCount = SocialEdge.TodayGamesCount;
 
                 if (isNewlyCreated == true)
                 {

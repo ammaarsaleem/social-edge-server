@@ -20,6 +20,8 @@ namespace SocialEdgeSDK.Server.DataService
         //     total documents in a collection use EstimatedDocumentCount</summary>      
         ///<returns>The number of documents in the collection.</returns>
         long DocumentCount{ get;}
+
+        Task<long> Count(FilterDefinition<T> filter);
         
         ///<summary>Finds the document matching the id.</summary>      
         ///<param name="id">id of the document to match. </param>
