@@ -4,11 +4,12 @@
 /// Proprietary and confidential
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using PlayFab;
 using PlayFab.ServerModels;
-using PlayFab.ProfilesModels;
 using PlayFab.AuthenticationModels;
 using PlayFab.DataModels;
 using MongoDB.Bson;
@@ -16,13 +17,15 @@ using MongoDB.Driver;
 using SocialEdgeSDK.Server.Context;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Models;
-using Newtonsoft.Json;
-using System.Linq;
-using Microsoft.Extensions.Logging;
-
 
 namespace SocialEdgeSDK.Server.Api
 {
+    public class OnlineStatusNotifyMessageData
+    {
+        public string playerId;
+        public bool isOnline;
+    }
+
     public static class Player
     {
         public static async Task<PlayFabResult<GetPlayerProfileResult>> GetPlayerProfile(string playerId)
@@ -84,6 +87,7 @@ namespace SocialEdgeSDK.Server.Api
             FilterDefinition<PlayerModelDocument> filter = Builders<PlayerModelDocument>.Filter.In<string>("_id", friendsDBIds);
             var projection = Builders<PlayerModelDocument>.Projection.Expression(item => 
                                                             new PublicProfileEx(
+                                                                    item._model.Info.isOnline,
                                                                     item._model.Info.eloScore, 
                                                                     item._model.Info.trophies, 
                                                                     item._model.Info.earnings,
@@ -299,16 +303,13 @@ namespace SocialEdgeSDK.Server.Api
         {
             var vAvatars = SocialEdge.TitleContext.CatalogItems.Catalog.FindAll(s => s.Tags[0].Equals("Avatar"));
             var randomAvatar = vAvatars[(int)(Math.Floor(new Random().NextDouble() * vAvatars.Count))];
-            //BsonDocument avatarInventoryItem = new BsonDocument() {["key"] = randomAvatar.ItemId, ["kind"] = "Avatar"};
             return randomAvatar.ItemId.ToString();
         }
 
         private static string GenerateAvatarBgColor()
         {
-            //var colorCodesArray = SocialEdge.TitleContext.GetTitleDataProperty("GameSettings")["AvatarBgColors"];
             var colorCodesArray = Settings.GameSettings["AvatarBgColors"];
             var randomColorCode = colorCodesArray[(int)(Math.Floor(new Random().NextDouble() * colorCodesArray.Count))];
-            //BsonDocument colorCodeInventoryItem = new BsonDocument() {["key"] = randomColorCode, ["kind"] = "AvatarBgColor"};
             return randomColorCode.ToString();
         }
 
@@ -320,15 +321,8 @@ namespace SocialEdgeSDK.Server.Api
 
             var newName = Player.GenerateDisplayName();
             var newTag = Player.GenerateTag();
-            //var playerPublicData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerPublicData"];
-            //var playerData = SocialEdge.TitleContext.GetTitleDataProperty("NewPlayerSetup")["playerData"];
-            //var coinsCredit = (int)SocialEdge.TitleContext.GetTitleDataProperty("Economy")["BettingIncrements"][0];
             var avatar = GenerateAvatar();
             var avatarBgColor = GenerateAvatarBgColor();
-
-            //List<BsonValue> activeInventoryList = playerPublicData["ActiveInventory"]["invl"].ToList();
-            // var activeInventoryAvatar = activeInventoryList.Find(s => s[1].Equals("Avatar"));
-            //var activeInventoryBgColor = activeInventoryList.Find(s => s[1].Equals("AvatarBgColor"));
 
             socialEdgePlayer.PlayerModel.CreateDefaults();
             socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
@@ -343,29 +337,16 @@ namespace SocialEdgeSDK.Server.Api
             socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
 
             var addInventoryT = GrantItem(playerId, "DefaultOwnedItems");
-
-            //playerData["coldData"]["isInitialized"] = true;
-            //playerPublicData["PublicProfileEx"]["tag"] = newTag;
-            // activeInventoryAvatar["key"] = avatar;
-            //activeInventoryBgColor["key"] = avatarBgColor;
-
             InboxModel.Init(socialEdgePlayer.InboxId);
-            //playerPublicData["DBIds"] = "{\"inbox\":" + "\""+ chatDocumentId +"\"," + "\"chat\":" + "\"\"}";
 
-            //String avatarInfo =  avatar + "," + avatarBgColor + "," + "XXX" + "," + "0";
-            // PlayerMiniProfileData playerMiniProfile =  new PlayerMiniProfileData();
             socialEdgePlayer.MiniProfile.AvatarId = avatar;
             socialEdgePlayer.MiniProfile.AvatarBgColor = avatarBgColor;
             socialEdgePlayer.MiniProfile.UploadPicId = null;
             socialEdgePlayer.MiniProfile.EventGlow = 0;
             socialEdgePlayer.MiniProfile.isDirty = false;
             UpdatePlayerAvatarData(playerId, socialEdgePlayer.MiniProfile);
-            //var UpdatePlayerDataT = UpdatePlayerData(playerId, playerData);
             var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
-            //var UpdatePublicDataT = UpdatePublicData(entityToken, entityId, playerPublicData);
 
-            //Task.WaitAll(UpdatePlayerDataT, addVirualCurrencyT, updateDisplayNameT, UpdatePublicDataT);
-            //Task.WaitAll(addVirualCurrencyT, updateDisplayNameT);
             Task.WaitAll(updateDisplayNameT, addInventoryT);
         }
         public static void PlayerCurrenyChanged(SocialEdgePlayerContext socialEdgePlayer, ILogger log)
@@ -400,6 +381,23 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile.playerMiniProfile = socialEdgePlayer.MiniProfile;
 
             return playerPublicProfile;
+        }
+
+        public static void NotifyOnlineStatus(SocialEdgePlayerContext socialEdgePlayer, bool isOnline)
+        {
+            int friendCount = socialEdgePlayer.PlayerModel.Friends.friends.Count;
+            if (friendCount == 0)
+                return;
+
+            string[] friendIds = new string[friendCount];
+
+            for(int i = 0; i < friendCount; i++)
+                friendIds[i] = socialEdgePlayer.PlayerModel.Friends.friends.ElementAt(i).Key;
+
+            OnlineStatusNotifyMessageData notifyOnlineMessage = new OnlineStatusNotifyMessageData();
+            notifyOnlineMessage.playerId = socialEdgePlayer.PlayerId;
+            notifyOnlineMessage.isOnline = isOnline;
+            new SocialEdgeMessage(socialEdgePlayer.PlayerId, notifyOnlineMessage, nameof(OnlineStatusNotifyMessageData), friendIds).Send();
         }
     }
 }

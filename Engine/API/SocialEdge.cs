@@ -24,8 +24,7 @@ namespace SocialEdgeSDK.Server.Context
         public static IMessageService MessageService { get => _messageService; }
         public static ILogger Log { get => _log; }
 
-        public static void Init(HttpRequestMessage req = null,
-                                ILogger logger = null,
+        public static void Init(ILogger logger = null,
                                 ITitleContext titleContext = null,
                                 IDataService dataService = null,
                                 IMessageService messageService = null)

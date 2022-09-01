@@ -25,7 +25,7 @@ namespace SocialEdgeSDK.Server.Requests
             ILogger log)
         {
             byte[] profilePic = null;
-            SocialEdge.Init(req);
+            SocialEdge.Init();
             var context = JsonConvert.DeserializeObject<FunctionExecutionContext<dynamic>>(await req.Content.ReadAsStringAsync());
             dynamic args = context.FunctionArgument;
             try

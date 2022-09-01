@@ -76,9 +76,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             if (op == "startChallenge")
             {
-                SocialEdgePlayer.PlayerModel.Prefetch(new List<string>() {  PlayerModelFields.INFO, 
-                                                                            PlayerModelFields.CHALLENGE, 
-                                                                            PlayerModelFields.TOURNAMENT});
+                SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.INFO, PlayerModelFields.CHALLENGE, PlayerModelFields.TOURNAMENT);
                                                                             
                 var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
                 var challengeId = SocialEdgeChallenge.ChallengeModel.Create(challengeData);
@@ -102,11 +100,11 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (op == "endChallenge")
             {
-                SocialEdgePlayer.PlayerModel.Prefetch(new List<string>() {  PlayerModelFields.ECONOMY, 
-                                                                            PlayerModelFields.EVENTS, 
-                                                                            PlayerModelFields.INFO, 
-                                                                            PlayerModelFields.CHALLENGE, 
-                                                                            PlayerModelFields.TOURNAMENT});
+                SocialEdgePlayer.PlayerModel.Prefetch( PlayerModelFields.ECONOMY, 
+                                                       PlayerModelFields.EVENTS, 
+                                                       PlayerModelFields.INFO, 
+                                                       PlayerModelFields.CHALLENGE, 
+                                                       PlayerModelFields.TOURNAMENT);
 
                 string challengeId = data["challengeId"].ToString();
                 string winnerId = data["winnerId"].ToString();

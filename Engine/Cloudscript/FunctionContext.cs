@@ -35,17 +35,21 @@ namespace SocialEdgeSDK.Server.Requests
 
         public dynamic Args { get => _args; }
 
+        public FunctionContext()
+        {
+            _cacheFlush = new List<CacheFlushFn>();
+        }
+
         public void Base(ITitleContext titleContext, IDataService dataService = null, IMessageService messageService = null)
         {
             _titleContext = titleContext;
             _dataService = dataService;
             _messageService = messageService;
-            _cacheFlush = new List<CacheFlushFn>();
         }
 
         public void InitContext(HttpRequestMessage req, ILogger log)
         {
-            SocialEdge.Init(req, log, _titleContext, _dataService, _messageService);
+            SocialEdge.Init(log, _titleContext, _dataService, _messageService);
             var readT = req.Content.ReadAsStringAsync();
             readT.Wait();
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject(readT.Result);
@@ -56,7 +60,7 @@ namespace SocialEdgeSDK.Server.Requests
 
         public void InitContext<FunctionContextT>(HttpRequestMessage req, ILogger log)
         {
-            SocialEdge.Init(req, log, _titleContext, _dataService, _messageService);
+            SocialEdge.Init(log, _titleContext, _dataService, _messageService);
             var readT = req.Content.ReadAsStringAsync();
             readT.Wait();
             _context = Newtonsoft.Json.JsonConvert.DeserializeObject<FunctionContextT>(readT.Result);
