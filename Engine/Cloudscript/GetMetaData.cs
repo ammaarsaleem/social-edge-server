@@ -39,6 +39,7 @@ namespace SocialEdgeSDK.Server.Requests
         public bool appVersionValid;
         public List<BlobFileInfo> contentData;
         public int todayGamesCount;
+        public int todayActivePlayersCount;
     }
 
     public class GetMetaData : FunctionContext
@@ -86,6 +87,7 @@ namespace SocialEdgeSDK.Server.Requests
                 result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC).GetContentList();
                 result.playerDataModel = SocialEdgePlayer.PlayerModel;
                 result.todayGamesCount = SocialEdge.TodayGamesCount;
+                result.todayActivePlayersCount = SocialEdge.TodayActivePlayersCount;
 
                 if (isNewlyCreated == true)
                 {

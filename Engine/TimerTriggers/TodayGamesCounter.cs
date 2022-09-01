@@ -1,6 +1,10 @@
+/// @license Propriety <http://license.url>
+/// @copyright Copyright (C) Everplay - All rights reserved
+/// Unauthorized copying of this file, via any medium is strictly prohibited
+/// Proprietary and confidential
+
 using System;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using SocialEdgeSDK.Server.DataService;
 using SocialEdgeSDK.Server.Context;
@@ -21,9 +25,12 @@ namespace SocialEdgeSDK.Server.Requests
             // once every two hours "0 0 */2 * * *"
             // reference: https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=in-process&pivots=programming-language-csharp
 
-            SocialEdge.Init(null, null, _dataService);
-            SocialEdge.FetchTodayGamesCount();
-            log.LogInformation("[TodayGamesCounter]" + $"C# Timer trigger function executed at: {DateTime.Now}");
+            if (!myTimer.IsPastDue)
+            {
+                SocialEdge.Init(null, null, _dataService);
+                SocialEdge.FetchTodayGamesCount();
+                log.LogInformation("[TodayGamesCounter]" + $"C# Timer trigger function executed at: {DateTime.Now}");
+            }
         }
     }
 }
