@@ -51,7 +51,7 @@ namespace SocialEdgeSDK.Server.MessageService
             socialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.FRIENDS, PlayerModelFields.INFO);
             socialEdgePlayer.PlayerModel.Info.isOnline = true;
 
-            Player.NotifyOnlineStatus(socialEdgePlayer, isOnline : false);
+            Player.NotifyOnlineStatus(socialEdgePlayer, isOnline : true);
             socialEdgePlayer.CacheFlush();
         }
 
