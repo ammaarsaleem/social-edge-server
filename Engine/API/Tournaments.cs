@@ -74,7 +74,7 @@ namespace SocialEdgeSDK.Server.Api
             tournament.concluded = false;
             tournament.entryIds = new List<string>();
             tournament.score = 0;
-            tournament.expireAt = expiryTime;
+            tournament.expireAt = DateTimeOffset.FromUnixTimeMilliseconds(expiryTime).DateTime;
             tournament.tournamentCollectionIndex = tournamentCollectionIdx;
             tournament.tournamentSlot = 0;  
 
@@ -219,7 +219,7 @@ namespace SocialEdgeSDK.Server.Api
                 msg.tournamentType = activeTournament.type;
                 msg.tournamentId =  socialEdgeTournament.TournamentModel.Id;
                 msg.chestType = reward.chestType;
-                msg.expireAt = tournamentModel.expireAt;
+                msg.expireAt = Utils.ToUTC(tournamentModel.expireAt);
                 
                 InboxModel.Add(msg, socialEdgePlayer);
             }

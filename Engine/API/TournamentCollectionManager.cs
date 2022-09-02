@@ -117,7 +117,7 @@ namespace SocialEdgeSDK.Server.Api
 
             entry.eloScore = socialEdgePlayer.PlayerModel.Info.eloScore;
             entry.rnd = Math.Floor((new Random().NextDouble() * 100));
-            entry.expireAt = GetCurrentActiveCollection(socialEdgeTournament, tournamentShortCode).expiryTime;
+            entry.expireAt = DateTimeOffset.FromUnixTimeMilliseconds(GetCurrentActiveCollection(socialEdgeTournament, tournamentShortCode).expiryTime).DateTime;
             entry.score = score;
             entry.retentionDay = retentionDayString;
             entry.tournamentMaxScore = tournamentMaxScore;

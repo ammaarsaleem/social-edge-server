@@ -40,7 +40,7 @@ namespace SocialEdgeSDK.Server.Models
 
         [BsonElement("eloScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _eloScore;
         [BsonElement("rnd")][BsonRepresentation(MongoDB.Bson.BsonType.Double)]              public double _rnd;
-        [BsonElement("expireAt")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]          public long _expireAt;
+        [BsonElement("expireAt")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]       public DateTime _expireAt;
         [BsonElement("score")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int _score;
         [BsonElement("retentionDay")][BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string _retentionDay;
         [BsonElement("tournamentMaxScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]public int _tournamentMaxScore;
@@ -57,7 +57,7 @@ namespace SocialEdgeSDK.Server.Models
 
         [BsonIgnore] public int eloScore {get => _eloScore; set {_eloScore = value; isDirty = true;}}
         [BsonIgnore] public double rnd {get => _rnd; set {_rnd = value; isDirty = true;}}
-        [BsonIgnore] public long expireAt {get => _expireAt; set {_expireAt = value; isDirty = true;}}
+        [BsonIgnore] public DateTime expireAt {get => _expireAt; set {_expireAt = value; isDirty = true;}}
         [BsonIgnore] public int score {get => _score; set {_score = value; isDirty = true;}}
         [BsonIgnore] public string retentionDay {get => _retentionDay; set {_retentionDay = value; isDirty = true;}}
         [BsonIgnore] public int tournamentMaxScore {get => _tournamentMaxScore; set {_tournamentMaxScore = value; isDirty = true;}}

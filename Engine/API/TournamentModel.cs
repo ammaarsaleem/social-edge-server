@@ -30,7 +30,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("concluded")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]               public bool _concluded;
         [BsonElement("entryIds")]                                                                   public List<string> _entryIds;
         [BsonElement("score")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                     public int _score;
-        [BsonElement("expireAt")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]                  public long _expireAt;
+        [BsonElement("expireAt")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]               public DateTime _expireAt;
         [BsonElement("tournamentCollectionIndex")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)] public int _tournamentCollectionIndex;
         [BsonElement("tournamentSlot")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _tournamentSlot;
         #pragma warning restore format
@@ -47,7 +47,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public bool concluded { get => _concluded; set { _concluded = value; isDirty = true; } }
         [BsonIgnore] public List<string> entryIds { get => _entryIds; set { _entryIds = value; isDirty = true; } }
         [BsonIgnore] public int score { get => _score; set { _score = value; isDirty = true; } }
-        [BsonIgnore] public long expireAt { get => _expireAt; set { _expireAt = value; isDirty = true; } }
+        [BsonIgnore] public DateTime expireAt { get => _expireAt; set { _expireAt = value; isDirty = true; } }
         [BsonIgnore] public int tournamentCollectionIndex { get => _tournamentCollectionIndex; set { _tournamentCollectionIndex = value; isDirty = true; } }
         [BsonIgnore] public int tournamentSlot { get => _tournamentSlot; set { _tournamentSlot = value; isDirty = true; } }
 

@@ -17,6 +17,7 @@ namespace SocialEdgeSDK.Server.Models
 {
     public class PlayerPublicProfile : DataModelBase
     {
+        #pragma warning disable format
         [BsonElement("playerMiniProfile")]                                                  public PlayerMiniProfileData _playerMiniProfile;
         [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _displayName;
         [BsonElement("location")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _location;
@@ -31,6 +32,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _gamesLost;
         [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _gamesDrawn;
         [BsonElement("activeInventory")]                                                    public List<PlayerInventoryItem> _activeInventory;
+        #pragma warning restore format
 
         [BsonIgnore] public PlayerMiniProfileData playerMiniProfile { get => _playerMiniProfile; set { _playerMiniProfile = value; isDirty = true; } }
         [BsonIgnore] public string displayName { get => _displayName; set { _displayName = value; isDirty = true; } }
@@ -51,13 +53,12 @@ namespace SocialEdgeSDK.Server.Models
     public class PlayerSearchData : DataModelBase
     {
         #pragma warning disable format
-        [BsonElement("activeTimeStamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long _activeTimeStamp;
-        [BsonElement("tag")][BsonRepresentation(MongoDB.Bson.BsonType.String)]              public string _tag;
-        [BsonElement("publicProfile")]                                                      public PlayerPublicProfile _publicProfile;
-
+        [BsonElement("activeTimeStamp")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]    public DateTime _activeTimeStamp;
+        [BsonElement("tag")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                  public string _tag;
+        [BsonElement("publicProfile")]                                                          public PlayerPublicProfile _publicProfile;
         #pragma warning restore format
         
-        [BsonIgnore] public long activeTimeStamp { get => _activeTimeStamp; set { _activeTimeStamp = value; isDirty = true; } }
+        [BsonIgnore] public DateTime activeTimeStamp { get => _activeTimeStamp; set { _activeTimeStamp = value; isDirty = true; } }
         [BsonIgnore] public string tag { get => _tag; set { _tag = value; isDirty = true; } }
         [BsonIgnore] public PlayerPublicProfile publicProfile { get => _publicProfile; set { _publicProfile = value; isDirty = true; } }
     }
@@ -79,7 +80,7 @@ namespace SocialEdgeSDK.Server.Models
             PlayerPublicProfile publicProfile = socialEdgePlayer.PublicProfile;
 
             PlayerSearchData model = new PlayerSearchData();
-            model.activeTimeStamp = Utils.UTCNow();
+            model.activeTimeStamp = DateTime.UtcNow;
             model.tag = tag;
             model.publicProfile = publicProfile;
 
