@@ -83,8 +83,7 @@ namespace SocialEdgeSDK.Server.Context
         {
             const string COLLECTION = "playerModel";
             var collection = _dataService.GetCollection<PlayerModelDocument>(COLLECTION);
-            DateTime yesterday = DateTime.UtcNow.AddDays(-1);
-            var beginTime = new DateTime(yesterday.Year, yesterday.Month, yesterday.Day, 0, 0, 0, DateTimeKind.Utc);
+            var beginTime = DateTime.SpecifyKind( DateTime.Today.AddDays(-1), DateTimeKind.Utc); 
             var filter = Builders<PlayerModelDocument>.Filter.Gt("PlayerDataModel.info.lastPlayDay", beginTime);
             _todayActivePlayersCount = (int)(await collection.Count(filter));
         }
