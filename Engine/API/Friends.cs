@@ -51,5 +51,22 @@ namespace SocialEdgeSDK.Server.Api
             friendData.flagMask = friendData.flagMask | FriendFlagMask.RECENT_PLAYED;
             return friendData;
         }
+
+        public static void SyncFriendsList(SocialEdgePlayerContext socialEdgePlayer)
+        {
+            // Add any friends that appear in playfab but not registered with the player's playermodel data
+            foreach(var friend in socialEdgePlayer.Friends)
+            {
+                if (!socialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(friend.FriendPlayFabId))
+                {
+                    FriendData friendData = socialEdgePlayer.PlayerModel.Friends.CreateFriendData();
+                    
+                    if (friend.FacebookInfo != null && friend.FacebookInfo.FacebookId != null)
+                        friendData.friendType = "SOCIAL";
+                    
+                    socialEdgePlayer.PlayerModel.Friends.Add(friend.FriendPlayFabId, friendData);
+                }
+            }
+        }
     }
 }

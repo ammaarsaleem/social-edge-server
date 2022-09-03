@@ -541,12 +541,12 @@ namespace SocialEdgeSDK.Server.Models
         public PlayerDataFriends Friends { get => _friends != null && _friends.isCached ? _friends : _friends = Get<PlayerDataFriends>(nameof(_friends)); }
         public PlayerDataBlocked Blocked { get => _blocked != null && _blocked.isCached ? _blocked : _blocked = Get<PlayerDataBlocked>(nameof(_blocked)); }
 
-        public void AddFriend(string friendId, FriendData friendData)
+        public void DBOpAddFriend(string friendId, FriendData friendData)
         {
             updates.Add(update.Set<FriendData>(typeof(PlayerDataModel).Name + ".friends.friends."+friendId, friendData));
         }
 
-        public void RemoveFriend(string friendId)
+        public void DBOpRemoveFriend(string friendId)
         {
             updates.Add(update.Unset(typeof(PlayerDataModel).Name + ".friends.friends."+friendId));
         }
@@ -558,12 +558,12 @@ namespace SocialEdgeSDK.Server.Models
             return friendData;
         }
 
-        public void UnblockFriend(string friendId)
+        public void DBOpUnblockFriend(string friendId)
         {
             updates.Add(update.Unset(typeof(PlayerDataModel).Name + ".blocked.blocked."+friendId));
         }
 
-        public void BlockFriend(string friendId, string displayName)
+        public void DBOpBlockFriend(string friendId, string displayName)
         {
             updates.Add(update.Set<string>(typeof(PlayerDataModel).Name + ".blocked.blocked."+friendId, displayName));
         }

@@ -59,7 +59,7 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 FriendData friendData = SocialEdgePlayer.PlayerModel.CreateFriendData();
                 friendData._friendType = data["friendType"].ToString();
-                SocialEdgePlayer.PlayerModel.AddFriend(friendId, friendData);
+                SocialEdgePlayer.PlayerModel.DBOpAddFriend(friendId, friendData);
                 result.friendId = friendId;
                 result.friendType = data["friendType"].ToString();
                 bool status = Friends.AddFriend(friendId, SocialEdgePlayer.PlayerId);
@@ -69,7 +69,7 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 if (!string.IsNullOrEmpty(friendId))
                 {
-                    SocialEdgePlayer.PlayerModel.RemoveFriend(friendId);
+                    SocialEdgePlayer.PlayerModel.DBOpRemoveFriend(friendId);
                     result.friendId = friendId;
                     bool status = Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
                     result.status = status;
@@ -85,7 +85,7 @@ namespace SocialEdgeSDK.Server.Requests
                         {
                             if (SocialEdgePlayer.PlayerModel.Friends.friends[id].friendType == "COMMNUNITY")
                             {
-                                SocialEdgePlayer.PlayerModel.RemoveFriend(id);
+                                SocialEdgePlayer.PlayerModel.DBOpRemoveFriend(id);
                                 Friends.RemoveFriend(id, SocialEdgePlayer.PlayerId);
                             }
                             else
@@ -99,7 +99,7 @@ namespace SocialEdgeSDK.Server.Requests
                     {
                         foreach (var id in friendsSubOp.friendIds)
                         {
-                            SocialEdgePlayer.PlayerModel.RemoveFriend(friendId);
+                            SocialEdgePlayer.PlayerModel.DBOpRemoveFriend(friendId);
                             Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
                         }
                     }
@@ -111,13 +111,13 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 FriendInfo friend = SocialEdgePlayer.Friends.Find(s => s.FriendPlayFabId.Equals(friendId));
                 bool status = Friends.RemoveFriend(friendId, SocialEdgePlayer.PlayerId);
-                SocialEdgePlayer.PlayerModel.BlockFriend(friendId, friend.TitleDisplayName);
+                SocialEdgePlayer.PlayerModel.DBOpBlockFriend(friendId, friend.TitleDisplayName);
                 result.friendId = friendId;
                 result.status = status;
             }
             else if (op == "unblock")
             {
-                SocialEdgePlayer.PlayerModel.UnblockFriend(friendId);
+                SocialEdgePlayer.PlayerModel.DBOpUnblockFriend(friendId);
                 result.friendId = friendId;
                 result.status = true;
             }

@@ -107,7 +107,7 @@ namespace SocialEdgeSDK.Server.Models
             foreach (var data in _playersData)
             {
                 data.Value._parent = this;
-                
+
                 if (data.Value._winnerBonusRewards != null)
                     data.Value._winnerBonusRewards._parent = this;
             }
@@ -173,6 +173,7 @@ namespace SocialEdgeSDK.Server.Models
             ChallengeModelDocument modelDocument = new ChallengeModelDocument();
             challengeData.PrepareCache();
             modelDocument._model = challengeData;
+            modelDocument._model._activeTimeStamp = DateTime.UtcNow;
             var taskT = collection.InsertOne(modelDocument);
             taskT.Wait(); 
             SocialEdge.Log.LogInformation("Task Insert CHALLENGE_MODEL");

@@ -71,6 +71,7 @@ namespace SocialEdgeSDK.Server.Requests
             SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
             PlayerSearch.Register(SocialEdgePlayer);
             Challenge.ProcessAbandonedGame(SocialEdgePlayer, SocialEdgeChallenge, SocialEdgeTournament, this);
+            Friends.SyncFriendsList(SocialEdgePlayer);
 
             try
             {
