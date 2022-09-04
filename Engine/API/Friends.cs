@@ -52,8 +52,10 @@ namespace SocialEdgeSDK.Server.Api
             return friendData;
         }
 
-        public static void SyncFriendsList(SocialEdgePlayerContext socialEdgePlayer)
+        public static Dictionary<string, FriendData> SyncFriendsList(SocialEdgePlayerContext socialEdgePlayer)
         {
+            Dictionary<string, FriendData> friendsAdded = new Dictionary<string, FriendData>();
+
             // Add any friends that appear in playfab but not registered with the player's playermodel data
             foreach(var friend in socialEdgePlayer.Friends)
             {
@@ -65,8 +67,11 @@ namespace SocialEdgeSDK.Server.Api
                         friendData.friendType = "SOCIAL";
                     
                     socialEdgePlayer.PlayerModel.Friends.Add(friend.FriendPlayFabId, friendData);
+                    friendsAdded.Add(friend.FriendPlayFabId, friendData);
                 }
             }
+
+            return friendsAdded;
         }
     }
 }
