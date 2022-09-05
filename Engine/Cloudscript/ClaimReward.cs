@@ -95,7 +95,7 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (rewardType == "ratingBoostTier1")
             {   
-                string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
+                string challengeId = data["userData"]["challengeId"].ToString();
                 int rewardPoints = int.Parse(rewardsTable[rewardType].ToString());
                 result = RewardRatingBoostTier1(rewardType, challengeId, rewardPoints, SocialEdgePlayer, SocialEdgeChallenge);
             }
@@ -116,12 +116,12 @@ namespace SocialEdgeSDK.Server.Requests
             }
             else if (rewardType == "betCoinsReturn") 
             {
-                string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
+                string challengeId = data["userData"]["challengeId"].ToString();
                 result = BetCoinsReturn(rewardType, challengeId, SocialEdgePlayer, SocialEdgeChallenge);
             }
             else if(rewardType.Contains("bonusCoins")) 
             {
-                string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
+                string challengeId = data["userData"]["challengeId"].ToString();
                 result = BonusCoins(rewardType, challengeId, SocialEdgePlayer, SocialEdgeChallenge);
             }
             else if (rewardType == "balloonRVRewards") 
@@ -333,7 +333,7 @@ namespace SocialEdgeSDK.Server.Requests
                 
                 if (rewardType == "ratingBoosterReward") 
                 {
-                    string challengeId = data["userData"]["BaseData"]["challengeId"].ToString();
+                    string challengeId = data["userData"]["challengeId"].ToString();
                     ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
                     socialEdgeChallenge.ChallengeModel.ReadOnly(challengeId);
                     ChallengePlayerModel playerChallengeData = challengeData.playersData[socialEdgePlayer.PlayerId];
@@ -423,7 +423,7 @@ namespace SocialEdgeSDK.Server.Requests
         
             if (bonusRewards != null) 
             {
-                int bonusCoins = (int)bonusRewards.GetType().GetField(rewardType).GetValue(bonusRewards);
+                int bonusCoins = (int)bonusRewards.GetType().GetProperty(rewardType).GetValue(bonusRewards);
                 socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", bonusCoins);
             }
 

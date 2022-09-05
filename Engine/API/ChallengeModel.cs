@@ -34,6 +34,11 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int bonusCoinsRV1 { get => _bonusCoinsRV1; set { _bonusCoinsRV1 = value; _parent.isDirty = true; } }
         [BsonIgnore] public int bonusCoinsRV2 { get => _bonusCoinsRV2; set { _bonusCoinsRV2 = value; _parent.isDirty = true; } }
         [BsonIgnore] public int bonusCoinsRV3 { get => _bonusCoinsRV3; set { _bonusCoinsRV3 = value; _parent.isDirty = true; } }
+
+        public ChallengeWinnerBonusRewardsData(DataModelBase parent)
+        {
+            _parent = parent;
+        }
     }
 
     public class ChallengePlayerModel
