@@ -12,8 +12,12 @@ namespace SocialEdgeSDK.Server.DataService
     {
         IMongoDatabase GetDatabase();
         ICollection<T> GetCollection<T>(string name);
-        ICache GetCache();
         IBlobStorage GetBlobStorage(string containerName);
         BlobContainerClient GetContainerClient(string containerName);
+
+#if USE_REDIS
+        ICache GetCache();
+#endif
+
     }
 }

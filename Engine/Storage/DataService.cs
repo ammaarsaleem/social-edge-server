@@ -18,12 +18,14 @@ namespace SocialEdgeSDK.Server.DataService
         private readonly IMongoDatabase _database;
         #endregion
 
+#if USE_REDIS
         #region Redis members
         private readonly ConnectionMultiplexer _redis;
         private readonly IDatabase _cacheDb;
-        #endregion
-        public readonly BlobServiceClient _blobServerClient;
         ICache _cache;
+        #endregion
+#endif
+        public readonly BlobServiceClient _blobServerClient;
 
         public IMongoDatabase GetDatabase()
         {
@@ -33,9 +35,11 @@ namespace SocialEdgeSDK.Server.DataService
         public DataService(MongoClient mongoClient, ConnectionMultiplexer redisConn, BlobServiceClient serviceClient)
         {
             _dbClient = mongoClient;
-            _database = _dbClient.GetDatabase(ConfigConstants.MONGO_DATABASE_NAME);           
+            _database = _dbClient.GetDatabase(ConfigConstants.MONGO_DATABASE_NAME);  
+#if USE_REDIS         
              _redis = redisConn;
             _cacheDb = _redis.GetDatabase();
+#endif
             _blobServerClient = serviceClient;
         }
 
@@ -56,9 +60,11 @@ namespace SocialEdgeSDK.Server.DataService
             return _blobServerClient.GetBlobContainerClient(containerName);
         }
 
+#if USE_REDIS
         public ICache GetCache()
         {
             return _cache = new Cache(_cacheDb);
         }
+#endif
     }
 }

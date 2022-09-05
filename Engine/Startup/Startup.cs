@@ -4,6 +4,8 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+//#define USE_REDIS
+
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +47,7 @@ namespace SocialEdgeSDK.Playfab
                 return client;
             });
 
+#if USE_REDIS
             builder.Services.AddSingleton((r) =>
             {
                 string connString  = ConfigConstants.REDIS_CONNECTION_STRING;
@@ -53,6 +56,7 @@ namespace SocialEdgeSDK.Playfab
                 ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connString);
                 return redis;
             });
+#endif
 
             // builder.Services.AddSingleton((s) =>
             // {
@@ -83,8 +87,9 @@ namespace SocialEdgeSDK.Playfab
                 BlobServiceClient blobServiceClient = new BlobServiceClient(connString);
                 return blobServiceClient;
             });
-
+#if USE_REDIS
             builder.Services.AddSingleton<ICache,Cache>();
+#endif
             builder.Services.AddSingleton<IDbHelper,DbHelper>();
             builder.Services.AddSingleton<IDataService,DataService>();
             builder.Services.AddSingleton<ITitleContext, TitleContext>();
