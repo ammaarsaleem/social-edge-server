@@ -4,6 +4,7 @@
 /// Proprietary and confidential
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -68,10 +69,20 @@ namespace SocialEdgeSDK.Server.Requests
                     Friends.NotifySync(SocialEdgePlayer, friendsList);
                 }
 
-                PlayerSearch.Register(SocialEdgePlayer);
+                // Set fb id in player model info first so that it is available in the code following this.
                 SocialEdgePlayer.PlayerModel.Info.fbId = SocialEdgePlayer.CombinedInfo.AccountInfo.FacebookInfo.FacebookId;
-                SocialEdgeTournament.TournamentEntryModel.TournamentEntry.fbId = SocialEdgePlayer.PlayerModel.Info.fbId;
-                SocialEdgeTournament.TournamentEntryModel.TournamentEntry.displayName = SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
+                PlayerSearch.Register(SocialEdgePlayer);
+
+                // Note: This code is tied to a single entry Active Tournament.
+                if (SocialEdgePlayer.PlayerModel.Tournament.activeTournaments.Count > 0)
+                {
+                    string tournamentId = SocialEdgePlayer.PlayerModel.Tournament.activeTournaments.ElementAt(0).Key;
+                    var tournament = SocialEdgeTournament.TournamentModel.Get(tournamentId);
+                    string collectionName = SocialEdgeTournament.TournamentLiveModel.Get(tournament.shortCode).collectionPrefix + tournament.tournamentCollectionIndex.ToString();
+                    var entry = SocialEdgeTournament.TournamentEntryModel.Get(SocialEdgePlayer.PlayerDBId, collectionName);
+                    entry.fbId = SocialEdgePlayer.PlayerModel.Info.fbId;
+                    entry.displayName = SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
+                }
 
                 result.status = true;
             }
