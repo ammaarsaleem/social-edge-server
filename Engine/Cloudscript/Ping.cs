@@ -24,6 +24,11 @@ namespace SocialEdgeSDK.Server.Requests
     {
         public long serverReceiptTimestamp;
         public long clientSendTimestamp;
+        public long maintenanceWarningTimeStamp;
+        public string maintenanceWarningMessage;
+        public string maintenanceWarningBgColor;
+        public bool maintenanceFlag;
+        public bool maintenanceWarningFlag;
     }
         
     public class Ping : FunctionContext
@@ -31,34 +36,32 @@ namespace SocialEdgeSDK.Server.Requests
         public Ping(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
         [FunctionName("Ping")]
-        public  PingResult Run(
+        public PingResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
             // log.LogInformation("C# HTTP trigger function processed a request.");
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
-            try
-            {
-                PingResult result = new PingResult();
-                result.clientSendTimestamp = (long)Args["data"]["clientSendTimestamp"].Value;
-                result.serverReceiptTimestamp = Utils.UTCNow();
+            var result = new PingResult();
+            result.clientSendTimestamp = (long)Args["data"]["clientSendTimestamp"].Value;
+            result.serverReceiptTimestamp = Utils.UTCNow();
 
-                // Dictionary<string, string> titleData = SocialEdge.TitleContext.TitleData.Data;
-                // var testing = titleData["Testing"];
-                // SocialEdge.Log.LogInformation("testing RESULT : " + testing.ToJson());
+            var commonSettings = Settings.CommonSettings;
+            var maintenanceWarningTimeStamp = long.Parse(commonSettings["maintenanceWarningTimeStamp"].ToString());
 
-                return result;
-            }
-            catch (Exception e)
+            if(maintenanceWarningTimeStamp > Utils.UTCNow())
             {
-                if(e is OperationCanceledException){
-                     log.LogWarning("Function cancelled " + e.Message);
-                      return new PingResult();
-                }
-                else{
-                    throw e;
-                }
+                result.maintenanceWarningTimeStamp = maintenanceWarningTimeStamp;
+                result.maintenanceWarningFlag = true;
+                result.maintenanceWarningMessage = commonSettings["maintenanceWarningMessage"].ToString();
+                result.maintenanceWarningBgColor = commonSettings["maintenanceWarningBgColor"].ToString();
             }
+            else if(maintenanceWarningTimeStamp > 0)
+            {
+                result.maintenanceFlag = true;
+            }
+
+            return result;
         }
     }
 }

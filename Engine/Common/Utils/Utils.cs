@@ -94,5 +94,27 @@ namespace SocialEdgeSDK.Server.Common
         {
             return playerId.ToLower().PadLeft(24, '0');
         }
+
+        
+        public static bool CompareVersions(string v1, string v2)
+        {
+            var v1Split = v1.Split('.');
+            var v2Split = v2.Split('.');
+
+            if(v1Split.Length > v2Split.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < v1Split.Length; ++i)
+            {
+                if (int.Parse(v1Split[i]) > int.Parse(v2Split[i]))
+                { 
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

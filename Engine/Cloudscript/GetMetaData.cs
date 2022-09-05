@@ -19,6 +19,7 @@ using SocialEdgeSDK.Server.Api;
 using PlayFab.Samples;
 using PlayFab.ServerModels;
 using PlayFab.ProfilesModels;
+using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -55,7 +56,7 @@ namespace SocialEdgeSDK.Server.Requests
             var data = Args["data"];
             BsonDocument args = BsonDocument.Parse(data["parameters"].ToString());
             var isNewlyCreated = args.Contains("isNewlyCreated") ? (bool)args["isNewlyCreated"] : false;
-            
+            var clientVersion = args["clientVersion"].ToString();
             if (isNewlyCreated)
             {
                 Player.NewPlayerInit(SocialEdgePlayer);
@@ -72,6 +73,7 @@ namespace SocialEdgeSDK.Server.Requests
             PlayerSearch.Register(SocialEdgePlayer);
             Challenge.ProcessAbandonedGame(SocialEdgePlayer, SocialEdgeChallenge, SocialEdgeTournament, this);
             Friends.SyncFriendsList(SocialEdgePlayer);
+            SocialEdgePlayer.PlayerModel.Meta.clientVersion = clientVersion;
 
             try
             {
@@ -80,7 +82,7 @@ namespace SocialEdgeSDK.Server.Requests
                 result.friendsProfilesEx = SocialEdgePlayer.FriendsProfilesEx;
                 result.inbox = SocialEdgePlayer.Inbox;
                 result.chat = SocialEdgePlayer.ChatJson;
-                result.appVersionValid = true; // TODO
+                result.appVersionValid = Utils.CompareVersions(Settings.MetaSettings["minimumClientVersion"].ToString(), clientVersion);
                 result.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 result.liveTournaments = SocialEdgeTournament.TournamentLiveModel.Fetch();
                 result.dynamicBundleToDisplay = SocialEdgePlayer.PlayerEconomy.ProcessDynamicDisplayBundle();
