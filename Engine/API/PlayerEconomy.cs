@@ -312,7 +312,10 @@ namespace SocialEdgeSDK.Server.Context
             foreach (ItemInstance theGood in vGoods) 
             {
                 CatalogItem catalogItem = SocialEdge.TitleContext.GetCatalogItem(theGood.ItemId);
-                if (catalogItem != null && catalogItem.RealCurrencyPrices.ContainsKey("RM") && catalogItem.RealCurrencyPrices["RM"] > 0)
+                if (catalogItem != null 
+                    && catalogItem.RealCurrencyPrices != null 
+                    && catalogItem.RealCurrencyPrices.ContainsKey("RM") 
+                    && catalogItem.RealCurrencyPrices["RM"] > 0)
                 {
                     double dollars = catalogItem.RealCurrencyPrices["RM"] / 100;
                     int iap_count = theGood.RemainingUses != null ? theGood.RemainingUses.Value : 1;
