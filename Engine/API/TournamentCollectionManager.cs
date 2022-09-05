@@ -112,6 +112,7 @@ namespace SocialEdgeSDK.Server.Api
             // Create a tournament entry
             TournamentEntryData entry = socialEdgeTournament.TournamentEntryModel.Create(socialEdgePlayer.PlayerDBId, collectionName);
             entry.playerId = socialEdgePlayer.PlayerId;
+            entry.fbId = socialEdgePlayer.PlayerModel.Info.fbId;
             entry.displayName = socialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
             entry.country = socialEdgePlayer.CombinedInfo.PlayerProfile.Locations[0].CountryCode.ToString();
 
@@ -149,7 +150,8 @@ namespace SocialEdgeSDK.Server.Api
                                                                                 item._model.score, 
                                                                                 item._model.playerMiniProfile,
                                                                                 item._model.country,
-                                                                                item._model.displayName));
+                                                                                item._model.displayName,
+                                                                                item._model.fbId));
             return collection.Find(filter).Project(projection).Sort(sortByScore).ToList<TournamentLeaderboardEntry>();
         }
     }

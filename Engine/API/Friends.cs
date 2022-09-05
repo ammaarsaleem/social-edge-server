@@ -3,6 +3,7 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+using System.Linq;
 using System.Collections.Generic;
 using PlayFab;
 using PlayFab.ServerModels;
@@ -72,6 +73,12 @@ namespace SocialEdgeSDK.Server.Api
             }
 
             return friendsAdded;
+        }
+
+        public static void NotifySync(SocialEdgePlayerContext socialEdgePlayer, Dictionary<string, FriendData> notifyList)
+        {
+            string[] friendIds = new List<string>(notifyList.Keys).ToArray();
+            new SocialEdgeMessage(socialEdgePlayer.PlayerId, null, "NotifyFriendsSync", friendIds).Send();
         }
     }
 }

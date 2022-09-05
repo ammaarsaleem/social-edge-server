@@ -19,6 +19,7 @@ namespace SocialEdgeSDK.Server.Models
     {
         #pragma warning disable format
         [BsonElement("playerMiniProfile")]                                                  public PlayerMiniProfileData _playerMiniProfile;
+        [BsonElement("fbId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]             public string _fbId;
         [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _displayName;
         [BsonElement("location")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _location;
         [BsonElement("created")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]        public DateTime _created;
@@ -35,6 +36,7 @@ namespace SocialEdgeSDK.Server.Models
         #pragma warning restore format
 
         [BsonIgnore] public PlayerMiniProfileData playerMiniProfile { get => _playerMiniProfile; set { _playerMiniProfile = value; isDirty = true; } }
+        [BsonIgnore] public string fbId { get => _fbId; set { _fbId = value; isDirty = true; } }
         [BsonIgnore] public string displayName { get => _displayName; set { _displayName = value; isDirty = true; } }
         [BsonIgnore] public string location { get => _location; set { _location = value; isDirty = true; } }
         [BsonIgnore] public DateTime created { get => _created; set { _created = value; isDirty = true; } }

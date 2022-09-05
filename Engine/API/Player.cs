@@ -367,6 +367,7 @@ namespace SocialEdgeSDK.Server.Api
         {
             PlayerPublicProfile playerPublicProfile = new PlayerPublicProfile();
             playerPublicProfile._displayName = socialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
+            playerPublicProfile._fbId = socialEdgePlayer.PlayerModel.Info.fbId;
             playerPublicProfile._location = socialEdgePlayer.CombinedInfo.PlayerProfile.Locations[0].CountryCode.ToString();
             playerPublicProfile._created = socialEdgePlayer.CreationDate;
             playerPublicProfile._lastLogin = DateTime.UtcNow;
@@ -385,15 +386,10 @@ namespace SocialEdgeSDK.Server.Api
 
         public static void NotifyOnlineStatus(SocialEdgePlayerContext socialEdgePlayer, bool isOnline)
         {
-            int friendCount = socialEdgePlayer.PlayerModel.Friends.friends.Count;
-            if (friendCount == 0)
+            if (socialEdgePlayer.PlayerModel.Friends.friends.Count == 0)
                 return;
 
-            string[] friendIds = new string[friendCount];
-
-            for(int i = 0; i < friendCount; i++)
-                friendIds[i] = socialEdgePlayer.PlayerModel.Friends.friends.ElementAt(i).Key;
-
+            string[] friendIds = new List<string>(socialEdgePlayer.PlayerModel.Friends.friends.Keys).ToArray();
             OnlineStatusNotifyMessageData notifyOnlineMessage = new OnlineStatusNotifyMessageData();
             notifyOnlineMessage.playerId = socialEdgePlayer.PlayerId;
             notifyOnlineMessage.isOnline = isOnline;

@@ -36,7 +36,7 @@ namespace SocialEdgeSDK.Server.Api
             this.msgType = "UserMessage";
             this.senderPlayerId = senderPlayerId;
             this.toPlayerIds = toPlayerIds.ToList();
-            this.msgData = JsonConvert.SerializeObject(msgData);
+            this.msgData = msgData != null ? JsonConvert.SerializeObject(msgData) : null;
             this.msgDataType = msgDataType;
         }
 

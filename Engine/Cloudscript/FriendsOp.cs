@@ -28,6 +28,8 @@ namespace SocialEdgeSDK.Server.Requests
         public string friendType;
         public int skip;
         public List<PlayerSearchDataModelDocument> searchList;
+        public List<FriendInfo> friends;
+        public List<PublicProfileEx> friendsProfilesEx;
     }
 
     public static class SubOpType
@@ -55,7 +57,32 @@ namespace SocialEdgeSDK.Server.Requests
             string friendId = data["friendId"] != null ? data["friendId"].ToString() : null;
             string op = result.op = data["op"].ToString();
 
-            if (op == "add" || op == "addFavourite")
+            if (op == "initialize")
+            {
+                Dictionary<string, FriendData> friendsList = Friends.SyncFriendsList(SocialEdgePlayer);
+
+                if (friendsList.Count > 0)
+                {
+                    result.friends = SocialEdgePlayer.Friends;
+                    result.friendsProfilesEx = SocialEdgePlayer.FriendsProfilesEx;
+                    Friends.NotifySync(SocialEdgePlayer, friendsList);
+                }
+
+                PlayerSearch.Register(SocialEdgePlayer);
+                SocialEdgePlayer.PlayerModel.Info.fbId = SocialEdgePlayer.CombinedInfo.AccountInfo.FacebookInfo.FacebookId;
+                SocialEdgeTournament.TournamentEntryModel.TournamentEntry.fbId = SocialEdgePlayer.PlayerModel.Info.fbId;
+                SocialEdgeTournament.TournamentEntryModel.TournamentEntry.displayName = SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
+
+                result.status = true;
+            }
+            else if (op == "sync")
+            {
+                Friends.SyncFriendsList(SocialEdgePlayer);
+                result.friends = SocialEdgePlayer.Friends;
+                result.friendsProfilesEx = SocialEdgePlayer.FriendsProfilesEx;
+                result.status = true;
+            }
+            else if (op == "add" || op == "addFavourite")
             {
                 FriendData friendData = SocialEdgePlayer.PlayerModel.CreateFriendData();
                 friendData._friendType = data["friendType"].ToString();

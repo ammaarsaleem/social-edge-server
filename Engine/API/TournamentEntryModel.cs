@@ -35,6 +35,7 @@ namespace SocialEdgeSDK.Server.Models
     {
         #pragma warning disable format
         [BsonElement("playerId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _playerId;
+        [BsonElement("fbId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]             public string _fbId;
         [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _displayName;
         [BsonElement("country")][BsonRepresentation(MongoDB.Bson.BsonType.String)]          public string _country;
 
@@ -52,6 +53,7 @@ namespace SocialEdgeSDK.Server.Models
         #pragma warning restore format
 
         [BsonIgnore] public string playerId {get => _playerId; set {_playerId = value; isDirty = true;}}
+        [BsonIgnore] public string fbId {get => _fbId; set {_fbId = value; isDirty = true;}}
         [BsonIgnore] public string displayName {get => _displayName; set {_displayName = value; isDirty = true;}}
         [BsonIgnore] public string country {get => _country; set {_country = value; isDirty = true;}}
 
@@ -82,6 +84,7 @@ namespace SocialEdgeSDK.Server.Models
     {
         #pragma warning disable format
         [BsonElement("playerId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string playerId;
+        [BsonElement("fbId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string fbId;
         [BsonElement("score")][BsonRepresentation(MongoDB.Bson.BsonType.String)]        public int score;
         [BsonElement("displayName")][BsonRepresentation(MongoDB.Bson.BsonType.String)]  public string displayName;
         [BsonElement("league")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int league;
@@ -89,9 +92,10 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("playerMiniProfile")]                                              public PlayerMiniProfileData playerMiniProfile;
         #pragma warning restore format
 
-        public TournamentLeaderboardEntry(string playerId, int score, PlayerMiniProfileData playerMiniProfile, string country, string displayName)
+        public TournamentLeaderboardEntry(string playerId, int score, PlayerMiniProfileData playerMiniProfile, string country, string displayName, string fbId)
         {
             this.playerId = playerId;
+            this.fbId = fbId;
             this.score = score;
             this.displayName = displayName;
             this.country = country;
