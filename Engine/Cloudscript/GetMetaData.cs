@@ -81,7 +81,6 @@ namespace SocialEdgeSDK.Server.Requests
                 result.friends = SocialEdgePlayer.Friends;
                 result.friendsProfilesEx = SocialEdgePlayer.FriendsProfilesEx;
                 result.inbox = SocialEdgePlayer.Inbox;
-                result.chat = SocialEdgePlayer.ChatJson;
                 result.appVersionValid = Utils.CompareVersions(Settings.MetaSettings["minimumClientVersion"].ToString(), clientVersion);
                 result.inboxCount = InboxModel.Count(SocialEdgePlayer);
                 result.liveTournaments = SocialEdgeTournament.TournamentLiveModel.Fetch();
