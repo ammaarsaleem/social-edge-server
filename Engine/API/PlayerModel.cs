@@ -41,6 +41,7 @@ namespace SocialEdgeSDK.Server.Models
     public class PublicProfileEx
     {
         public bool isOnline;
+        public DateTime created;
         public int eloScore;
         public int trophies;
         public int earnings;
@@ -48,9 +49,10 @@ namespace SocialEdgeSDK.Server.Models
         public int gamesLost;
         public int gamesDrawn; 
 
-        public PublicProfileEx(bool isOnline, int eloScore, int trophies, int earnings, int gamesWon, int gamesLost, int gamesDrawn)
+        public PublicProfileEx(bool isOnline, DateTime created, int eloScore, int trophies, int earnings, int gamesWon, int gamesLost, int gamesDrawn)
         {
             this.isOnline = isOnline;
+            this.created = created;
             this.eloScore = eloScore;
             this.trophies = trophies;
             this.earnings = earnings;
@@ -248,6 +250,7 @@ namespace SocialEdgeSDK.Server.Models
     {
         #pragma warning disable format
         [BsonElement("fbId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                         public string _fbId;
+        [BsonElement("created")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]                    public DateTime _created;
         [BsonElement("isOnline")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]                    public bool _isOnline;
         [BsonElement("eloScore")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _eloScore;
         [BsonElement("trophies")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _trophies;
@@ -274,6 +277,7 @@ namespace SocialEdgeSDK.Server.Models
         #pragma warning restore format
 
         [BsonIgnore] public string fbId { get => _fbId; set { _fbId = value; isDirty = true; } }
+        [BsonIgnore] public DateTime created { get => _created; set { _created = value; isDirty = true; } }
         [BsonIgnore] public bool isOnline { get => _isOnline; set { _isOnline = value; isDirty = true; } }
         [BsonIgnore] public int eloScore { get => _eloScore; set { _eloScore = value; isDirty = true; } }
         [BsonIgnore] public int trophies { get => _trophies; set { _trophies = value; isDirty = true; } }

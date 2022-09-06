@@ -88,6 +88,7 @@ namespace SocialEdgeSDK.Server.Api
             var projection = Builders<PlayerModelDocument>.Projection.Expression(item => 
                                                             new PublicProfileEx(
                                                                     item._model.Info.isOnline,
+                                                                    item._model.Info.created,
                                                                     item._model.Info.eloScore, 
                                                                     item._model.Info.trophies, 
                                                                     item._model.Info.earnings,
@@ -349,11 +350,12 @@ namespace SocialEdgeSDK.Server.Api
                 var avatar = GenerateAvatar();
                 var avatarBgColor = GenerateAvatarBgColor();
 
-                socialEdgePlayer.PlayerModel.CreateDefaults();
-                socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
-                socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
-                socialEdgePlayer.PlayerModel.Info.tag = newTag;
-                socialEdgePlayer.PlayerModel.Info.eloScore = 775;
+            socialEdgePlayer.PlayerModel.CreateDefaults();
+            socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
+            socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
+            socialEdgePlayer.PlayerModel.Info.tag = newTag;
+            socialEdgePlayer.PlayerModel.Info.created = socialEdgePlayer.Created;
+            socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
                 CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinDark");
                 PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
@@ -396,7 +398,7 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile._displayName = socialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName;
             playerPublicProfile._fbId = socialEdgePlayer.PlayerModel.Info.fbId;
             playerPublicProfile._location = socialEdgePlayer.CombinedInfo.PlayerProfile.Locations[0].CountryCode.ToString();
-            playerPublicProfile._created = socialEdgePlayer.CreationDate;
+            playerPublicProfile._created = socialEdgePlayer.PlayerModel.Info.created;
             playerPublicProfile._lastLogin = DateTime.UtcNow;
             playerPublicProfile._activeInventory = socialEdgePlayer.PlayerModel.Info.activeInventory;
             playerPublicProfile._earnings = socialEdgePlayer.PlayerModel.Info.earnings;

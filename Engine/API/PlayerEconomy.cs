@@ -249,7 +249,7 @@ namespace SocialEdgeSDK.Server.Context
 
         public int GetPlayerRetentionDays()
         {
-            return (int)(DateTime.UtcNow - socialEdgePlayer.CombinedInfo.AccountInfo.Created).TotalDays;
+            return (int)(DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.created).TotalDays;
         }
 
         public bool IsValidForRVReward()

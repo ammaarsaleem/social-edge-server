@@ -30,7 +30,7 @@ namespace SocialEdgeSDK.Server.Api
             if (playerEntry != null)
                 return null;
 
-            int retentionDay = GetPlayerRetentionDays(socialEdgePlayer);
+            int retentionDay = socialEdgePlayer.PlayerEconomy.GetPlayerRetentionDays();
             if (retentionDay >= 7) 
                 retentionDay = 7;
             string retentionDayString = "D"+retentionDay;
@@ -79,14 +79,6 @@ namespace SocialEdgeSDK.Server.Api
             tournament.tournamentSlot = 0;  
 
             return socialEdgeTournament.TournamentModel.Tournament;  
-        } 
-
-        public static int GetPlayerRetentionDays(SocialEdgePlayerContext socialEdgePlayer)
-        {
-            // TODO: change combined info to a get Profile
-            long creationTime = Utils.ToUTC(socialEdgePlayer.CombinedInfo.AccountInfo.Created);
-            double retentionDays = (Utils.UTCNow() - creationTime) / (60*60*24*1000.0);
-            return (int)Math.Floor(retentionDays);
         }
 
         private static long CalculateCurrentStartTime(long waitTimeSeconds, long durationSeconds, long firstStartTimeSeconds) 

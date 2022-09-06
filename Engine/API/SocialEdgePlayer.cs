@@ -75,7 +75,7 @@ namespace SocialEdgeSDK.Server.Context
         private string _playerId;
         private string _entityToken;
         private string _entityId;
-        private DateTime _creationdDate;
+        private DateTime _created;
         private PlayerMiniProfileData _miniProfile;
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private Dictionary<string, InboxDataMessage> _inbox;
@@ -92,7 +92,7 @@ namespace SocialEdgeSDK.Server.Context
         private PlayerEconomy _playerEconomy;
 
         public string PlayerId => _playerId;
-        public DateTime CreationDate => _creationdDate;
+        public DateTime Created => _created;
         public string InboxId { get => PlayerDBId; }
         public string ChatId { get => PlayerDBId; }
         public string PlayerDBId { get => _playerId.ToLower().PadLeft(24, '0'); }
@@ -132,7 +132,7 @@ namespace SocialEdgeSDK.Server.Context
             _context = context;
             _contextType = ContextType.FUNCTION_EXECUTION_API;
             _playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
-            _creationdDate = context.CallerEntityProfile.Created;
+            _created = context.CallerEntityProfile.Created;
             _entityId = context.CallerEntityProfile.Entity.Id;
             _publicDataObjs = context.CallerEntityProfile.Objects;
             _fillMask |= _entityId != null ? CachePlayerDataSegments.ENTITY_ID : 0;
