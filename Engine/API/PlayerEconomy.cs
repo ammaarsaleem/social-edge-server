@@ -249,7 +249,7 @@ namespace SocialEdgeSDK.Server.Context
 
         public bool IsValidForRVReward()
         {
-            int retentionDay = GetPlayerRetentionDays();
+            int retentionDay = socialEdgePlayer.PlayerModel.Info.playDays;
             int currentGems = socialEdgePlayer.VirtualCurrency["GM"];
             int minRequiredGems = SocialEdge.TitleContext.EconomySettings.Ads.minGemsRequiredforRV;
             int minPlayDays = SocialEdge.TitleContext.EconomySettings.Ads.minPlayDaysRequired;

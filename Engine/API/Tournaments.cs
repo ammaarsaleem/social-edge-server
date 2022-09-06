@@ -147,9 +147,12 @@ namespace SocialEdgeSDK.Server.Api
         private static List<string> TournamentPoolSample(string tournamentShortCode, string collectionName, SocialEdgePlayerContext socialEdgePlayer, int tournamentSlot, long joinedTime, int poolSize, List<ObjectId> a_alreadyIncludedInArray)
         {
             List<string> pool = new List<string>();
-            // TODO Need to check algorithm to uncomment this
-            //if (tournamentSlot <= 1) tournamentSlot = 1;
-            if (poolSize <= 1) poolSize = 1;
+
+            if (tournamentSlot <= 1) 
+                tournamentSlot = 1;
+            
+            if (poolSize <= 1) 
+                poolSize = 1;
             
             var collection = SocialEdge.DataService.GetDatabase().GetCollection<TournamentEntryData>(collectionName);
             string playerId = socialEdgePlayer.PlayerId;
