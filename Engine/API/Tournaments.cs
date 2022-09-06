@@ -352,7 +352,7 @@ namespace SocialEdgeSDK.Server.Api
                 double freeReward = challengePlayerModel.betValue * (double)Settings.CommonSettings["bonusCoinsFreeRatio"];
                 double rvReward = challengePlayerModel.betValue * (double)Settings.CommonSettings["bonusCoinsRVRatio"];
             
-                ChallengeWinnerBonusRewardsData rewards = new ChallengeWinnerBonusRewardsData(challengePlayerModel._parent);
+                ChallengeWinnerBonusRewardsData rewards = challengePlayerModel.CreateChallengeWinnerBonusReward();
                 rewards.bonusCoinsFree1 = (int)Math.Round(freeReward * reward1Ratio);
                 rewards.bonusCoinsFree2 = (int)Math.Round(freeReward * reward2Ratio);
                 rewards.bonusCoinsFree3 = (int)Math.Round(freeReward * reward3Ratio);
