@@ -39,7 +39,7 @@ namespace SocialEdgeSDK.Server.Api
                 return null;
 
             long absoluteStartTime = tournamentLive.startTime; // in milliseconds
-            long tournamentDuration = tournamentLive.durationMinutes * 60; // in seconds
+            long tournamentDuration = tournamentLive.duration * 60; // in seconds
             return FindCurrentActiveCollection(tournamentLive, absoluteStartTime / 1000, tournamentDuration);
         }
 
@@ -136,7 +136,8 @@ namespace SocialEdgeSDK.Server.Api
             var sortByScore = Builders<TournamentEntryModelDocument>.Sort.Descending(typeof(TournamentEntryData).Name + ".score");
             var projection = Builders<TournamentEntryData>.Projection.Include("_id").Include(typeof(TournamentEntryData).Name + ".score");
             var entries = collection.Find(filter).Sort(sortByScore).ToList<TournamentEntryModelDocument>();
-            return entries.FindIndex(0, entries.Count, x => x._id.ToString() == socialEdgePlayer.PlayerDBId) + 1;
+            int returnIndex = entries.FindIndex(0, entries.Count, x => x._id.ToString() == socialEdgePlayer.PlayerDBId) + 1;
+            return returnIndex;
         }
         
         public static List<TournamentLeaderboardEntry> GetSortedLeaderboardEntries(string collectionName, List<string> ids)

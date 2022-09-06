@@ -205,28 +205,31 @@ namespace SocialEdgeSDK.Server.Api
             List<TournamentReward> rewards = tournamentModel.rewards[socialEdgePlayer.MiniProfile.League.ToString()];
             TournamentReward reward = rewards.Find(x => activeTournament.rank >= x.minRank && activeTournament.rank <= x.maxRank);
 
-            var i = socialEdgePlayer.Inbox.GetEnumerator();
-            bool found = false;
-            while(!found && i.MoveNext()) 
+            if(reward != null)
+            {
+                var i = socialEdgePlayer.Inbox.GetEnumerator();
+                bool found = false;
+                while(!found && i.MoveNext()) 
                 found = i.Current.Value.type == "RewardTournamentEnd";
 
-            if (!found)
-            {
-                InboxDataMessage msg = Inbox.CreateMessage();
-                msg.type = "RewardTournamentEnd";
-                msg.heading = "Tournament Results";
-                msg.body = "Tournament";
-                msg.trophies = reward.trophies;
-                msg.rank = activeTournament.rank;
-                msg.reward.Add("gems", reward.gems);
-                msg.tournamentType = activeTournament.type;
-                msg.tournamentId =  socialEdgeTournament.TournamentModel.Id;
-                msg.chestType = reward.chestType;
-                msg.expireAt = Utils.ToUTC(tournamentModel.expireAt);
-                
-                InboxModel.Add(msg, socialEdgePlayer);
+                if (!found)
+                {
+                    InboxDataMessage msg = Inbox.CreateMessage();
+                    msg.type = "RewardTournamentEnd";
+                    msg.heading = "Tournament Results";
+                    msg.body = "Tournament";
+                    msg.trophies = reward.trophies;
+                    msg.rank = activeTournament.rank;
+                    msg.reward.Add("gems", reward.gems);
+                    msg.tournamentType = activeTournament.type;
+                    msg.tournamentId =  socialEdgeTournament.TournamentModel.Id;
+                    msg.chestType = reward.chestType;
+                    msg.expireAt = Utils.ToUTC(tournamentModel.expireAt);
+                    
+                    InboxModel.Add(msg, socialEdgePlayer);
+                }
             }
-
+            
             if (tournamentNewScore > socialEdgePlayer.PlayerModel.Tournament.tournamentMaxScore)
                 socialEdgePlayer.PlayerModel.Tournament.tournamentMaxScore = tournamentNewScore;
         }

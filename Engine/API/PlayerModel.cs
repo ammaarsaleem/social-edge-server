@@ -31,6 +31,13 @@ namespace SocialEdgeSDK.Server.Models
         };
     }
 
+    public class GSPlayerModelDocument
+    {
+        #pragma warning disable format                                                        
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]    public string _id;
+        [BsonElement("PlayerDataModel")]                        public BsonDocument document;
+        #pragma warning restore format
+    }
     public class PublicProfileEx
     {
         public bool isOnline;
@@ -690,7 +697,23 @@ namespace SocialEdgeSDK.Server.Models
             if (_blocked != null)
                 _blocked.PrepareCache();
         }
+        public GSPlayerModelDocument GetGSPlayerData(SocialEdgePlayerContext socialEdgePlayer, string deviceId)
+        {
+            GSPlayerModelDocument gsPlayerData  = null;
+            SocialEdge.Log.LogInformation("PLAYER deviceId ::::::::::" +  deviceId);
+            var collection =  SocialEdge.DataService.GetCollection<GSPlayerModelDocument>("gsDataCollection");
+            var taskT = collection.FindOne("PlayerDataModel.deviceId", deviceId);
+            taskT.Wait(); 
 
+            if(taskT.Result != null){
+                gsPlayerData = taskT.Result;
+            }
+            
+            return gsPlayerData;
+        }
+       
+        
+       
         /*
                 private void Set<T>(string id, T val)
                 {

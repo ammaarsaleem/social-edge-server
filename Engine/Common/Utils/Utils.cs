@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using PlayFab;
 using System;
 using SocialEdgeSDK.Server.Context;
+using MongoDB.Bson;
 
 namespace SocialEdgeSDK.Server.Common
 {
@@ -115,6 +116,62 @@ namespace SocialEdgeSDK.Server.Common
             }
 
             return true;
+        }
+
+         public static BsonDocument GetDocument(BsonDocument doc, string key)
+        {
+            bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
+            if(keyExists){
+                return BsonDocument.Parse(keyData.ToString());
+            }
+            else{
+                return null;
+            }
+        }
+        public static int GetInt(BsonDocument doc, string key)
+        {
+            int returnValue = 0;
+            bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
+            if(keyExists)
+            {
+                if (keyData.IsDouble == true){
+                    returnValue = (int)keyData.AsDouble;
+                }
+                else if (keyData.IsInt32 == true){
+                     returnValue = keyData.AsInt32;
+                }
+            }
+            return returnValue;
+        }
+
+        public static long GetLong(BsonDocument doc, string key)
+        {
+            long returnValue = 0;
+            bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
+            if(keyExists)
+            {
+                if (keyData.IsDouble == true){
+                    returnValue = (long)keyData.AsDouble;
+                }
+                else if (keyData.IsInt32 == true){
+                     returnValue = (long)keyData.AsInt32;
+                }
+            }            
+            return returnValue;
+        }
+        public static string GetString(BsonDocument doc, string key)
+        {
+             bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
+            if(keyExists){
+                return keyData.AsString;
+            }
+            else{
+                return "";
+            }
+        }
+        public static bool GetBool(BsonDocument doc, string key)
+        {
+            return doc.Contains(key) ? doc[key].AsBoolean : false;
         }
     }
 }

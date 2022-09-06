@@ -241,6 +241,23 @@ namespace SocialEdgeSDK.Server.Api
             return await PlayFab.PlayFabServerAPI.GrantItemsToUserAsync(request);
         }
 
+        public static async Task<PlayFabResult<PlayFab.ServerModels.GrantItemsToUserResult>> GrantItems(string playerId, List<string> itemsList)
+        {
+            var request = new PlayFab.ServerModels.GrantItemsToUserRequest();
+            request.PlayFabId = playerId;
+            request.ItemIds = itemsList;
+            return await PlayFab.PlayFabServerAPI.GrantItemsToUserAsync(request);
+        }
+
+        public static async Task<PlayFabResult<PlayFab.ServerModels.ModifyItemUsesResult>> ModifyItemUses(string playerId, string itemInstanceId, int usesToAdd)
+        {
+            var request = new PlayFab.ServerModels.ModifyItemUsesRequest();
+            request.PlayFabId = playerId;
+            request.ItemInstanceId = itemInstanceId;
+            request.UsesToAdd = usesToAdd;
+            return await PlayFab.PlayFabServerAPI.ModifyItemUsesAsync(request);
+        }
+
         public static async Task<PlayFabResult<PlayFab.ServerModels.ConsumeItemResult>> ConsumeItem(string playerId, string itemId)
         {
             ConsumeItemRequest request = new ConsumeItemRequest();
@@ -313,42 +330,52 @@ namespace SocialEdgeSDK.Server.Api
             return randomColorCode.ToString();
         }
 
-        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer)
+        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, string deviceId)
         {
             string playerId = socialEdgePlayer.PlayerId;
             string entityToken = socialEdgePlayer.EntityToken;
             string entityId = socialEdgePlayer.EntityId;
 
-            var newName = Player.GenerateDisplayName();
-            var newTag = Player.GenerateTag();
-            var avatar = GenerateAvatar();
-            var avatarBgColor = GenerateAvatarBgColor();
+            //check if Gamespark data exists, init with GS data
+            GSPlayerModelDocument gsPlayerData = socialEdgePlayer.PlayerModel.GetGSPlayerData(socialEdgePlayer, deviceId);
+            if(gsPlayerData != null)
+            {
+                InitPlayerWithGsData(socialEdgePlayer, gsPlayerData);
+            }
+            else // init fresh new player
+            {
+                var newTag = Player.GenerateTag();
+                var newName = Player.GenerateDisplayName();
+                var avatar = GenerateAvatar();
+                var avatarBgColor = GenerateAvatarBgColor();
 
-            socialEdgePlayer.PlayerModel.CreateDefaults();
-            socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
-            socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
-            socialEdgePlayer.PlayerModel.Info.tag = newTag;
-            socialEdgePlayer.PlayerModel.Info.eloScore = 775;
+                socialEdgePlayer.PlayerModel.CreateDefaults();
+                socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
+                socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
+                socialEdgePlayer.PlayerModel.Info.tag = newTag;
+                socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
-            CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinDark");
-            PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
-            skinItem.kind = defaultSkin.Tags[0];
-            skinItem.key = defaultSkin.ItemId;
-            socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
+                CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinDark");
+                PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
+                skinItem.kind = defaultSkin.Tags[0];
+                skinItem.key = defaultSkin.ItemId;
+                socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
 
-            var addInventoryT = GrantItem(playerId, "DefaultOwnedItems");
-            InboxModel.Init(socialEdgePlayer.InboxId);
+                var addInventoryT = GrantItem(playerId, "DefaultOwnedItems");
+                InboxModel.Init(socialEdgePlayer.InboxId);
 
-            socialEdgePlayer.MiniProfile.AvatarId = avatar;
-            socialEdgePlayer.MiniProfile.AvatarBgColor = avatarBgColor;
-            socialEdgePlayer.MiniProfile.UploadPicId = null;
-            socialEdgePlayer.MiniProfile.EventGlow = 0;
-            socialEdgePlayer.MiniProfile.isDirty = false;
-            UpdatePlayerAvatarData(playerId, socialEdgePlayer.MiniProfile);
-            var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
+                socialEdgePlayer.MiniProfile.AvatarId = avatar;
+                socialEdgePlayer.MiniProfile.AvatarBgColor = avatarBgColor;
+                socialEdgePlayer.MiniProfile.UploadPicId = null;
+                socialEdgePlayer.MiniProfile.EventGlow = 0;
+                socialEdgePlayer.MiniProfile.isDirty = false;
+                UpdatePlayerAvatarData(playerId, socialEdgePlayer.MiniProfile);
+                var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
 
-            Task.WaitAll(updateDisplayNameT, addInventoryT);
+                Task.WaitAll(updateDisplayNameT, addInventoryT);
+            }
         }
+
         public static void PlayerCurrenyChanged(SocialEdgePlayerContext socialEdgePlayer, ILogger log)
         {
             int playerGems = (int)socialEdgePlayer.VirtualCurrency["GM"];
@@ -383,7 +410,6 @@ namespace SocialEdgeSDK.Server.Api
 
             return playerPublicProfile;
         }
-
         public static void NotifyOnlineStatus(SocialEdgePlayerContext socialEdgePlayer, bool isOnline)
         {
             if (socialEdgePlayer.PlayerModel.Friends.friends.Count == 0)
@@ -394,6 +420,228 @@ namespace SocialEdgeSDK.Server.Api
             notifyOnlineMessage.playerId = socialEdgePlayer.PlayerId;
             notifyOnlineMessage.isOnline = isOnline;
             new SocialEdgeMessage(socialEdgePlayer.PlayerId, notifyOnlineMessage, nameof(OnlineStatusNotifyMessageData), friendIds).Send();
+        } 
+        public static void InitPlayerWithGsData(SocialEdgePlayerContext socialEdgePlayer, GSPlayerModelDocument gsPlayerData)
+        {
+            string playerId = socialEdgePlayer.PlayerId;
+            socialEdgePlayer.PlayerModel.CreateDefaults();
+            InboxModel.Init(socialEdgePlayer.InboxId);
+
+            BsonDocument playerDocument = gsPlayerData.document;
+            string userID   = Utils.GetString(playerDocument, "userId");
+            string deviceId = Utils.GetString(playerDocument, "deviceId"); 
+            string FbId     = Utils.GetString(playerDocument, "facebookId");
+            string appleId  = Utils.GetString(playerDocument, "appleId"); 
+            string storeId  = Utils.GetString(playerDocument, "storeId"); 
+     
+            BsonDocument sparkPlayer = Utils.GetDocument(playerDocument, "sparkPlayer");
+            if(sparkPlayer != null)
+            {
+                DateTime creationTime = sparkPlayer["creationDate"].ToUniversalTime();
+                DateTime lastSceen =   sparkPlayer["lastSeen"].ToUniversalTime();
+
+                string displayName = Utils.GetString(sparkPlayer,"displayName"); 
+                var updateDisplayNameT = UpdatePlayerDisplayName(playerId, displayName);
+                updateDisplayNameT.Wait();
+
+                int numCoins = Utils.GetInt(sparkPlayer, "coins"); 
+                int numGems  = Utils.GetInt(sparkPlayer, "gems"); 
+                socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", numCoins);
+                socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", numGems);
+
+                socialEdgePlayer.PlayerModel.Economy.piggyBankGems          = Utils.GetInt(sparkPlayer, "piggyBank");
+                socialEdgePlayer.PlayerModel.Tournament.tournamentMaxScore  = Utils.GetInt(sparkPlayer, "tournamentMaxScore");
+                socialEdgePlayer.PlayerModel.Info.playDays                  = Utils.GetInt(sparkPlayer, "playDays");
+                //socialEdgePlayer.PlayerModel.Economy.dollarSpent  = Utils.GetInt(sparkPlayer, "dollarSpent");
+                //socialEdgePlayer.PlayerModel.Economy.flagMask  = Utils.GetInt(sparkPlayer, "flagMask");
+   
+                BsonDocument inventory = Utils.GetDocument(sparkPlayer, "inventory");
+                UpdateInventoryWithGsData(socialEdgePlayer, inventory);
+
+                //update daily games count
+                if(sparkPlayer.Contains("challengeCount"))
+                {
+                    BsonArray dailyChallengeCount = sparkPlayer["challengeCount"].AsBsonArray;
+                    UpdateDailyGamesCount(socialEdgePlayer, dailyChallengeCount);
+                }                
+            }
+
+            BsonDocument playerData = Utils.GetDocument(playerDocument, "playerData");
+            if(playerData != null)
+            {
+                BsonDocument pub = Utils.GetDocument(playerData, "pub");
+                if(pub != null)
+                {
+                    socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
+                    socialEdgePlayer.PlayerModel.Info.tag           = Utils.GetString(pub, "tag"); 
+                    socialEdgePlayer.PlayerModel.Info.eloScore      = Utils.GetInt(pub, "eloScore"); 
+                    socialEdgePlayer.PlayerModel.Info.eloCompletedPlacementGames = Utils.GetInt(pub, "eloCompletedPlacementGames"); 
+                    socialEdgePlayer.PlayerModel.Info.gamesWon      = Utils.GetInt(pub, "gamesWon"); 
+                    socialEdgePlayer.PlayerModel.Info.gamesLost     = Utils.GetInt(pub, "gamesLost"); 
+                    socialEdgePlayer.PlayerModel.Info.gamesDrawn    = Utils.GetInt(pub, "gamesDrawn"); 
+                    socialEdgePlayer.PlayerModel.Info.trophies      = Utils.GetInt(pub, "trophies"); 
+                    socialEdgePlayer.PlayerModel.Info.trophies2     = Utils.GetInt(pub, "trophies2"); 
+                    //socialEdgePlayer.PlayerModel.Info.countryFlag = Utils.GetString(pub, "countryFlag"); 
+                }
+
+                BsonDocument priv = Utils.GetDocument(playerData, "priv");
+                if(priv != null)
+                {
+                    //socialEdgePlayer.PlayerModel.Meta.clientVersion        = Utils.GetString(priv, "clientVersion");
+                    socialEdgePlayer.PlayerModel.Economy.isPremium          = Utils.GetBool(priv, "isPremium");
+                    socialEdgePlayer.PlayerModel.Events.eventTimeStamp      = Utils.GetLong(priv,"eventTimeStamp");
+                    socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp = Utils.GetLong(priv,"dailyEventExpiryTimestamp");
+                    socialEdgePlayer.PlayerModel.Events.dailyEventProgress  = Utils.GetInt(priv,"dailyEventProgress");
+                    socialEdgePlayer.PlayerModel.Events.dailyEventState     = Utils.GetString(priv, "dailyEventState");
+                    socialEdgePlayer.PlayerModel.Economy.balloonRewardsClaimedCount = Utils.GetInt(priv,"balloonRewardsClaimedCount");
+                    socialEdgePlayer.PlayerModel.Economy.chestUnlockTimestamp = Utils.GetLong(priv,"chestUnlockTimestamp");
+                    socialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp  = Utils.GetLong(priv,"rvUnlockTimestamp");
+                    socialEdgePlayer.PlayerModel.Economy.shopRvMaxReward    = Utils.GetInt(priv,"shopRvMaxReward");
+                    socialEdgePlayer.PlayerModel.Economy.shopRvDefaultBet   = Utils.GetInt(priv,"shopRvDefaultBet");
+                    socialEdgePlayer.PlayerModel.Economy.shopRvRewardClaimedCount = Utils.GetInt(priv,"shopRvRewardClaimedCount");
+                    socialEdgePlayer.PlayerModel.Economy.shopRvRewardCooldownTimestamp = Utils.GetLong(priv,"shopRvRewardCooldownTimestamp");
+                    socialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = Utils.GetLong(priv,"piggyBankExpiryTimestamp");
+                    socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp = Utils.GetLong(priv,"piggyBankDoublerExipryTimestamp");
+                    socialEdgePlayer.PlayerModel.Economy.subscriptionExpiryTime = Utils.GetLong(priv,"subscriptionExpiryTime");
+                    socialEdgePlayer.PlayerModel.Economy.subscriptionType = Utils.GetString(priv, "subscriptionType");
+                    socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier = Utils.GetString(priv, "dynamicBundlePurchaseTier");
+                    socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier = Utils.GetString(priv, "dynamicBundleDisplayTier");
+                    socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTierNew = Utils.GetString(priv, "dynamicBundlePurchaseTierNew");
+
+                    BsonArray playerActiveInventory = priv["playerActiveInventory"].AsBsonArray;
+                    InitActiveInventoryWithGsData(socialEdgePlayer, playerActiveInventory, pub);
+
+                    if(priv.Contains("dailyEventRewards"))
+                    {
+                        BsonArray dailyEventRewards = priv["dailyEventRewards"].AsBsonArray;
+                        InitDailyRewardFromGS(socialEdgePlayer, dailyEventRewards);
+                    }
+                }
+            }
         }
+        public static void UpdateDailyGamesCount(SocialEdgePlayerContext socialEdgePlayer, BsonArray dailyGamesCount)
+         {
+             if(dailyGamesCount != null)
+             {
+                for(int i=0; i<dailyGamesCount.Count; i++)
+                {
+                    BsonDocument dailyData = dailyGamesCount[i].AsBsonDocument;
+                    BsonElement dailyElement = dailyData.GetElement(0);
+                    string theDate = dailyElement.Name;
+                    BsonDocument dailyMatches = dailyElement.Value.AsBsonDocument;
+                    GameResults gameResults = new GameResults();
+                    gameResults.won   = Utils.GetInt(dailyMatches, "win");
+                    gameResults.lost  = Utils.GetInt(dailyMatches, "loss");
+                    gameResults.drawn = Utils.GetInt(dailyMatches, "draw");
+
+                    DateTime oDate = DateTime.Parse(theDate);
+                    var dateKey = oDate.ToShortDateString();
+                    socialEdgePlayer.PlayerModel.Info.gamesPlayedPerDay[dateKey] = gameResults;
+                }
+             }
+         }
+        public static void UpdateInventoryWithGsData(SocialEdgePlayerContext socialEdgePlayer, BsonDocument inventory)
+        {
+            Dictionary<string, int> gsItemDictionary = new Dictionary<string, int>();
+
+            //Add object in Inventory
+            if(inventory != null)
+            {
+                List<string> iventoryItemsList = new List<string>();
+                foreach (BsonElement element in inventory) 
+                {
+                    string itemName = element.Name;
+                    iventoryItemsList.Add(itemName);
+                    BsonValue value = element.Value;
+                    gsItemDictionary.Add(itemName, value.AsInt32);
+                }
+
+                if(iventoryItemsList.Count > 0){
+                    var addInventoryT = GrantItems(socialEdgePlayer.PlayerId, iventoryItemsList);
+                    addInventoryT.Wait();
+                }
+            }
+
+            //Modify item count
+            foreach (var item in gsItemDictionary)
+            {
+                ItemInstance itemData = socialEdgePlayer.PlayerEconomy.GetInventoryItemWithItemID(socialEdgePlayer, item.Key);
+                if(itemData != null)
+                {
+                    if(item.Value > itemData.RemainingUses)
+                    {
+                        itemData.RemainingUses = item.Value - itemData.RemainingUses;
+                        var modifyT = ModifyItemUses(socialEdgePlayer.PlayerId, itemData.ItemInstanceId, (int)itemData.RemainingUses);
+                        modifyT.Wait();
+                        SocialEdge.Log.LogInformation("UPDATE ITEM  :" +  itemData.ItemId + " RemainingUses : " + itemData.RemainingUses);
+                    }
+                }
+                else
+                {
+                    SocialEdge.Log.LogInformation("ITEM NOT FOUND :" +  item.Key);
+                }
+            }
+        }
+
+        public static void InitActiveInventoryWithGsData(SocialEdgePlayerContext socialEdgePlayer, BsonArray playerActiveInventory, BsonDocument pub)
+        {
+            if(playerActiveInventory != null)
+            {
+                 string Avatar = null;
+                 string AvatarBgColor = null;
+
+                for(int i=0; i<playerActiveInventory.Count; i++)
+                {
+                    BsonDocument dataItem = playerActiveInventory[i].AsBsonDocument;
+                    string itemType  = Utils.GetString(dataItem, "kind");
+                    string itemValue = Utils.GetString(dataItem, "shopItemKey");
+                    if(itemType == "Skin")
+                    {
+                        string skin = itemValue;
+                        CatalogItem activeSkin = SocialEdge.TitleContext.GetCatalogItem(skin);
+                        PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
+                        skinItem.kind = activeSkin.Tags[0];
+                        skinItem.key = activeSkin.ItemId;
+                        socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
+                    }
+                    else if(itemType == "Avatar")
+                    {
+                        Avatar = itemValue;
+                        socialEdgePlayer.MiniProfile.AvatarId = Avatar;
+                    }
+                    else if(itemType == "AvatarBgColor")
+                    {
+                         AvatarBgColor = itemValue;
+                         socialEdgePlayer.MiniProfile.AvatarBgColor = AvatarBgColor;
+                    }
+                }
+
+                if(Avatar != null && AvatarBgColor != null)
+                {
+                    socialEdgePlayer.MiniProfile.League = Utils.GetInt(pub, "league");
+                    socialEdgePlayer.MiniProfile.UploadPicId = null;
+                    socialEdgePlayer.MiniProfile.EventGlow = Utils.GetBool(pub, "dailyEventRing") ? 1 : 0;
+                    socialEdgePlayer.MiniProfile.isDirty = false;
+                    UpdatePlayerAvatarData(socialEdgePlayer.PlayerId, socialEdgePlayer.MiniProfile);
+                }
+            }
+        }
+
+         public static void InitDailyRewardFromGS(SocialEdgePlayerContext socialEdgePlayer, BsonArray dailyEventRewards)
+         {
+            if(dailyEventRewards != null && dailyEventRewards.Count > 0)
+            {
+                for(int i=0; i<dailyEventRewards.Count; i++)
+                {
+                    BsonDocument dataItem = dailyEventRewards[i].AsBsonDocument;
+                    DailyEventRewards rewardItem = new DailyEventRewards();
+                    int gems  = Utils.GetInt(dataItem, "gems");
+                    int coins = Utils.GetInt(dataItem, "coins");
+                    rewardItem.gems = gems;
+                    rewardItem.coins = coins;
+                    socialEdgePlayer.PlayerModel.Events.dailyEventRewards.Add(rewardItem);
+                }
+            }
+         }
     }
 }

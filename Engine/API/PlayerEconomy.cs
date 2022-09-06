@@ -141,6 +141,11 @@ namespace SocialEdgeSDK.Server.Context
             return socialEdgePlayer.Inventory.FirstOrDefault(i => i.ItemInstanceId == intanceId);
         }
 
+        public ItemInstance GetInventoryItemWithItemID(SocialEdgePlayerContext socialEdgePlayer, string itemId)
+        {
+            ItemInstance obj = socialEdgePlayer.Inventory.FirstOrDefault(i => i.ItemId == itemId);
+            return obj != null ? obj : null;
+        }
         public void AddVirtualCurrency(string currencyType, int amount)
         {
             var taskT = Player.AddVirtualCurrency(socialEdgePlayer.PlayerId, amount, currencyType);

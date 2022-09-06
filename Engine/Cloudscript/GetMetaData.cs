@@ -57,9 +57,12 @@ namespace SocialEdgeSDK.Server.Requests
             BsonDocument args = BsonDocument.Parse(data["parameters"].ToString());
             var isNewlyCreated = args.Contains("isNewlyCreated") ? (bool)args["isNewlyCreated"] : false;
             var clientVersion = args["clientVersion"].ToString();
+            int playerTimeZoneSlot = args["timeZone"].ToInt32();
+            string deviceId = args["deviceId"].ToString();
+
             if (isNewlyCreated)
             {
-                Player.NewPlayerInit(SocialEdgePlayer);
+                Player.NewPlayerInit(SocialEdgePlayer, deviceId);
             }
             else
             {
@@ -68,6 +71,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             SocialEdgePlayer.CacheFill(CachePlayerDataSegments.META);
             Inbox.Validate(SocialEdgePlayer);
+            SocialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot = playerTimeZoneSlot;
             Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
             SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
             PlayerSearch.Register(SocialEdgePlayer);
