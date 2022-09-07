@@ -74,7 +74,7 @@ namespace SocialEdgeSDK.Server.Api
             tournament.concluded = false;
             tournament.entryIds = new List<string>();
             tournament.score = 0;
-            tournament.expireAt = DateTimeOffset.FromUnixTimeMilliseconds(expiryTime).DateTime;
+            tournament.expireAt = Utils.EpochToDateTime(expiryTime);
             tournament.tournamentCollectionIndex = tournamentCollectionIdx;
             tournament.tournamentSlot = 0;  
 

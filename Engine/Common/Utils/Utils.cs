@@ -31,6 +31,11 @@ namespace SocialEdgeSDK.Server.Common
             return (long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds; 
         }
 
+        public static DateTime EpochToDateTime(long milli)
+        {
+            return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(milli);
+        }
+
         public static string CleanupJsonString(string json)
         {
             json = json.Replace("\\n", "").Replace("\n", "").Replace("\\", "");
