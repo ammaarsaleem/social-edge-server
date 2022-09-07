@@ -190,6 +190,14 @@ namespace SocialEdgeSDK.Server.Api
                 return;
 
             ChallengeData challengeData = SocialEdgeChallenge.ChallengeModel.Get(SocialEdgePlayer.PlayerModel.Challenge.currentChallengeId);
+            
+            // Bail if challenge model removed from db
+            if (challengeData == null)
+            {
+                SocialEdgePlayer.PlayerModel.Challenge.currentChallengeId = null;
+                return;
+            }
+            
             SocialEdgeChallenge.ChallengeModel.Challenge.winnerId = null;
             SocialEdgeChallenge.ChallengeModel.Challenge.gameEndReason = "ABANDONED";
 
