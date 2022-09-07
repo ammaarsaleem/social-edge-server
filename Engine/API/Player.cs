@@ -350,12 +350,12 @@ namespace SocialEdgeSDK.Server.Api
                 var avatar = GenerateAvatar();
                 var avatarBgColor = GenerateAvatarBgColor();
 
-            socialEdgePlayer.PlayerModel.CreateDefaults();
-            socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
-            socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
-            socialEdgePlayer.PlayerModel.Info.tag = newTag;
-            socialEdgePlayer.PlayerModel.Info.created = socialEdgePlayer.Created;
-            socialEdgePlayer.PlayerModel.Info.eloScore = 775;
+                socialEdgePlayer.PlayerModel.CreateDefaults();
+                socialEdgePlayer.PlayerModel.Meta.clientVersion = "0.0.1";
+                socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
+                socialEdgePlayer.PlayerModel.Info.tag = newTag;
+                socialEdgePlayer.PlayerModel.Info.created = socialEdgePlayer.Created;
+                socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
                 CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinDark");
                 PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
@@ -440,6 +440,8 @@ namespace SocialEdgeSDK.Server.Api
             if(sparkPlayer != null)
             {
                 DateTime creationTime = sparkPlayer["creationDate"].ToUniversalTime();
+                socialEdgePlayer.PlayerModel.Info.created = creationTime;
+
                 DateTime lastSceen =   sparkPlayer["lastSeen"].ToUniversalTime();
 
                 string displayName = Utils.GetString(sparkPlayer,"displayName"); 
