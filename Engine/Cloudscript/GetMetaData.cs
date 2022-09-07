@@ -98,6 +98,7 @@ namespace SocialEdgeSDK.Server.Requests
                 if (isNewlyCreated == true)
                 {
                     result.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
+                    result.playerCombinedInfoResultPayload.PlayerProfile.AvatarUrl = SocialEdgePlayer.MiniProfile.ToJson();
                 }
 
                 CacheFlush();

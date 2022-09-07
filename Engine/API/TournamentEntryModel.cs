@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Text.Json.Serialization;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.Context;
 
@@ -16,12 +17,12 @@ namespace SocialEdgeSDK.Server.Models
 {
     public class PlayerMiniProfileData : DataModelBase
     {
-         #pragma warning disable format
-        [BsonElement("0")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarId;
-        [BsonElement("1")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarBgColor;
-        [BsonElement("2")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _uploadPicId;
-        [BsonElement("3")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _eventGlow;
-        [BsonElement("4")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _league;
+        #pragma warning disable format
+        [JsonPropertyName("0")][BsonElement("0")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarId { get; set; }
+        [JsonPropertyName("1")][BsonElement("1")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _avatarBgColor { get; set; }
+        [JsonPropertyName("2")][BsonElement("2")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _uploadPicId { get; set; }
+        [JsonPropertyName("3")][BsonElement("3")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _eventGlow { get; set; }
+        [JsonPropertyName("4")][BsonElement("4")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _league { get; set; }
         #pragma warning restore format
 
         [BsonIgnore] public string AvatarId { get => _avatarId; set { _avatarId = value; isDirty = true; }}
