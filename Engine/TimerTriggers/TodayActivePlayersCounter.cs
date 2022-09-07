@@ -18,7 +18,7 @@ namespace SocialEdgeSDK.Server.Requests
         public TodayActivePlayersCounter(IDataService dataService) { _dataService = dataService; }
 
         [FunctionName("TodayActivePlayersCounter")]
-        public void Run([TimerTrigger("0 7 */2 * * *")]TimerInfo myTimer, ILogger log)
+        public void Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
             // once every minute "0 */1 * * * *"
             // once at the top of every hour "0 0 * * * *"
