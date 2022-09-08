@@ -13,41 +13,38 @@ using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using SocialEdgeSDK.Server.Models;
-using Xunit;
+using PlayFab.ServerModels;
 using SocialEdgeSDK.Server.Common;
+using System.Collections.Generic;
+using PlayFab.Samples;
+using System.Net.Http;
 
 namespace SocialEdgeSDK.Server.Requests
 {
-    public class Test
+    public class Test : FunctionContext
     {
         //IDbHelper _dbHelper;
-        IDataService _dataService;
-        public Test(IDataService dataService)
-        {
-            _dataService = dataService;
-            // _dbHelper = dbHelper;
-        }
-        /// <summary>
-        /// Wild search for a player by namee
-        /// </summary>
-        /// <param name="name">the name of the user to fetch</param>
-        /// <returns>serialiazed json</returns>
+        // IDataService _dataService;
+        // public Test(IDataService dataService)
+        // {
+        //     _dataService = dataService;
+        //     // _dbHelper = dbHelper;
+        // }
+
+        public Test(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
+
         [FunctionName("Test")]
-        public  async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequestMessage req, ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string userId = req.Query["userId"];
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            userId = userId ?? data?.userId;
+            InitContext(req, log);
+            string userId  = Args["userId"];
 
-            GSPlayerModelDocument gsPlayerData =  GetGSPlayerData(_dataService);
+            GSPlayerModelDocument gsPlayerData =  GetGSPlayerData();
             if(gsPlayerData != null)
             {
-                InitPlayerWithGsData(gsPlayerData, log);
+                 InitPlayerWithGsData(gsPlayerData);
             }
 
             string responseMessage = string.IsNullOrEmpty(userId)
@@ -57,11 +54,11 @@ namespace SocialEdgeSDK.Server.Requests
             return new OkObjectResult(responseMessage);
         }
 
-        public GSPlayerModelDocument GetGSPlayerData(IDataService _dataService)
+        public GSPlayerModelDocument GetGSPlayerData()
         {
             GSPlayerModelDocument gsPlayerData  = null;
-            string deviceId = "F9B9EEDD-DCB8-4B2D-A016-38817F457245";
-            var collection =  _dataService.GetCollection<GSPlayerModelDocument>("gsDataCollection");
+            string deviceId = "604265AD-D11A-5EBB-9F36-345F72E5601D";
+            var collection =  SocialEdge.DataService.GetCollection<GSPlayerModelDocument>("gsDataCollection");
             var taskT = collection.FindOne("PlayerDataModel.deviceId", deviceId);
             taskT.Wait(); 
 
@@ -71,7 +68,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             return gsPlayerData;
         }
-        public  void InitPlayerWithGsData( GSPlayerModelDocument gsPlayerData, ILogger log)
+        public  void InitPlayerWithGsData( GSPlayerModelDocument gsPlayerData)
         {
             BsonDocument playerDocument = gsPlayerData.document;
             string deviceId = Utils.GetString(playerDocument, "deviceId"); 
@@ -90,44 +87,62 @@ namespace SocialEdgeSDK.Server.Requests
                 long eventTimeStamp      = Utils.GetLong(priv,"eventTimeStamp");
                 long dailyEventExpiryTimestamp = Utils.GetLong(priv,"dailyEventExpiryTimestamp");
 
-                if(sparkPlayer.Contains("challengeCount"))
+                 BsonDocument inventory = Utils.GetDocument(sparkPlayer, "inventory");
+                Dictionary<string, int> gsItemDictionary = new Dictionary<string, int>();
+
+                //Add object in Inventory
+                if(inventory != null)
                 {
-                    BsonArray dailyGamesCount = sparkPlayer["challengeCount"].AsBsonArray;
-                     if(dailyGamesCount != null)
-                     {
-                        for(int i=0; i<dailyGamesCount.Count; i++)
-                        {
-                            BsonDocument dailyData = dailyGamesCount[i].AsBsonDocument;
-                            BsonElement dailyElement = dailyData.GetElement(0);
-                            string dateKey = dailyElement.Name;
-                            BsonDocument dailyMatches = dailyElement.Value.AsBsonDocument;
-                            GameResults result = new GameResults();
-                            result.won = Utils.GetInt(dailyMatches, "win");
-                            result.lost = Utils.GetInt(dailyMatches, "loss");
-                            result.drawn = Utils.GetInt(dailyMatches, "draw");
-
-                            DateTime oDate = DateTime.Parse(dateKey);
-                            var dateKey1 = oDate.ToShortDateString();
-
-                            log.LogInformation("DATE : " + dateKey1);
-
-                        }
-                     }
-                }
-
-                BsonArray dailyEventRewards = priv["dailyEventRewards"].AsBsonArray;
-                if(dailyEventRewards != null && dailyEventRewards.Count > 0){
-                    for(int i=0; i<dailyEventRewards.Count; i++)
+                   List<string> iventoryItemsList = new List<string>();
+                    foreach (BsonElement element in inventory) 
                     {
-                        BsonDocument dataItem = dailyEventRewards[i].AsBsonDocument;
-                        int gems  = Utils.GetInt(dataItem, "gems");
-                        int coins = Utils.GetInt(dataItem, "coins");
-                        DailyEventRewards reward = new DailyEventRewards();
-                        reward.gems = gems;
-                        reward.coins = coins;
+                        string shortCode = element.Name;
+                        if(shortCode == "DefaultOwnedItemsV1" || shortCode == "DefaultOwnedItemsV2"){
+                            continue;
+                        }
+
+                        CatalogItem itemData = null;
+                        if(SocialEdge.TitleContext.GetCatalogItemDictionary().ContainsKey(shortCode)){
+                            itemData = SocialEdge.TitleContext.GetCatalogItemDictionary()[shortCode];
+
+                        if(itemData != null && !iventoryItemsList.Contains(itemData.ItemId)){
+                            iventoryItemsList.Add(itemData.ItemId);
+                            BsonValue value = element.Value;
+                            gsItemDictionary.Add(itemData.ItemId, value.AsInt32);
+                        }                
                     }
 
                 }
+
+                int coins = 0;
+                int gems  = 0;
+                foreach (var item in gsItemDictionary)
+                {
+                    CatalogItem itemData = SocialEdge.TitleContext.GetCatalogItem(item.Key);
+
+                    if(itemData.Bundle != null && itemData.Bundle.BundledVirtualCurrencies != null)
+                    {
+                        if(itemData.Bundle.BundledVirtualCurrencies.ContainsKey("CN"))
+                        {
+                            coins += ((int)itemData.Bundle.BundledVirtualCurrencies["CN"]);
+                        }
+
+                        if(itemData.Bundle.BundledVirtualCurrencies.ContainsKey("GM"))
+                        {
+                            gems += ((int)itemData.Bundle.BundledVirtualCurrencies["GM"]);
+                        }
+                    }
+                }
+
+                if(coins > 0){
+                    SocialEdge.Log.LogInformation("TOTAL DEDCUT COINS: " + coins);
+                }
+
+                if(gems > 0){
+                    SocialEdge.Log.LogInformation("TOTAL DEDCUT GEMS: " + gems);
+                }
+
+                SocialEdge.Log.LogInformation("gsItemDictionary : " + gsItemDictionary.ToJson());
 
                 // BsonArray playerActiveInventory = priv["playerActiveInventory"].AsBsonArray;
                 // if(playerActiveInventory != null && playerActiveInventory.Count > 0){
@@ -154,11 +169,11 @@ namespace SocialEdgeSDK.Server.Requests
                 //     }
 
                 // }
+                }
+
             }
 
-        }
-
-       
+        }  
     }
 }
 

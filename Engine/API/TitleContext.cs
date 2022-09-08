@@ -26,7 +26,7 @@ namespace SocialEdgeSDK.Server.DataService
         CatalogItem GetCatalogItem(string ItemId);
         StoreItem GetStoreItem(string ItemId);
         string GetShortCodeFromItemId(string itemId);
-
+        Dictionary<string, CatalogItem> GetCatalogItemDictionary();
         LeagueSettingModel LeagueSettings { get; }
         EconomySettingsModel EconomySettings { get; }
 
@@ -43,7 +43,7 @@ namespace SocialEdgeSDK.Server.DataService
         private Dictionary<string, BsonDocument> _titleDataDict;
         private Dictionary<string, CatalogItem> _catalogItemsDict;
         private Dictionary<string, StoreItem> _storeItemsDict;
-
+        private Dictionary<string, CatalogItem> _catalogItemsWihtShortCode;
         private LeagueSettingModel _leagueSettings;
         private EconomySettingsModel _economySettings;
 
@@ -55,6 +55,7 @@ namespace SocialEdgeSDK.Server.DataService
         internal Dictionary<string, BsonDocument> titleDataDict => _titleDataDict;
         internal Dictionary<string, CatalogItem> catalogItemsDict => _catalogItemsDict;
         internal Dictionary<string, StoreItem> storeItemsDict => _storeItemsDict;
+        internal Dictionary<string, CatalogItem> catalogItemsWihtShortCode => _catalogItemsWihtShortCode;
 
         internal LeagueSettingModel leagueSettings => _leagueSettings;
         internal EconomySettingsModel economySettings => _economySettings;
@@ -100,6 +101,23 @@ namespace SocialEdgeSDK.Server.DataService
 
             _economySettings = new EconomySettingsModel();
             _economySettings = BsonSerializer.Deserialize<EconomySettingsModel>(_titleDataDict["Economy"].ToString());
+
+            //Catalog Dictionary with shortCode
+            _catalogItemsWihtShortCode = new Dictionary<string, CatalogItem>();
+            GetCatalogItemsResult items = _catalogItems;
+            for(int i=0; i<items.Catalog.Count; i++){
+                CatalogItem itemData = items.Catalog[i];
+                string shortCode = itemData.ItemId;
+                if(itemData.CustomData != null){
+                    Dictionary<string, object> dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(itemData.CustomData);
+                    if(dictionary.ContainsKey("shortCode")){
+                        shortCode = dictionary["shortCode"].ToString();
+                    }
+                }
+                if(!_catalogItemsWihtShortCode.ContainsKey(shortCode)){
+                    _catalogItemsWihtShortCode.Add(shortCode, itemData);
+                }
+            }
 
             Console.WriteLine("****** *********************  *****");
             Console.WriteLine("*     ( FetchTitleContext[" + _index + "] )    *");
@@ -169,6 +187,11 @@ namespace SocialEdgeSDK.Server.DataService
             Dictionary<string, object> dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(itemData.CustomData);
             string shortCode = dictionary["shortCode"].ToString();
             return shortCode;
+        }
+
+        public Dictionary<string, CatalogItem> GetCatalogItemDictionary()
+        {
+            return CurrentBuffer.catalogItemsWihtShortCode;
         }
     }
 }

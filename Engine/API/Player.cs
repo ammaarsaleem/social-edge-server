@@ -342,6 +342,7 @@ namespace SocialEdgeSDK.Server.Api
             if(gsPlayerData != null)
             {
                 InitPlayerWithGsData(socialEdgePlayer, gsPlayerData);
+                socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
             }
             else // init fresh new player
             {
@@ -476,7 +477,7 @@ namespace SocialEdgeSDK.Server.Api
                 BsonDocument pub = Utils.GetDocument(playerData, "pub");
                 if(pub != null)
                 {
-                    socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
+                    //socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
                     socialEdgePlayer.PlayerModel.Info.tag           = Utils.GetString(pub, "tag"); 
                     socialEdgePlayer.PlayerModel.Info.eloScore      = Utils.GetInt(pub, "eloScore"); 
                     socialEdgePlayer.PlayerModel.Info.eloCompletedPlacementGames = Utils.GetInt(pub, "eloCompletedPlacementGames"); 
@@ -547,17 +548,27 @@ namespace SocialEdgeSDK.Server.Api
         public static void UpdateInventoryWithGsData(SocialEdgePlayerContext socialEdgePlayer, BsonDocument inventory)
         {
             Dictionary<string, int> gsItemDictionary = new Dictionary<string, int>();
-
             //Add object in Inventory
             if(inventory != null)
             {
                 List<string> iventoryItemsList = new List<string>();
                 foreach (BsonElement element in inventory) 
                 {
-                    string itemName = element.Name;
-                    iventoryItemsList.Add(itemName);
-                    BsonValue value = element.Value;
-                    gsItemDictionary.Add(itemName, value.AsInt32);
+                    string shortCode = element.Name;
+                    if(shortCode == "DefaultOwnedItemsV1" || shortCode == "DefaultOwnedItemsV2"){
+                        continue;
+                    }
+
+                    CatalogItem itemData = null;
+                    if(SocialEdge.TitleContext.GetCatalogItemDictionary().ContainsKey(shortCode)){
+                        itemData = SocialEdge.TitleContext.GetCatalogItemDictionary()[shortCode];
+                    }
+
+                    if(itemData != null && !iventoryItemsList.Contains(itemData.ItemId)){
+                        iventoryItemsList.Add(itemData.ItemId);
+                        BsonValue value = element.Value;
+                        gsItemDictionary.Add(itemData.ItemId, value.AsInt32);
+                    }                
                 }
 
                 if(iventoryItemsList.Count > 0){
@@ -566,24 +577,51 @@ namespace SocialEdgeSDK.Server.Api
                 }
             }
 
+            int deductCoins = 0;
+            int deductGems  = 0;  
             //Modify item count
             foreach (var item in gsItemDictionary)
             {
                 ItemInstance itemData = socialEdgePlayer.PlayerEconomy.GetInventoryItemWithItemID(socialEdgePlayer, item.Key);
                 if(itemData != null)
                 {
-                    if(item.Value > itemData.RemainingUses)
-                    {
+                    if(item.Value > itemData.RemainingUses){
                         itemData.RemainingUses = item.Value - itemData.RemainingUses;
                         var modifyT = ModifyItemUses(socialEdgePlayer.PlayerId, itemData.ItemInstanceId, (int)itemData.RemainingUses);
                         modifyT.Wait();
                         SocialEdge.Log.LogInformation("UPDATE ITEM  :" +  itemData.ItemId + " RemainingUses : " + itemData.RemainingUses);
+                    }
+
+                    CatalogItem catalogItemData = SocialEdge.TitleContext.GetCatalogItem(item.Key);
+                    if(catalogItemData.Bundle != null && catalogItemData.Bundle.BundledVirtualCurrencies != null){
+
+                        if(catalogItemData.Bundle.BundledVirtualCurrencies.ContainsKey("CN"))
+                        {
+                            deductCoins += ((int)catalogItemData.Bundle.BundledVirtualCurrencies["CN"]);
+                        }
+
+                        if(catalogItemData.Bundle.BundledVirtualCurrencies.ContainsKey("GM"))
+                        {
+                            deductGems += ((int)catalogItemData.Bundle.BundledVirtualCurrencies["GM"]);
+                        }
                     }
                 }
                 else
                 {
                     SocialEdge.Log.LogInformation("ITEM NOT FOUND :" +  item.Key);
                 }
+            }
+
+            if(deductCoins > 0)
+            {
+                SocialEdge.Log.LogInformation("TOTAL DEDCUT COINS: " + deductCoins);
+                socialEdgePlayer.PlayerEconomy.SubtractVirtualCurrency("CN", deductCoins);
+            }
+
+            if(deductGems > 0)
+            {
+                SocialEdge.Log.LogInformation("TOTAL DEDCUT GEMS: " + deductGems);
+                socialEdgePlayer.PlayerEconomy.SubtractVirtualCurrency("GM", deductGems);
             }
         }
 
