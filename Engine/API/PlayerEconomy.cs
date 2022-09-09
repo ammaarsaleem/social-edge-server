@@ -163,7 +163,7 @@ namespace SocialEdgeSDK.Server.Context
             if(socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp == 0 || socialEdgePlayer.PlayerModel.Events.dailyEventExpiryTimestamp <= currentTime)
             {
                 var hourToMilliseconds = 60 * 60 * 1000;
-                var expiryTimestamp = Utils.ToUTC(Utils.EndOfDay(DateTime.Now)) - (socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot * hourToMilliseconds);
+                var expiryTimestamp = Utils.ToUTC(DateTime.UtcNow.Date.AddDays(1)) - (socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot * hourToMilliseconds);
                 var defaultBet = GetDefaultBet();
 
                 if(expiryTimestamp < currentTime)
