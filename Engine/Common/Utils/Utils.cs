@@ -123,7 +123,7 @@ namespace SocialEdgeSDK.Server.Common
             return true;
         }
 
-         public static BsonDocument GetDocument(BsonDocument doc, string key)
+        public static BsonDocument GetDocument(BsonDocument doc, string key)
         {
             bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
             if(keyExists){
@@ -133,6 +133,19 @@ namespace SocialEdgeSDK.Server.Common
                 return null;
             }
         }
+
+        public static BsonArray GetArray(BsonDocument doc, string key)
+        {
+            BsonArray returnValue = null;
+            bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
+            if(keyExists){
+                if(keyData.IsBsonArray){
+                    returnValue = keyData.AsBsonArray;
+                }
+            }
+            return returnValue;
+        }
+
         public static int GetInt(BsonDocument doc, string key)
         {
             int returnValue = 0;
@@ -177,6 +190,25 @@ namespace SocialEdgeSDK.Server.Common
         public static bool GetBool(BsonDocument doc, string key)
         {
             return doc.Contains(key) ? doc[key].AsBoolean : false;
+        }
+
+        public static float Getfloat(BsonDocument doc, string key)
+        {
+            float returnValue = 0;
+             bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
+            if(keyExists)
+            {
+                if (keyData.IsDecimal128 == true){
+                    returnValue = (float)keyData.AsDecimal128;
+                }
+                else if (keyData.IsDouble == true){
+                    returnValue = (float)keyData.AsDouble;
+                }
+                else if (keyData.IsInt32 == true){
+                     returnValue = (float)keyData.AsInt32;
+                }
+            }            
+            return returnValue;
         }
     }
 }

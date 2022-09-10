@@ -461,14 +461,15 @@ namespace SocialEdgeSDK.Server.Api
                 //socialEdgePlayer.PlayerModel.Economy.flagMask  = Utils.GetInt(sparkPlayer, "flagMask");
    
                 BsonDocument inventory = Utils.GetDocument(sparkPlayer, "inventory");
-                UpdateInventoryWithGsData(socialEdgePlayer, inventory);
+                if(inventory != null){
+                    UpdateInventoryWithGsData(socialEdgePlayer, inventory);
+                }
 
                 //update daily games count
-                if(sparkPlayer.Contains("challengeCount"))
-                {
-                    BsonArray dailyChallengeCount = sparkPlayer["challengeCount"].AsBsonArray;
+                BsonArray dailyChallengeCount = Utils.GetArray(sparkPlayer, "challengeCount"); 
+                if(dailyChallengeCount != null){
                     UpdateDailyGamesCount(socialEdgePlayer, dailyChallengeCount);
-                }                
+                }
             }
 
             BsonDocument playerData = Utils.GetDocument(playerDocument, "playerData");
@@ -513,12 +514,13 @@ namespace SocialEdgeSDK.Server.Api
                     socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier = Utils.GetString(priv, "dynamicBundleDisplayTier");
                     socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTierNew = Utils.GetString(priv, "dynamicBundlePurchaseTierNew");
 
-                    BsonArray playerActiveInventory = priv["playerActiveInventory"].AsBsonArray;
-                    InitActiveInventoryWithGsData(socialEdgePlayer, playerActiveInventory, pub);
+                    BsonArray playerActiveInventory = Utils.GetArray(priv, "playerActiveInventory");
+                    if(playerActiveInventory != null){
+                        InitActiveInventoryWithGsData(socialEdgePlayer, playerActiveInventory, pub);
+                    }
 
-                    if(priv.Contains("dailyEventRewards"))
-                    {
-                        BsonArray dailyEventRewards = priv["dailyEventRewards"].AsBsonArray;
+                    BsonArray dailyEventRewards = Utils.GetArray(priv, "dailyEventRewards");
+                    if(dailyEventRewards != null){
                         InitDailyRewardFromGS(socialEdgePlayer, dailyEventRewards);
                     }
                 }
@@ -655,6 +657,12 @@ namespace SocialEdgeSDK.Server.Api
                     {
                          AvatarBgColor = itemValue;
                          socialEdgePlayer.MiniProfile.AvatarBgColor = AvatarBgColor;
+                    }
+                    else if(itemType == "VideoLesson")
+                    {
+                        string videoId = itemValue;
+                        float progress = Utils.Getfloat(dataItem, "progress");
+                        socialEdgePlayer.PlayerModel.Info.videosProgress[videoId] = progress;
                     }
                 }
 
