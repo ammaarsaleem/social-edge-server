@@ -66,7 +66,7 @@ namespace SocialEdgeSDK.Server.Context
         
         public const ulong MAX = MINI_PROFILE;
 
-        public const ulong META = INBOX | CHAT;
+        public const ulong META = INBOX;
         public const ulong READONLY = FRIENDS | FRIENDS_PROFILESEX;
     }
 
