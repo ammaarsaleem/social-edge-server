@@ -513,6 +513,8 @@ namespace SocialEdgeSDK.Server.Api
                     socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTier = Utils.GetString(priv, "dynamicBundlePurchaseTier");
                     socialEdgePlayer.PlayerModel.Economy.dynamicBundleDisplayTier = Utils.GetString(priv, "dynamicBundleDisplayTier");
                     socialEdgePlayer.PlayerModel.Economy.dynamicBundlePurchaseTierNew = Utils.GetString(priv, "dynamicBundlePurchaseTierNew");
+                    socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp = Utils.GetLong(priv, "freePowerPlayExipryTimestamp");
+                    socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter =  Utils.GetInt(priv, "jackpotNotCollectedCounter");
 
                     BsonArray playerActiveInventory = Utils.GetArray(priv, "playerActiveInventory");
                     if(playerActiveInventory != null){
