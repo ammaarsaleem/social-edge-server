@@ -66,7 +66,7 @@ namespace SocialEdgeSDK.Server.Models
             if (msg == null)
                 return null;
 
-            var granted = socialEdgePlayer.PlayerEconomy.Grant(msg.reward);
+            Dictionary<string, int> granted = msg.reward != null ? socialEdgePlayer.PlayerEconomy.Grant(msg.reward) : null;
 
             if (msg.isDaily == true)
             {
@@ -142,6 +142,15 @@ namespace SocialEdgeSDK.Server.Models
 
                 InboxModel.Add(newMsgInfo, socialEdgePlayer);
             }
+        }
+
+        public static void CreateAnnouncementMessage(SocialEdgePlayerContext socialEdgePlayer, string title, string body)
+        {
+            var message = CreateMessage();
+            message.type = "Announcement";
+            message.heading = title;
+            message.body = body;
+            InboxModel.Add(message, socialEdgePlayer);
         }
 
         private static void RemoveExpired(SocialEdgePlayerContext socialEdgePlayer)

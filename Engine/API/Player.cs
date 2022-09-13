@@ -662,7 +662,7 @@ namespace SocialEdgeSDK.Server.Api
                     {
                         string videoId = itemValue;
                         float progress = Utils.Getfloat(dataItem, "progress");
-                        socialEdgePlayer.PlayerModel.Info.videosProgress[videoId] = progress;
+                        socialEdgePlayer.PlayerModel.Info.videosProgress[videoId] = progress / 100;
                     }
                 }
 

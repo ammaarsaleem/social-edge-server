@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using SocialEdgeSDK.Server.DataService;
 using PlayFab.Samples;
+using System;
 
 namespace SocialEdgeSDK.Server.Requests
 {       
@@ -25,6 +26,7 @@ namespace SocialEdgeSDK.Server.Requests
             var data = Args["data"];
             var videoId = data["videoId"].Value.ToString();
             var progress = (float)data["progress"].Value;
+            progress = (float)Math.Round(progress, 2);
 
             if(SocialEdgePlayer.PlayerModel.Info.videosProgress.ContainsKey(videoId))
             {
