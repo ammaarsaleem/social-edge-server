@@ -343,6 +343,7 @@ namespace SocialEdgeSDK.Server.Api
             {
                 InitPlayerWithGsData(socialEdgePlayer, gsPlayerData);
                 socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
+                Inbox.CreateAnnouncementMessage(socialEdgePlayer, "Important Update","Hey Champ!\nWe changed our server providers to bring you the best multiplayer gameplay experience. Our team worked hard to implement this technology switch. Please help us with your feedback and report issues on support.\nNow let's enjoy the game :)");
             }
             else // init fresh new player
             {

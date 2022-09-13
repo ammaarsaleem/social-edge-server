@@ -60,16 +60,9 @@ namespace SocialEdgeSDK.Server.Requests
             int playerTimeZoneSlot = args["timeZone"].ToInt32();
             string deviceId = args["deviceId"].ToString();
 
-
             if (isNewlyCreated)
             {
                 Player.NewPlayerInit(SocialEdgePlayer, deviceId);
-
-                // For migrated players
-                if ((DateTime.UtcNow - SocialEdgePlayer.PlayerModel.Info.created).TotalMinutes >= 5)
-                {
-                    Inbox.CreateAnnouncementMessage(SocialEdgePlayer, "Important Update","Hey Champ!\nWe changed our server providers to bring you the best multiplayer gameplay experience. Our team worked hard to implement this technology switch. Please help us with your feedback and report issues on support.\nNow let's enjoy the game :)");
-                }
             }
             else
             {
