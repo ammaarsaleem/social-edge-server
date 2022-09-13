@@ -150,6 +150,7 @@ namespace SocialEdgeSDK.Server.Models
             message.type = "Announcement";
             message.heading = title;
             message.body = body;
+            message.expireAt = Utils.UTCNow() + (5 * 60 * 1000);
             InboxModel.Add(message, socialEdgePlayer);
         }
 
