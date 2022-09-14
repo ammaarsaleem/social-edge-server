@@ -373,6 +373,7 @@ namespace SocialEdgeSDK.Server.Api
                 socialEdgePlayer.MiniProfile.UploadPicId = null;
                 socialEdgePlayer.MiniProfile.EventGlow = 0;
                 socialEdgePlayer.MiniProfile.isDirty = false;
+                socialEdgePlayer.DisplayName = newName;
                 UpdatePlayerAvatarData(playerId, socialEdgePlayer.MiniProfile);
                 var updateDisplayNameT = UpdatePlayerDisplayName(playerId, newName);
 
@@ -447,6 +448,7 @@ namespace SocialEdgeSDK.Server.Api
                 DateTime lastSceen =   sparkPlayer["lastSeen"].ToUniversalTime();
 
                 string displayName = Utils.GetString(sparkPlayer,"displayName"); 
+                socialEdgePlayer.DisplayName = displayName;
                 var updateDisplayNameT = UpdatePlayerDisplayName(playerId, displayName);
                 updateDisplayNameT.Wait();
 

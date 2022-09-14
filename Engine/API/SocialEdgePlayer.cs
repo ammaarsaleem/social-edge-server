@@ -76,6 +76,7 @@ namespace SocialEdgeSDK.Server.Context
         private string _entityToken;
         private string _entityId;
         private DateTime _created;
+        private string _displayName;
         private PlayerMiniProfileData _miniProfile;
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private Dictionary<string, InboxDataMessage> _inbox;
@@ -103,6 +104,8 @@ namespace SocialEdgeSDK.Server.Context
         public PlayerEconomy PlayerEconomy { get => _playerEconomy != null ? _playerEconomy : _playerEconomy = new PlayerEconomy(this); }
 
         public PlayerDataSegment PlayerData { get => _playerData; }
+
+        public string DisplayName { get => _displayName; set => _displayName = value; }
         public PlayerMiniProfileData MiniProfile { get => (((_fillMask & CachePlayerDataSegments.MINI_PROFILE) != 0) || (CacheFillSegment(CachePlayerDataSegments.MINI_PROFILE))) ? _miniProfile : null; }
         public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CachePlayerDataSegments.COMBINED_INFO) != 0) || (CacheFillSegment(CachePlayerDataSegments.COMBINED_INFO))) ? _combinedInfo : null; }
         public string EntityId { get => (((_fillMask & CachePlayerDataSegments.ENTITY_ID) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_ID))) ? _entityId : null; }
