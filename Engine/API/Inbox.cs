@@ -151,6 +151,8 @@ namespace SocialEdgeSDK.Server.Models
             message.heading = title;
             message.body = body;
             message.expireAt = Utils.UTCNow() + (5 * 60 * 1000);
+            message.startTime = Utils.ToUTC(DateTime.UtcNow.AddDays(2));
+            message.time = message.startTime;
             InboxModel.Add(message, socialEdgePlayer);
         }
 
