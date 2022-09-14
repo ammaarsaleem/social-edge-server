@@ -331,14 +331,14 @@ namespace SocialEdgeSDK.Server.Api
             return randomColorCode.ToString();
         }
 
-        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, string deviceId)
+        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, string deviceId, string fbId, string appleId)
         {
             string playerId = socialEdgePlayer.PlayerId;
             string entityToken = socialEdgePlayer.EntityToken;
             string entityId = socialEdgePlayer.EntityId;
 
             //check if Gamespark data exists, init with GS data
-            GSPlayerModelDocument gsPlayerData = socialEdgePlayer.PlayerModel.GetGSPlayerData(socialEdgePlayer, deviceId);
+            GSPlayerModelDocument gsPlayerData = socialEdgePlayer.PlayerModel.GetGSPlayerData(socialEdgePlayer, deviceId, fbId, appleId);
             if(gsPlayerData != null)
             {
                 InitPlayerWithGsData(socialEdgePlayer, gsPlayerData);

@@ -39,12 +39,18 @@ namespace SocialEdgeSDK.Server.Requests
             log.LogInformation("C# HTTP trigger function processed a request.");
 
             InitContext(req, log);
-            string userId  = Args["userId"];
+            string userId  =  Args["userId"];
+            string deviceId = Args["deviceId"].ToString();
+            string fbId     = Args["fbId"].ToString();
+            string appleId  = Args["appleId"].ToString();
 
-            GSPlayerModelDocument gsPlayerData =  GetGSPlayerData();
+            GSPlayerModelDocument gsPlayerData = GetGSPlayerData(deviceId, fbId, appleId);
             if(gsPlayerData != null)
             {
                  InitPlayerWithGsData(gsPlayerData);
+            }
+            else{
+                  SocialEdge.Log.LogInformation("PLAYER NOT FOUND");
             }
 
             string responseMessage = string.IsNullOrEmpty(userId)
@@ -54,18 +60,39 @@ namespace SocialEdgeSDK.Server.Requests
             return new OkObjectResult(responseMessage);
         }
 
-        public GSPlayerModelDocument GetGSPlayerData()
+        public GSPlayerModelDocument GetGSPlayerData(string deviceId, string fbId, string appleId)
         {
+            SocialEdge.Log.LogInformation("PLAYER IDs deviceId: " + deviceId + " fbId: "+fbId + " appleId: "+appleId);
             GSPlayerModelDocument gsPlayerData  = null;
-            string deviceId = "604265AD-D11A-5EBB-9F36-345F72E5601D";
-            var collection =  SocialEdge.DataService.GetCollection<GSPlayerModelDocument>("gsDataCollection");
-            var taskT = collection.FindOne("PlayerDataModel.deviceId", deviceId);
-            taskT.Wait(); 
+            string query = null;
+            string findId = null;
 
-            if(taskT.Result != null){
-                gsPlayerData = taskT.Result;
+            if(!string.IsNullOrEmpty(fbId)){
+                query = "PlayerDataModel.facebookId";
+                findId = fbId;
             }
+            else if(!string.IsNullOrEmpty(appleId)){
+                query = "PlayerDataModel.appleId";
+                findId = appleId;
+            }
+            else{
+                query = "PlayerDataModel.deviceId";
+                findId = deviceId;
+            }
+            
+            SocialEdge.Log.LogInformation("FIND QUERY: " + query + " findId: "+findId);
 
+            if(!string.IsNullOrEmpty(findId)){
+
+                var collection =  SocialEdge.DataService.GetCollection<GSPlayerModelDocument>("gsDataCollection");
+                var taskT = collection.FindOne(query, findId);
+                taskT.Wait(); 
+
+                if(taskT.Result != null){
+                    gsPlayerData = taskT.Result;
+                }
+            }
+            
             return gsPlayerData;
         }
         public  void InitPlayerWithGsData( GSPlayerModelDocument gsPlayerData)
@@ -73,6 +100,8 @@ namespace SocialEdgeSDK.Server.Requests
             BsonDocument playerDocument = gsPlayerData.document;
             string deviceId = Utils.GetString(playerDocument, "deviceId"); 
             BsonDocument sparkPlayer = Utils.GetDocument(playerDocument, "sparkPlayer");
+            string displayName = Utils.GetString(sparkPlayer,"displayName"); 
+            SocialEdge.Log.LogInformation("PLAYER FOUND : " + displayName);
 
             int numCoins = Utils.GetInt(sparkPlayer, "coins"); 
             int tournamentMaxScore = Utils.GetInt(sparkPlayer, "tournamentMaxScore");
@@ -133,6 +162,8 @@ namespace SocialEdgeSDK.Server.Requests
                         }
                     }
                 }
+
+                SocialEdge.Log.LogInformation("TOTAL DEDCUT COINS: " + coins + " GEMS:" + gems);
 
                 if(coins > 0){
                     SocialEdge.Log.LogInformation("TOTAL DEDCUT COINS: " + coins);

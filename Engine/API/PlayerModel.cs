@@ -701,16 +701,37 @@ namespace SocialEdgeSDK.Server.Models
             if (_blocked != null)
                 _blocked.PrepareCache();
         }
-        public GSPlayerModelDocument GetGSPlayerData(SocialEdgePlayerContext socialEdgePlayer, string deviceId)
+        public GSPlayerModelDocument GetGSPlayerData(SocialEdgePlayerContext socialEdgePlayer, string deviceId, string fbId, string appleId)
         {
+            SocialEdge.Log.LogInformation("PLAYER IDs deviceId: " + deviceId + " fbId: "+fbId + " appleId: "+appleId);
             GSPlayerModelDocument gsPlayerData  = null;
-            SocialEdge.Log.LogInformation("PLAYER deviceId ::::::::::" +  deviceId);
-            var collection =  SocialEdge.DataService.GetCollection<GSPlayerModelDocument>("gsDataCollection");
-            var taskT = collection.FindOne("PlayerDataModel.deviceId", deviceId);
-            taskT.Wait(); 
+            string query = null;
+            string findId = null;
 
-            if(taskT.Result != null){
-                gsPlayerData = taskT.Result;
+            if(!string.IsNullOrEmpty(fbId)){
+                query = "PlayerDataModel.facebookId";
+                findId = fbId;
+            }
+            else if(!string.IsNullOrEmpty(appleId)){
+                query = "PlayerDataModel.appleId";
+                findId = appleId;
+            }
+            else{
+                query = "PlayerDataModel.deviceId";
+                findId = deviceId;
+            }
+            
+            SocialEdge.Log.LogInformation("FIND QUERY: " + query + " findId: "+findId);
+
+            if(!string.IsNullOrEmpty(findId)){
+
+                var collection =  SocialEdge.DataService.GetCollection<GSPlayerModelDocument>("gsDataCollection");
+                var taskT = collection.FindOne(query, findId);
+                taskT.Wait(); 
+
+                if(taskT.Result != null){
+                    gsPlayerData = taskT.Result;
+                }
             }
             
             return gsPlayerData;
