@@ -59,10 +59,12 @@ namespace SocialEdgeSDK.Server.Requests
             var clientVersion = args["clientVersion"].ToString();
             int playerTimeZoneSlot = args["timeZone"].ToInt32();
             string deviceId = args["deviceId"].ToString();
+            string fbId     = args["fbId"].ToString();
+            string appleId  = args["appleId"].ToString();
 
             if (isNewlyCreated)
             {
-                Player.NewPlayerInit(SocialEdgePlayer, deviceId);
+                Player.NewPlayerInit(SocialEdgePlayer, deviceId, fbId, appleId);
             }
             else
             {
