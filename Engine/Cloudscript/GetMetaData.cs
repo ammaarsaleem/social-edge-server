@@ -61,6 +61,7 @@ namespace SocialEdgeSDK.Server.Requests
             string deviceId = args["deviceId"].ToString();
             string fbId     = args["fbId"].ToString();
             string appleId  = args["appleId"].ToString();
+            bool isResume = args["isResume"].ToBoolean();
 
             if (isNewlyCreated)
             {
@@ -96,9 +97,13 @@ namespace SocialEdgeSDK.Server.Requests
                 result.todayGamesCount = SocialEdge.TodayGamesCount;
                 result.todayActivePlayersCount = SocialEdge.TodayActivePlayersCount;
 
-                if (isNewlyCreated == true)
+                if (isNewlyCreated == true || isResume == true)
                 {
                     result.playerCombinedInfoResultPayload = SocialEdgePlayer.CombinedInfo;
+                }
+
+                if (isNewlyCreated == true)
+                {
                     result.playerCombinedInfoResultPayload.PlayerProfile.AvatarUrl = SocialEdgePlayer.MiniProfile.ToJson();
                     result.playerCombinedInfoResultPayload.PlayerProfile.DisplayName = SocialEdgePlayer.DisplayName;
                 }
