@@ -90,7 +90,7 @@ namespace SocialEdgeSDK.Server.Api
                                                                     item._model.Info.isOnline,
                                                                     item._model.Info.created,
                                                                     item._model.Info.eloScore, 
-                                                                    item._model.Info.trophies, 
+                                                                    item._model.Info.trophies2, 
                                                                     item._model.Info.earnings,
                                                                     item._model.Info.gamesWon,
                                                                     item._model.Info.gamesLost,
