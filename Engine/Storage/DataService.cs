@@ -3,6 +3,8 @@
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
 
+#define USE_REDIS
+
 using System;
 using SocialEdgeSDK.Server.Context;
 using MongoDB.Driver;

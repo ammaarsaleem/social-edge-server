@@ -21,16 +21,11 @@ namespace SocialEdgeSDK.Server.Context
         private static IMessageService _messageService = null;
         private static ITitleContext _titleContext = null;
         private static ILogger _log = null;
-        public static int _todayGamesCount = 70000;
-        public static int _todayActivePlayersCount = 20000;
 
         public static ITitleContext TitleContext { get => _titleContext; }
         public static IDataService DataService { get => _dataService; }
         public static IMessageService MessageService { get => _messageService; }
         public static ILogger Log { get => _log; }
-        public static int TodayGamesCount { get => _todayGamesCount; }
-        public static int TodayActivePlayersCount { get => _todayActivePlayersCount; }
-
 
         public static void Init(ILogger logger = null,
                                 ITitleContext titleContext = null,
@@ -76,7 +71,9 @@ namespace SocialEdgeSDK.Server.Context
             string timeStampObjectId = utcSeconds.ToString("X").ToLower().PadRight(24, '0');
             var collection = _dataService.GetCollection<ChallengeModelDocument>(COLLECTION);
             var filter = Builders<ChallengeModelDocument>.Filter.Gt("_id", ObjectId.Parse(timeStampObjectId));
-            _todayGamesCount = (int)(await collection.Count(filter));
+
+            var todayGamesCount = (int)(await collection.Count(filter));
+            await _dataService.GetCache().Set("_todayGamesCount", todayGamesCount.ToString());
         }
 
         public static async void FetchTodayActivePlayersCount()
@@ -85,7 +82,23 @@ namespace SocialEdgeSDK.Server.Context
             var collection = _dataService.GetCollection<PlayerModelDocument>(COLLECTION);
             var beginTime = DateTime.SpecifyKind( DateTime.Today.AddDays(-1), DateTimeKind.Utc); 
             var filter = Builders<PlayerModelDocument>.Filter.Gt("PlayerDataModel.info.lastPlayDay", beginTime);
-            _todayActivePlayersCount = (int)(await collection.Count(filter));
+
+            var todayActivePlayersCount = (int)(await collection.Count(filter));
+            await _dataService.GetCache().Set("_todayActivePlayersCount", todayActivePlayersCount.ToString());
+        }
+
+        public static int GetTodayActivePlayersCount()
+        {
+            var taskT = _dataService.GetCache().Get("_todayActivePlayersCount");
+            taskT.Wait();
+            return taskT.Result != null ? int.Parse(taskT.Result) : 20000;
+        }
+
+        public static int GetTodayGamesCount()
+        {
+            var taskT = _dataService.GetCache().Get("_todayGamesCount");
+            taskT.Wait();
+            return taskT.Result != null ? int.Parse(taskT.Result) : 70000;
         }
     }
 }

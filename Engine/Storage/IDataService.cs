@@ -2,8 +2,10 @@
 /// @copyright Copyright (C) Everplay - All rights reserved
 /// Unauthorized copying of this file, via any medium is strictly prohibited
 /// Proprietary and confidential
-using Azure.Storage.Blobs;
 
+#define USE_REDIS
+
+using Azure.Storage.Blobs;
 using MongoDB.Driver;
 
 namespace SocialEdgeSDK.Server.DataService
