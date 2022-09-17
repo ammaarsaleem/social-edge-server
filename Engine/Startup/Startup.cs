@@ -39,7 +39,14 @@ namespace SocialEdgeSDK.Playfab
 
             builder.Services.AddSingleton((s) =>
             {
-                MongoClient client = new MongoClient(ConfigConstants.MONGO_CONNECTION_STRING);
+                MongoClientSettings settings = MongoClientSettings.FromConnectionString(ConfigConstants.MONGO_CONNECTION_STRING);
+                // change some fields based on your needs
+                settings.MaxConnectionIdleTime = System.TimeSpan.FromMinutes(1);
+                settings.MinConnectionPoolSize = 5;
+                settings.MaxConnectionPoolSize = 800;
+                MongoClient client = new MongoClient(settings);
+
+                //MongoClient client = new MongoClient(ConfigConstants.MONGO_CONNECTION_STRING);
                 //MongoClient client = new MongoClient("mongodb+srv://MyMongoDBUser:MyMongoDBUserPassword@socialedgecluster.hsxfp.mongodb.net/Development?retryWrites=true&w=majority");
                 // MongoClient client = new MongoClient("mongodb+srv://MyMongoDBUser:MyMongoDBUserPassword@socialedgecluster.hsxfp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority");
                 // string connString = Environment.GetEnvironmentVariable(ConfigConstants.MONGO_CONNECTION_STRING, EnvironmentVariableTarget.Process);

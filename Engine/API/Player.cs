@@ -90,7 +90,7 @@ namespace SocialEdgeSDK.Server.Api
                                                                     item._model.Info.isOnline,
                                                                     item._model.Info.created,
                                                                     item._model.Info.eloScore, 
-                                                                    item._model.Info.trophies, 
+                                                                    item._model.Info.trophies2, 
                                                                     item._model.Info.earnings,
                                                                     item._model.Info.gamesWon,
                                                                     item._model.Info.gamesLost,
@@ -522,6 +522,7 @@ namespace SocialEdgeSDK.Server.Api
                     BsonArray playerActiveInventory = Utils.GetArray(priv, "playerActiveInventory");
                     if(playerActiveInventory != null){
                         InitActiveInventoryWithGsData(socialEdgePlayer, playerActiveInventory, pub);
+                        socialEdgePlayer.PlayerModel.Info.fbId = FbId;
                     }
 
                     BsonArray dailyEventRewards = Utils.GetArray(priv, "dailyEventRewards");
@@ -636,8 +637,8 @@ namespace SocialEdgeSDK.Server.Api
         {
             if(playerActiveInventory != null)
             {
-                 string Avatar = null;
-                 string AvatarBgColor = null;
+                string Avatar = GenerateAvatar();
+                string AvatarBgColor = GenerateAvatarBgColor();
 
                 for(int i=0; i<playerActiveInventory.Count; i++)
                 {
@@ -656,12 +657,10 @@ namespace SocialEdgeSDK.Server.Api
                     else if(itemType == "Avatar")
                     {
                         Avatar = itemValue;
-                        socialEdgePlayer.MiniProfile.AvatarId = Avatar;
                     }
                     else if(itemType == "AvatarBgColor")
                     {
                          AvatarBgColor = itemValue;
-                         socialEdgePlayer.MiniProfile.AvatarBgColor = AvatarBgColor;
                     }
                     else if(itemType == "VideoLesson")
                     {
@@ -671,14 +670,13 @@ namespace SocialEdgeSDK.Server.Api
                     }
                 }
 
-                if(Avatar != null && AvatarBgColor != null)
-                {
-                    socialEdgePlayer.MiniProfile.League = Utils.GetInt(pub, "league");
-                    socialEdgePlayer.MiniProfile.UploadPicId = null;
-                    socialEdgePlayer.MiniProfile.EventGlow = Utils.GetBool(pub, "dailyEventRing") ? 1 : 0;
-                    socialEdgePlayer.MiniProfile.isDirty = false;
-                    UpdatePlayerAvatarData(socialEdgePlayer.PlayerId, socialEdgePlayer.MiniProfile);
-                }
+                socialEdgePlayer.MiniProfile.AvatarId = Avatar;
+                socialEdgePlayer.MiniProfile.AvatarBgColor = AvatarBgColor;
+                socialEdgePlayer.MiniProfile.League = Utils.GetInt(pub, "league");
+                socialEdgePlayer.MiniProfile.UploadPicId = null;
+                socialEdgePlayer.MiniProfile.EventGlow = Utils.GetBool(pub, "dailyEventRing") ? 1 : 0;
+                socialEdgePlayer.MiniProfile.isDirty = false;
+                UpdatePlayerAvatarData(socialEdgePlayer.PlayerId, socialEdgePlayer.MiniProfile);                
             }
         }
 
