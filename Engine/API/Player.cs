@@ -522,6 +522,7 @@ namespace SocialEdgeSDK.Server.Api
                     BsonArray playerActiveInventory = Utils.GetArray(priv, "playerActiveInventory");
                     if(playerActiveInventory != null){
                         InitActiveInventoryWithGsData(socialEdgePlayer, playerActiveInventory, pub);
+                        socialEdgePlayer.PlayerModel.Info.fbId = FbId;
                     }
 
                     BsonArray dailyEventRewards = Utils.GetArray(priv, "dailyEventRewards");
