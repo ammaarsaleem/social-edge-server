@@ -25,7 +25,8 @@ namespace SocialEdgeSDK.Server.DataService
             }
             catch (Exception e)
             {
-                throw e;
+                // The object may be disposed
+                return false;
             }
         }
         public async Task<string> Get(string key)
@@ -37,7 +38,8 @@ namespace SocialEdgeSDK.Server.DataService
             }   
             catch(Exception e)
             {
-                throw e;
+                // The object may be disposed
+                return null;
             }         
         }
 
