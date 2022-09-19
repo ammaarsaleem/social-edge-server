@@ -465,7 +465,7 @@ namespace SocialEdgeSDK.Server.Models
                 activeTournament.Value._parent = this;
         }
 
-        public ActiveTournament CreatePlayerActiveTournament(string tournamentId, TournamentData tournament, int playerRank)
+        public ActiveTournament CreatePlayerActiveTournament(string tournamentId, TournamentData tournament, int playerRank, int defaultScore)
         {
             ActiveTournament activeTournament = new ActiveTournament()
             {
@@ -477,7 +477,7 @@ namespace SocialEdgeSDK.Server.Models
                 grandPrize = tournament.rewards["0"],
                 startTime = tournament.startTime,
                 duration = tournament.duration,
-                score = 0,
+                score = defaultScore,
                 matchesPlayedCount = 0
             };
 

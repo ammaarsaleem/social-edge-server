@@ -65,7 +65,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             if (isNewlyCreated)
             {
-                Player.NewPlayerInit(SocialEdgePlayer, deviceId, fbId, appleId);
+                Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId);
             }
             else
             {

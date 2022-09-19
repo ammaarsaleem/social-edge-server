@@ -16,5 +16,10 @@ namespace SocialEdgeSDK.Server.DataService
         Task<bool> DeleteRoom(string roomId);
         Task<HashEntry[]> GetRoom(string roomId);
         Task RemovePlayerFromRoom(string roomId, string playerId, string playerName="");
+        long Increment(string key, long value);
+        bool KeyDelete(string key);
+        long GetValue(string key);
+
+
     }
 }

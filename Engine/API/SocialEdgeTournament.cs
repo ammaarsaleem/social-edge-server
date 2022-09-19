@@ -36,11 +36,12 @@ namespace SocialEdgeSDK.Server.Context
         private TournamentLiveModel _tournamentLiveModel;
         private TournamentEntryModel _tournamentEntryModel;
         private TournamentDataModel _tournamentModel;
+        private int _tournamentDefaultStartingScore;
 
         public TournamentDataModel TournamentModel { get => _tournamentModel != null ? _tournamentModel : _tournamentModel = new TournamentDataModel(this); }
         public TournamentLiveModel TournamentLiveModel { get => _tournamentLiveModel != null ? _tournamentLiveModel : _tournamentLiveModel = new TournamentLiveModel(); }
         public TournamentEntryModel TournamentEntryModel { get => _tournamentEntryModel != null ? _tournamentEntryModel : _tournamentEntryModel = new TournamentEntryModel(this); }
-
+        public int tournamentDefaultStartingScore { get => _tournamentDefaultStartingScore ; set => _tournamentDefaultStartingScore=value;}
         public SocialEdgeTournamentContext(FunctionExecutionContext<dynamic> context)
         {
             _contextType = ContextType.FUNCTION_EXECUTION_API;

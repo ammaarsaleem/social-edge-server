@@ -26,6 +26,7 @@ namespace SocialEdgeSDK.Server.DataService
             catch (Exception e)
             {
                 // The object may be disposed
+                Console.WriteLine("REDIS ERROR " + e.Message);
                 return false;
             }
         }
@@ -39,6 +40,7 @@ namespace SocialEdgeSDK.Server.DataService
             catch(Exception e)
             {
                 // The object may be disposed
+                Console.WriteLine("REDIS ERROR " + e.Message);
                 return null;
             }         
         }
@@ -109,6 +111,22 @@ namespace SocialEdgeSDK.Server.DataService
         private string GetUserNameKey(string id)
         {
             return "user::"+id+"::name";
+        }
+        public long Increment(string key, long value)
+        {
+            long valueData = _cacheDb.StringIncrement(key, value);
+            return valueData;
+        }
+
+        public bool KeyDelete(string key)
+        {
+            return _cacheDb.KeyDelete(key);
+        }
+
+        public long GetValue(string key)
+        {
+            RedisValue value  = _cacheDb.StringGet(key);
+            return ((long)value); 
         }
 
     }

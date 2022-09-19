@@ -331,7 +331,7 @@ namespace SocialEdgeSDK.Server.Api
             return randomColorCode.ToString();
         }
 
-        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, string deviceId, string fbId, string appleId)
+        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, string deviceId, string fbId, string appleId)
         {
             string playerId = socialEdgePlayer.PlayerId;
             string entityToken = socialEdgePlayer.EntityToken;
@@ -341,7 +341,7 @@ namespace SocialEdgeSDK.Server.Api
             GSPlayerModelDocument gsPlayerData = socialEdgePlayer.PlayerModel.GetGSPlayerData(socialEdgePlayer, deviceId, fbId, appleId);
             if(gsPlayerData != null)
             {
-                InitPlayerWithGsData(socialEdgePlayer, gsPlayerData);
+                InitPlayerWithGsData(socialEdgePlayer, socialEdgeTournament, gsPlayerData);
                 socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
                 Inbox.CreateAnnouncementMessage(socialEdgePlayer, "Important Update","Hey Champ!\nWe changed our server providers to bring you the best multiplayer gameplay experience. Our team worked hard to implement this technology switch. Please help us with your feedback and report issues on support.\nNow let's enjoy the game :)");
             }
@@ -426,7 +426,7 @@ namespace SocialEdgeSDK.Server.Api
             notifyOnlineMessage.isOnline = isOnline;
             new SocialEdgeMessage(socialEdgePlayer.PlayerId, notifyOnlineMessage, nameof(OnlineStatusNotifyMessageData), friendIds).Send();
         } 
-        public static void InitPlayerWithGsData(SocialEdgePlayerContext socialEdgePlayer, GSPlayerModelDocument gsPlayerData)
+        public static void InitPlayerWithGsData(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, GSPlayerModelDocument gsPlayerData)
         {
             string playerId = socialEdgePlayer.PlayerId;
             socialEdgePlayer.PlayerModel.CreateDefaults();
@@ -528,6 +528,11 @@ namespace SocialEdgeSDK.Server.Api
                     BsonArray dailyEventRewards = Utils.GetArray(priv, "dailyEventRewards");
                     if(dailyEventRewards != null){
                         InitDailyRewardFromGS(socialEdgePlayer, dailyEventRewards);
+                    }
+
+                     BsonDocument activeTournaments = Utils.GetDocument(priv, "activeTournaments");
+                    if(activeTournaments != null){
+                        InitActiveTournmentScore(socialEdgePlayer, socialEdgeTournament, activeTournaments);
                     }
                 }
             }
@@ -693,6 +698,33 @@ namespace SocialEdgeSDK.Server.Api
                     rewardItem.gems = gems;
                     rewardItem.coins = coins;
                     socialEdgePlayer.PlayerModel.Events.dailyEventRewards.Add(rewardItem);
+                }
+            }
+         }
+
+        public static void InitActiveTournmentScore(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, BsonDocument activeTournaments)
+         {
+            if(activeTournaments != null)
+            {
+                foreach (BsonElement element in activeTournaments) 
+                {
+                    SocialEdge.Log.LogInformation("NAME : : " + element.Name.ToString());
+                    BsonDocument dataItem = element.Value.AsBsonDocument;
+                    string shortCode  = Utils.GetString(dataItem, "shortCode");
+                    if(string.Equals(shortCode, "TournamentWeeklyChampionship"))
+                    {
+                        long startTime    = Utils.GetLong(dataItem, "startTime");
+                        int duration      = Utils.GetInt(dataItem, "duration");
+                        int score         = Utils.GetInt(dataItem, "score");
+                        bool isEnded = (Utils.UTCNow() <  startTime) || (Utils.UTCNow() > (startTime + duration * 60 * 1000 ));
+                        if(!isEnded){
+                            socialEdgeTournament.tournamentDefaultStartingScore = score;
+                            SocialEdge.Log.LogInformation("PLAYER ACTIVE TOURNMENT IS RUNNING ADD HIS SCORE : : " + score);
+                        }
+                        else{
+                            SocialEdge.Log.LogInformation("PLAYER ACTIVE TOURNMENT ENDDED : : " + startTime + " SCORE : " + score);
+                        }
+                    }
                 }
             }
          }

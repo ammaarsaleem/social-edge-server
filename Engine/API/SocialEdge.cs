@@ -72,31 +72,35 @@ namespace SocialEdgeSDK.Server.Context
             var collection = _dataService.GetCollection<ChallengeModelDocument>(COLLECTION);
             var filter = Builders<ChallengeModelDocument>.Filter.Gt("_id", ObjectId.Parse(timeStampObjectId));
 
+            var keyName = ConfigConstants.MONGO_DATABASE_NAME + "_todayGamesCount";
             var todayGamesCount = (int)(await collection.Count(filter));
-            await _dataService.GetCache().Set("_todayGamesCount", todayGamesCount.ToString());
+            await _dataService.GetCache().Set(keyName, todayGamesCount.ToString());
         }
 
         public static async void FetchTodayActivePlayersCount()
         {
-            const string COLLECTION = "playerModel";
-            var collection = _dataService.GetCollection<PlayerModelDocument>(COLLECTION);
+            const string COLLECTION = "playerSearch";
+            var collection = _dataService.GetCollection<PlayerSearchDataModelDocument>(COLLECTION);
             var beginTime = DateTime.SpecifyKind( DateTime.Today.AddDays(-1), DateTimeKind.Utc); 
-            var filter = Builders<PlayerModelDocument>.Filter.Gt("PlayerDataModel.info.lastPlayDay", beginTime);
+            var filter = Builders<PlayerSearchDataModelDocument>.Filter.Gt("PlayerSearchData.activeTimeStamp", beginTime);
 
+            var keyName = ConfigConstants.MONGO_DATABASE_NAME + "_todayActivePlayersCount";
             var todayActivePlayersCount = (int)(await collection.Count(filter));
-            await _dataService.GetCache().Set("_todayActivePlayersCount", todayActivePlayersCount.ToString());
+            await _dataService.GetCache().Set(keyName, todayActivePlayersCount.ToString());
         }
 
         public static int GetTodayActivePlayersCount()
         {
-            var taskT = _dataService.GetCache().Get("_todayActivePlayersCount");
+            var keyName = ConfigConstants.MONGO_DATABASE_NAME + "_todayActivePlayersCount";
+            var taskT = _dataService.GetCache().Get(keyName);
             taskT.Wait();
             return taskT.Result != null ? int.Parse(taskT.Result) : 20000;
         }
 
         public static int GetTodayGamesCount()
         {
-            var taskT = _dataService.GetCache().Get("_todayGamesCount");
+            var keyName = ConfigConstants.MONGO_DATABASE_NAME + "_todayGamesCount";
+            var taskT = _dataService.GetCache().Get(keyName);
             taskT.Wait();
             return taskT.Result != null ? int.Parse(taskT.Result) : 70000;
         }

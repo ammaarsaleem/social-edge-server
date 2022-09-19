@@ -36,7 +36,7 @@ namespace SocialEdgeSDK.Server.Api
             string retentionDayString = "D"+retentionDay;
 
             socialEdgePlayer.PlayerModel.Tournament.reportingChampionshipCollectionIndex = activeCollectionInfo.index;
-            TournamentCollectionManager.RegisterEntry(socialEdgePlayer, socialEdgeTournament, 0, retentionDayString, activeCollectionInfo.name);
+            TournamentCollectionManager.RegisterEntry(socialEdgePlayer, socialEdgeTournament, score, retentionDayString, activeCollectionInfo.name);
             socialEdgePlayer.PlayerModel.Tournament.isReportingInChampionship = true;
 
             // Calculating current start time
@@ -53,7 +53,7 @@ namespace SocialEdgeSDK.Server.Api
             var pool = TournamentPoolSample(tournamentShortCode, activeCollectionInfo.name, socialEdgePlayer, tournamentSlot, tournamentModel.joinedTime, liveTournament.maxPlayers - 1, null);
             tournamentModel.entryIds = pool;
             string tournamentId = socialEdgeTournament.TournamentModel.Id;
-            var playerActiveTournament = socialEdgePlayer.PlayerModel.Tournament.CreatePlayerActiveTournament(tournamentId, tournamentModel, 1);
+            var playerActiveTournament = socialEdgePlayer.PlayerModel.Tournament.CreatePlayerActiveTournament(tournamentId, tournamentModel, 1, score);
 
             return tournamentId;
         }
@@ -262,7 +262,7 @@ namespace SocialEdgeSDK.Server.Api
             if (activeTournaments.Count == 0)
             {
                 string tournamentShortCode = socialEdgeTournament.TournamentLiveModel.GetActiveShortCode(socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot);
-                Join(socialEdgePlayer, socialEdgeTournament, tournamentShortCode, 0);
+                Join(socialEdgePlayer, socialEdgeTournament, tournamentShortCode, socialEdgeTournament.tournamentDefaultStartingScore);
             }
         }
 
