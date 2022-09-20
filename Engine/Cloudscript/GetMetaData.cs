@@ -55,7 +55,7 @@ namespace SocialEdgeSDK.Server.Requests
             InitContext<FunctionExecutionContext<dynamic>>(req, log);
             var data = Args["data"];
             BsonDocument args = BsonDocument.Parse(data["parameters"].ToString());
-            var isNewlyCreated = args.Contains("isNewlyCreated") ? (bool)args["isNewlyCreated"] : false;
+            bool isNewlyCreated = SocialEdgePlayer.PublicData.isInitialized == false;
             var clientVersion = args["clientVersion"].ToString();
             int playerTimeZoneSlot = args["timeZone"].ToInt32();
             string deviceId = args["deviceId"].ToString();
@@ -106,6 +106,7 @@ namespace SocialEdgeSDK.Server.Requests
                 {
                     result.playerCombinedInfoResultPayload.PlayerProfile.AvatarUrl = SocialEdgePlayer.MiniProfile.ToJson();
                     result.playerCombinedInfoResultPayload.PlayerProfile.DisplayName = SocialEdgePlayer.DisplayName;
+                    SocialEdgePlayer.PublicData.isInitialized = true;
                 }
 
                 CacheFlush();

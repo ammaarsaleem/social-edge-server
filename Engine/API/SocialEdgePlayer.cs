@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using PlayFab.ProfilesModels;
 using PlayFab.ServerModels;
@@ -43,6 +45,13 @@ namespace SocialEdgeSDK.Server.Context
             bool filled = _socialEdgePlayer.CacheFillSegment(CachePlayerDataSegments.PLAYER_DATA); 
             return filled ? base[key].ToBsonDocument() : null;
         }
+    }
+
+    public class PublicPlayerData : DataModelBase
+    {
+       [JsonPropertyName("isInitialized")][BsonElement("isInitialized")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]  public bool _isInitialized { get; set; }
+
+       [JsonIgnore][BsonIgnore] public bool isInitialized { get => _isInitialized; set { _isInitialized = value; isDirty = true; }}
     }
 
     public static class CachePlayerDataSegments
@@ -81,7 +90,7 @@ namespace SocialEdgeSDK.Server.Context
         private Dictionary<string, EntityDataObject> _publicDataObjs;
         private Dictionary<string, InboxDataMessage> _inbox;
         private BsonDocument _chat;
-        private BsonDocument _publicData;
+        private PublicPlayerData _publicData;
         private List<FriendInfo> _friends;
         private List<PublicProfileEx> _friendsProfilesEx;
         private List<ItemInstance> _inventory;
@@ -110,7 +119,7 @@ namespace SocialEdgeSDK.Server.Context
         public GetPlayerCombinedInfoResultPayload CombinedInfo { get => (((_fillMask & CachePlayerDataSegments.COMBINED_INFO) != 0) || (CacheFillSegment(CachePlayerDataSegments.COMBINED_INFO))) ? _combinedInfo : null; }
         public string EntityId { get => (((_fillMask & CachePlayerDataSegments.ENTITY_ID) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_ID))) ? _entityId : null; }
         public string EntityToken { get => (((_fillMask & CachePlayerDataSegments.ENTITY_TOKEN) != 0) || (CacheFillSegment(CachePlayerDataSegments.ENTITY_TOKEN))) ? _entityToken : null; }
-        public BsonDocument PublicData { get => (((_fillMask & CachePlayerDataSegments.PUBLIC_DATA) != 0) || (CacheFillSegment(CachePlayerDataSegments.PUBLIC_DATA))) ? _publicData : null; }
+        public PublicPlayerData PublicData { get => (((_fillMask & CachePlayerDataSegments.PUBLIC_DATA) != 0) || (CacheFillSegment(CachePlayerDataSegments.PUBLIC_DATA))) ? _publicData : null; }
         public Dictionary<string, InboxDataMessage> Inbox { get => (((_fillMask & CachePlayerDataSegments.INBOX) != 0) || (CacheFillSegment(CachePlayerDataSegments.INBOX))) ? _inbox : null; }                                                
         public BsonDocument Chat { get => (((_fillMask & CachePlayerDataSegments.CHAT) != 0) || (CacheFillSegment(CachePlayerDataSegments.CHAT))) ? _chat : null; }
         public List<FriendInfo> Friends { get => (((_fillMask & CachePlayerDataSegments.FRIENDS) != 0) || (CacheFillSegment(CachePlayerDataSegments.FRIENDS))) ? _friends : null; }
@@ -262,22 +271,37 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool CacheFillPublicData()
         {    
-            if (_publicDataObjs == null || _publicDataObjs.ContainsKey("PublicProfileEx"))
+            if (_publicDataObjs == null || _publicDataObjs.ContainsKey("publicData") == false)
             {
-                SocialEdge.Log.LogInformation("Called CacheFillPublicData and it was NULLL : " + _publicDataObjs.ToString());
-                return false;
+                _publicData = new PublicPlayerData();
+            }
+            else
+            {
+                EntityDataObject publicDataObject = _publicDataObjs["publicData"];
+                string json = publicDataObject.EscapedDataObject != null ? publicDataObject.EscapedDataObject : 
+                    (publicDataObject.DataObject != null ? publicDataObject.DataObject.ToString() : null);
+
+                if (json != null)
+                {
+                    _publicData =  BsonSerializer.Deserialize<PublicPlayerData>(Utils.CleanupJsonString(json));
+                }
             }
                 
-            _publicData = BsonDocument.Parse(Utils.CleanupJsonString(_publicDataObjs["PublicProfileEx"].EscapedDataObject));
             _fillMask |= _publicData != null ? CachePlayerDataSegments.PUBLIC_DATA : 0;
+            SetDirtyBit(_fillMask & CachePlayerDataSegments.PUBLIC_DATA);
             SocialEdge.Log.LogInformation("Parse PUBLIC_DATA");
             return _publicData != null;
         }
 
         private bool CacheWritePublicData()
         {
-            var updatePublicDataT = Player.UpdatePublicData(EntityToken, EntityId, new BsonDocument(){ ["PublicProfileEx"] = _publicData });
+            if (_publicData.isDirty == false)
+                return false;
+
+            var updatePublicDataT = Player.UpdatePublicData(EntityToken, EntityId, 
+                    new BsonDocument(){ ["publicData"] = _publicData.ToJson() });
             updatePublicDataT.Wait();
+            SocialEdge.Log.LogInformation("Task FLUSH PUBLIC_DATA");
             return updatePublicDataT.Result.Error != null;
         }
 
