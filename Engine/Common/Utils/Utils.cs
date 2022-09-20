@@ -179,13 +179,8 @@ namespace SocialEdgeSDK.Server.Common
         }
         public static string GetString(BsonDocument doc, string key)
         {
-             bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
-            if(keyExists){
-                return keyData.AsString;
-            }
-            else{
-                return "";
-            }
+            bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
+            return keyExists && keyData.BsonType != BsonType.Null ? keyData.AsString : string.Empty;
         }
         public static bool GetBool(BsonDocument doc, string key)
         {
