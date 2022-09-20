@@ -347,6 +347,7 @@ namespace SocialEdgeSDK.Server.Api
             }
             else // init fresh new player
             {
+                SocialEdge.Log.LogInformation("CREATING NEW PLAYER . . . ");
                 var newTag = Player.GenerateTag();
                 var newName = Player.GenerateDisplayName();
                 var avatar = GenerateAvatar();
@@ -438,6 +439,8 @@ namespace SocialEdgeSDK.Server.Api
             string FbId     = Utils.GetString(playerDocument, "facebookId");
             string appleId  = Utils.GetString(playerDocument, "appleId"); 
             string storeId  = Utils.GetString(playerDocument, "storeId"); 
+
+            SocialEdge.Log.LogInformation("MIGRATE DATA FOUND WITH ID . . . . " + userID);
      
             BsonDocument sparkPlayer = Utils.GetDocument(playerDocument, "sparkPlayer");
             if(sparkPlayer != null)
