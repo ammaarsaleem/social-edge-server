@@ -281,10 +281,11 @@ namespace SocialEdgeSDK.Server.Api
         {
             TournamentData tournamentData = socialEdgeTournament.TournamentModel.Get(tournamentId);
             TournamentLiveData tournamentLiveData = socialEdgeTournament.TournamentLiveModel.Get(tournamentData.shortCode);
-            if (tournamentData.entryIds.Count >= tournamentLiveData.maxPlayers)
+            int remainPoolSize = (tournamentLiveData.maxPlayers - tournamentData.entryIds.Count) - 1;
+
+            if (remainPoolSize <= 0)
                 return;
 
-            int remainPoolSize = tournamentLiveData.maxPlayers - tournamentData.entryIds.Count - 1;
             List<ObjectId> alreadyIncludedArray = new List<ObjectId>();
 
             foreach(var id in tournamentData.entryIds)

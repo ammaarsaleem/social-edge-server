@@ -324,6 +324,12 @@ namespace SocialEdgeSDK.Server.Api
             return randomAvatar.ItemId.ToString();
         }
 
+        public static string GetAbbriviatedName(string name)
+        {
+            string[] split = name.Trim().Split(" ");
+            return split.Length == 1 ? name : split[0] + " " + split[1].Substring(0, 1) + ".";
+        }
+
         private static string GenerateAvatarBgColor()
         {
             var colorCodesArray = Settings.GameSettings["AvatarBgColors"];
@@ -341,7 +347,8 @@ namespace SocialEdgeSDK.Server.Api
             GSPlayerModelDocument gsPlayerData = socialEdgePlayer.PlayerModel.GetGSPlayerData(socialEdgePlayer, deviceId, fbId, appleId);
             if(gsPlayerData != null)
             {
-                InitPlayerWithGsData(socialEdgePlayer, socialEdgeTournament, gsPlayerData);
+                BsonDocument playerDocument = gsPlayerData.document;
+                InitPlayerWithGsData(socialEdgePlayer, socialEdgeTournament, playerDocument);
                 socialEdgePlayer.PlayerModel.Meta.isInitialized = true;
                 Inbox.CreateAnnouncementMessage(socialEdgePlayer, "Important Update","Hey Champ!\nWe changed our server providers to bring you the best multiplayer gameplay experience. Our team worked hard to implement this technology switch. Please help us with your feedback and report issues on support.\nNow let's enjoy the game :)");
             }
@@ -427,13 +434,12 @@ namespace SocialEdgeSDK.Server.Api
             notifyOnlineMessage.isOnline = isOnline;
             new SocialEdgeMessage(socialEdgePlayer.PlayerId, notifyOnlineMessage, nameof(OnlineStatusNotifyMessageData), friendIds).Send();
         } 
-        public static void InitPlayerWithGsData(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, GSPlayerModelDocument gsPlayerData)
+        public static void InitPlayerWithGsData(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, BsonDocument playerDocument)
         {
             string playerId = socialEdgePlayer.PlayerId;
             socialEdgePlayer.PlayerModel.CreateDefaults();
             InboxModel.Init(socialEdgePlayer.InboxId);
 
-            BsonDocument playerDocument = gsPlayerData.document;
             string userID   = Utils.GetString(playerDocument, "userId");
             string deviceId = Utils.GetString(playerDocument, "deviceId"); 
             string FbId     = Utils.GetString(playerDocument, "facebookId");
@@ -443,14 +449,21 @@ namespace SocialEdgeSDK.Server.Api
             SocialEdge.Log.LogInformation("MIGRATE DATA FOUND WITH ID . . . . " + userID);
      
             BsonDocument sparkPlayer = Utils.GetDocument(playerDocument, "sparkPlayer");
+            BsonDocument playerData = Utils.GetDocument(playerDocument, "playerData");
+            BsonDocument priv = Utils.GetDocument(playerData, "priv");
+
             if(sparkPlayer != null)
             {
                 DateTime creationTime = sparkPlayer["creationDate"].ToUniversalTime();
                 socialEdgePlayer.PlayerModel.Info.created = creationTime;
-
                 DateTime lastSceen =   sparkPlayer["lastSeen"].ToUniversalTime();
 
                 string displayName = Utils.GetString(sparkPlayer,"displayName"); 
+                if(priv != null){
+                    string editedName = Utils.GetString(priv, "editedName");
+                    displayName =  editedName != "" ? editedName : displayName;
+                }
+                
                 socialEdgePlayer.DisplayName = displayName;
                 var updateDisplayNameT = UpdatePlayerDisplayName(playerId, displayName);
                 updateDisplayNameT.Wait();
@@ -478,7 +491,6 @@ namespace SocialEdgeSDK.Server.Api
                 }
             }
 
-            BsonDocument playerData = Utils.GetDocument(playerDocument, "playerData");
             if(playerData != null)
             {
                 BsonDocument pub = Utils.GetDocument(playerData, "pub");
@@ -496,7 +508,6 @@ namespace SocialEdgeSDK.Server.Api
                     //socialEdgePlayer.PlayerModel.Info.countryFlag = Utils.GetString(pub, "countryFlag"); 
                 }
 
-                BsonDocument priv = Utils.GetDocument(playerData, "priv");
                 if(priv != null)
                 {
                     //socialEdgePlayer.PlayerModel.Meta.clientVersion        = Utils.GetString(priv, "clientVersion");
