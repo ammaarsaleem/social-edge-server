@@ -164,22 +164,8 @@ namespace SocialEdgeSDK.Server.Common
 
         public static long GetLong(BsonDocument doc, string key)
         {
-            long returnValue = 0;
             bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
-            if(keyExists)
-            {
-                returnValue = long.Parse(keyData.ToString());
-                // if (keyData.IsDouble == true){
-                //     returnValue = (long)keyData.AsDouble;
-                // }
-                // else if (keyData.IsInt32 == true){
-                //      returnValue = (long)keyData.AsInt32;
-                // }
-                // else if (keyData.IsInt64 == true){
-                //      returnValue = (long)keyData.AsInt64;
-                // }
-            }            
-            return returnValue;
+            return keyExists && keyData.BsonType != BsonType.Null ? long.Parse(keyData.ToString()): 0;            
         }
         public static string GetString(BsonDocument doc, string key)
         {
@@ -193,21 +179,21 @@ namespace SocialEdgeSDK.Server.Common
 
         public static float Getfloat(BsonDocument doc, string key)
         {
-            float returnValue = 0;
-             bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
-            if(keyExists)
-            {
-                if (keyData.IsDecimal128 == true){
-                    returnValue = (float)keyData.AsDecimal128;
-                }
-                else if (keyData.IsDouble == true){
-                    returnValue = (float)keyData.AsDouble;
-                }
-                else if (keyData.IsInt32 == true){
-                     returnValue = (float)keyData.AsInt32;
-                }
-            }            
-            return returnValue;
+            bool keyExists = doc.TryGetValue(key, out BsonValue keyData);
+            return keyExists && keyData.BsonType != BsonType.Null ? float.Parse(keyData.ToString()): 0;
+            // if(keyExists)
+            // {
+            //     if (keyData.IsDecimal128 == true){
+            //         returnValue = (float)keyData.AsDecimal128;
+            //     }
+            //     else if (keyData.IsDouble == true){
+            //         returnValue = (float)keyData.AsDouble;
+            //     }
+            //     else if (keyData.IsInt32 == true){
+            //          returnValue = (float)keyData.AsInt32;
+            //     }
+            // }            
+            // return returnValue;
         }
     }
 }
