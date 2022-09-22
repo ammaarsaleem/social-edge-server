@@ -378,9 +378,7 @@ namespace SocialEdgeSDK.Server.Context
             _friends = friendsT.Result.Error == null ? friendsT.Result.Result.Friends : null;
             _fillMask |= _friends != null ? CachePlayerDataSegments.FRIENDS : 0;
             SocialEdge.Log.LogInformation("Task fetch FRIENDS");
-
-            if (_friends != null)
-                _friends.OrderByDescending(s => s.FriendPlayFabId);
+            _friends = _friends?.OrderByDescending(s => s.FriendPlayFabId).ToList();
 
             return _friends != null;
         }
