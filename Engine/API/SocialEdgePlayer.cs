@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
@@ -377,6 +378,10 @@ namespace SocialEdgeSDK.Server.Context
             _friends = friendsT.Result.Error == null ? friendsT.Result.Result.Friends : null;
             _fillMask |= _friends != null ? CachePlayerDataSegments.FRIENDS : 0;
             SocialEdge.Log.LogInformation("Task fetch FRIENDS");
+
+            if (_friends != null)
+                _friends.OrderByDescending(s => s.FriendPlayFabId);
+
             return _friends != null;
         }
 

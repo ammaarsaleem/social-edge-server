@@ -84,6 +84,7 @@ namespace SocialEdgeSDK.Server.Api
 
             const string PLAYERMODEL_COLLECTION_NAME = "playerModel";
             var collection = SocialEdge.DataService.GetDatabase().GetCollection<PlayerModelDocument>(PLAYERMODEL_COLLECTION_NAME);
+            var sortById = Builders<PlayerModelDocument>.Sort.Descending("_id");
             FilterDefinition<PlayerModelDocument> filter = Builders<PlayerModelDocument>.Filter.In<string>("_id", friendsDBIds);
             var projection = Builders<PlayerModelDocument>.Projection.Expression(item => 
                                                             new PublicProfileEx(
@@ -96,7 +97,7 @@ namespace SocialEdgeSDK.Server.Api
                                                                     item._model.Info.gamesLost,
                                                                     item._model.Info.gamesDrawn));
 
-            return collection.Find(filter).Project(projection).ToList<PublicProfileEx>();
+            return collection.Find(filter).Sort(sortById).Project(projection).ToList<PublicProfileEx>();
         }
 
         public static async Task<PlayFabResult<GetEntityTokenResponse>> GetTitleEntityToken()
