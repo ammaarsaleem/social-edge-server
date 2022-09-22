@@ -66,6 +66,7 @@ namespace SocialEdgeSDK.Server.Requests
             if (isNewlyCreated)
             {
                 Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId);
+                SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName = SocialEdgePlayer.DisplayName;
             }
             else
             {
