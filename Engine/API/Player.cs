@@ -465,6 +465,8 @@ namespace SocialEdgeSDK.Server.Api
                     displayName =  editedName != "" ? editedName : displayName;
                 }
                 
+                displayName = displayName.Length > 25 ? displayName.Substring(0, 25) : displayName;
+                displayName = displayName.Length < 3 ? displayName.PadRight(3, '~') : displayName;
                 socialEdgePlayer.DisplayName = displayName;
                 var updateDisplayNameT = UpdatePlayerDisplayName(playerId, displayName);
                 updateDisplayNameT.Wait();
