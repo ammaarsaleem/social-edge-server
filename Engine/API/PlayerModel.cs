@@ -665,7 +665,7 @@ namespace SocialEdgeSDK.Server.Models
             var taskT = collection.FindOneById<PlayerModelDocument>(_socialEdgePlayer.PlayerDBId, projection);
             taskT.Wait();
 
-            SocialEdge.Log.LogInformation("Task fetch PLAYER_MODEL fields:" + " " + (taskT.Result != null ? "(success)" : "(null)"));
+            //SocialEdge.Log.LogInformation("Task fetch PLAYER_MODEL fields:" + " " + (taskT.Result != null ? "(success)" : "(null)"));
 
             PlayerDataModel model = taskT.Result._model;
             _meta = model._meta != null ? model._meta : _meta;

@@ -46,10 +46,6 @@ namespace SocialEdgeSDK.Server.MessageService
         [FunctionName(nameof(OnConnected))]
         public void OnConnected([SignalRTrigger]InvocationContext invocationContext)
         {
-            if (_dataService == null)
-            {
-                throw new System.NullReferenceException($"MessageService::OnConnected(): Data Service NULL. Player Id: {invocationContext.UserId}");
-            }
             SocialEdge.Init(null, null, _dataService, this);
             SocialEdgePlayerContext socialEdgePlayer = new FunctionContext().LoadPlayer(invocationContext.UserId);
             socialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.FRIENDS, PlayerModelFields.INFO);
@@ -62,10 +58,6 @@ namespace SocialEdgeSDK.Server.MessageService
         [FunctionName(nameof(OnDisconnected))]
         public void OnDisconnected([SignalRTrigger]InvocationContext invocationContext)
         {
-            if (_dataService == null)
-            {
-                throw new System.NullReferenceException($"MessageService::OnDisconnected(): Data Service NULL. Player Id: {invocationContext.UserId}");
-            }
             SocialEdge.Init(null, null, _dataService, this);
             SocialEdgePlayerContext socialEdgePlayer = new FunctionContext().LoadPlayer(invocationContext.UserId);
             socialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.FRIENDS, PlayerModelFields.INFO);
