@@ -18,18 +18,12 @@ namespace SocialEdgeSDK.Server.Models
             return !string.IsNullOrEmpty(inboxId) ? await SocialEdge.DataService.GetCollection<InboxDataDocument>("inbox").FindOneById(inboxId) : null;
         }
 
-        public static string Init(string inboxId)
+        public static bool Init(string inboxId)
         {
-            var collection = SocialEdge.DataService.GetCollection<InboxDataDocument>("inbox");
-            InboxDataDocument container = new InboxDataDocument();
-            container._id = ObjectId.Parse(inboxId);
-            container._messages = new Dictionary<string, InboxDataMessage>();
-
-            var taskT = collection.InsertOne(container);
+            var taskT = Set(inboxId, new Dictionary<string, InboxDataMessage>());
             taskT.Wait();
-            return taskT.Result == true ? container._id.ToString() : null;
+            return taskT.Result.ModifiedCount != 0;
         }
-
         public static async Task<DataService.UpdateResult> Set(string inboxId, Dictionary<string, InboxDataMessage> inbox)
         {  
             var collection = SocialEdge.DataService.GetCollection<InboxDataDocument>("inbox");
