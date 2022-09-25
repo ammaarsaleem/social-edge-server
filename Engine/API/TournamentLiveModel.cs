@@ -101,23 +101,27 @@ namespace SocialEdgeSDK.Server.Models
 
         public string GetActiveShortCode(int timeZone)
         {
+            return "TournamentWeeklyChampionship";
+            // DONOT DELETE THIS
+            // Only one tournment is running so need to query the database to find the live tournment  
+
             // Check cache first
-            var val = _cache.Where(t => timeZone >= t.Value.timeZoneMin && timeZone < t.Value.timeZoneMax).Select(t => (KeyValuePair<string, TournamentLiveData>?)t).FirstOrDefault();
-            if (val != null)
-                return val.Value.Value.shortCode;
+            // var val = _cache.Where(t => timeZone >= t.Value.timeZoneMin && timeZone < t.Value.timeZoneMax).Select(t => (KeyValuePair<string, TournamentLiveData>?)t).FirstOrDefault();
+            // if (val != null)
+            //     return val.Value.Value.shortCode;
 
-            // Fetch from collection
-            var collection = SocialEdge.DataService.GetCollection<TournamentLiveDocument>(LIVE_TOURNAMENTS_COLLECTION);
-            FilterDefinition<TournamentLiveDocument> filter = Builders<TournamentLiveDocument>.Filter.Eq("tournament.active", true);
-            filter = filter & Builders<TournamentLiveDocument>.Filter.Lte("tournament.timeZoneMin", timeZone);
-            filter = filter & Builders<TournamentLiveDocument>.Filter.Gt("tournament.timeZoneMax", timeZone);
-            ProjectionDefinition<TournamentLiveDocument> projection = Builders<TournamentLiveDocument>.Projection.Include("TournamentLive").Exclude<TournamentLiveDocument>("_id");
+            // // Fetch from collection
+            // var collection = SocialEdge.DataService.GetCollection<TournamentLiveDocument>(LIVE_TOURNAMENTS_COLLECTION);
+            // FilterDefinition<TournamentLiveDocument> filter = Builders<TournamentLiveDocument>.Filter.Eq("tournament.active", true);
+            // filter = filter & Builders<TournamentLiveDocument>.Filter.Lte("tournament.timeZoneMin", timeZone);
+            // filter = filter & Builders<TournamentLiveDocument>.Filter.Gt("tournament.timeZoneMax", timeZone);
+            // ProjectionDefinition<TournamentLiveDocument> projection = Builders<TournamentLiveDocument>.Projection.Include("TournamentLive").Exclude<TournamentLiveDocument>("_id");
 
-            var taskT = collection.FindOne<TournamentLiveDocument>(filter, projection);
-            taskT.Wait();
-            if (taskT.Result != null) _cache.Add(taskT.Result.tournament.shortCode.ToString(), taskT.Result.tournament);
-            SocialEdge.Log.LogInformation("Task fetch TOURNAMENT_LIVE:" + (taskT.Result != null ? "(success)" : "(null)"));
-            return taskT.Result != null ? taskT.Result.tournament.shortCode.ToString() : null;
+            // var taskT = collection.FindOne<TournamentLiveDocument>(filter, projection);
+            // taskT.Wait();
+            // if (taskT.Result != null) _cache.Add(taskT.Result.tournament.shortCode.ToString(), taskT.Result.tournament);
+            // SocialEdge.Log.LogInformation("Task fetch TOURNAMENT_LIVE:" + (taskT.Result != null ? "(success)" : "(null)"));
+            // return taskT.Result != null ? taskT.Result.tournament.shortCode.ToString() : null;
         }
 
         public Dictionary<string, TournamentLiveData> Fetch()
