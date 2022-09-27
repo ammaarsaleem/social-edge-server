@@ -18,6 +18,7 @@ using SocialEdgeSDK.Server.Models;
 using MongoDB.Bson.Serialization;
 using SocialEdgeSDK.Server.Common;
 using SocialEdgeSDK.Server.MessageService;
+using MongoDB.Bson;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -70,7 +71,25 @@ namespace SocialEdgeSDK.Server.Requests
                 }
 
                 // Set fb id in player model info first so that it is available in the code following this.
-                SocialEdgePlayer.PlayerModel.Info.fbId = SocialEdgePlayer.CombinedInfo.AccountInfo.FacebookInfo.FacebookId;
+                string facebookId = SocialEdgePlayer.CombinedInfo.AccountInfo.FacebookInfo.FacebookId;
+                log.LogInformation("facebookId : : : : " + facebookId + " AND SocialEdgePlayer.PlayerModel.Info.fbId : " + SocialEdgePlayer.PlayerModel.Info.fbId);
+                if(string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Info.fbId))
+                {
+                    GSPlayerModelDocument gsPlayerData = SocialEdgePlayer.PlayerModel.GetGSPlayerData(SocialEdgePlayer, "", facebookId, "");
+                     if(gsPlayerData != null){
+                        BsonDocument playerDocument = gsPlayerData.document;
+                        string deviceId = Utils.GetString(playerDocument, "deviceId");
+                        SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId =  deviceId;
+                     }
+
+                    //      Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, "", facebookId, "");
+                    //     Inbox.Validate(SocialEdgePlayer);
+                    //     Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
+                    //     SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
+                    // }
+                }
+
+                SocialEdgePlayer.PlayerModel.Info.fbId = facebookId;
                 PlayerSearch.Register(SocialEdgePlayer);
 
                 // Note: This code is tied to a single entry Active Tournament.

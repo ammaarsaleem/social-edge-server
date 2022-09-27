@@ -438,7 +438,14 @@ namespace SocialEdgeSDK.Server.Api
         public static void InitPlayerWithGsData(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, BsonDocument playerDocument)
         {
             string playerId = socialEdgePlayer.PlayerId;
-            socialEdgePlayer.PlayerModel.CreateDefaults();
+            SocialEdge.Log.LogInformation("PLAYER isInitialized FLAG > > > > > > > " + socialEdgePlayer.PlayerModel.Meta.isInitialized);
+            
+            if(socialEdgePlayer.PlayerModel.Meta.isInitialized == true){
+                socialEdgePlayer.PlayerModel.GsMigrationResetDefaults();
+            }else{
+                socialEdgePlayer.PlayerModel.CreateDefaults();
+            }
+
             InboxModel.Init(socialEdgePlayer.InboxId);
 
             string userID   = Utils.GetString(playerDocument, "userId");

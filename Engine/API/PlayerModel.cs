@@ -159,10 +159,12 @@ namespace SocialEdgeSDK.Server.Models
         #pragma warning disable format
         [BsonElement("isInitialized")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool _isInitialized;
         [BsonElement("clientVersion")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _clientVersion;
-        #pragma warning restore format
+        [BsonElement("migrateToDeviceId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _migrateToDeviceId;
 
+        #pragma warning restore format
         [BsonIgnore] public bool isInitialized { get => _isInitialized; set { _isInitialized = value; isDirty = true; } }
         [BsonIgnore] public string clientVersion { get => _clientVersion; set { _clientVersion = value; isDirty = true; } }
+        [BsonIgnore] public string migrateToDeviceId { get => _migrateToDeviceId; set { _migrateToDeviceId = value; isDirty = true; } }
     }
 
     public class PlayerInventoryItem
@@ -648,6 +650,18 @@ namespace SocialEdgeSDK.Server.Models
             _economy = new PlayerDataEconomy();
             _events = new PlayerDataEvent();
             _tournament = new PlayerDataTournament();
+            _challenge = new PlayerDataChallenge(isDirty:true);
+            _friends = new PlayerDataFriends(isDirty:true);
+            _blocked = new PlayerDataBlocked(isDirty:true);
+        }
+
+        public void GsMigrationResetDefaults()
+        {
+            _meta = new PlayerDataMeta();
+            _info = new PlayerDataInfo();
+            _economy = new PlayerDataEconomy();
+            _events = new PlayerDataEvent();
+           //_tournament = new PlayerDataTournament();
             _challenge = new PlayerDataChallenge(isDirty:true);
             _friends = new PlayerDataFriends(isDirty:true);
             _blocked = new PlayerDataBlocked(isDirty:true);

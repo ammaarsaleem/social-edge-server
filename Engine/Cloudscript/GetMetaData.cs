@@ -63,10 +63,13 @@ namespace SocialEdgeSDK.Server.Requests
             string appleId  = args["appleId"].ToString();
             bool isResume = args["isResume"].ToBoolean();
 
-            if (isNewlyCreated)
+            if (isNewlyCreated || !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId))
             {
+                deviceId = !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId) ? SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId : deviceId;
                 Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId);
                 SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName = SocialEdgePlayer.DisplayName;
+                SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId = string.Empty;
+                isNewlyCreated = true;
             }
             else
             {
