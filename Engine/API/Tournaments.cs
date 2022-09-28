@@ -318,50 +318,9 @@ namespace SocialEdgeSDK.Server.Api
                 float matchCoinsMultiplyer = float.Parse(Settings.CommonSettings["matchCoinsMultiplyer"].ToString());
                 score = (int)(challengePlayerModel.betValue * matchCoinsMultiplyer);
                 socialEdgePlayer.PlayerModel.Info.trophies = socialEdgePlayer.PlayerModel.Info.trophies + (challengePlayerModel.powerMode ? leagueSettings.trophies.win * 2 : leagueSettings.trophies.win);
+                
                 // Update Allstars leaderboard
                 var taskT = Player.UpdatePlayerStatistics(socialEdgePlayer.PlayerId, "score", score);
-
-                 socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter = socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter + 1;
-                // jackpot probablity = jackpot not collected counter divided by 10
-                // is jackpot = select a random number between 1 and 10, if random number is less or equal to the probability into 10
-                int randNumber = Utils.GetRandomInteger(1, 10);
-                double rewardJackpotProbability = socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter >= 10 ? 1 : 
-                                                        socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter / 10;
-                bool isJackpot = randNumber <= rewardJackpotProbability * 10;
-                // e.g. total reward : reward 1 + reward 2 + reward 3 = 100
-                // reward 1 = random or jackpot
-                // reward 2 max = 100 minus reward 1 minus min of reward 3
-                // reward 2 = random between reward 2 min and max
-                // reward 3 = 100 minus reward 1 minus reward 2
-                var bonusCoinsRewards = Settings.CommonSettings["bonusCoinsRewards"];
-                int reward1Rand = Utils.GetRandomInteger((int)bonusCoinsRewards["reward1"][0], (int)bonusCoinsRewards["reward1"][1]);
-                int reward1Round = (int)Utils.RoundToNearestMultiple(reward1Rand, 5);
-                int reward1 = isJackpot ? (int)bonusCoinsRewards["reward1"][1] : reward1Round;
-                double reward1Ratio = (double)reward1 / 100;
-                isJackpot = (int)bonusCoinsRewards["reward1"][1] == reward1;
-            
-                int reward2Max = 100 - reward1 - (int)bonusCoinsRewards["reward3"][0];
-                int reward2Rand = Utils.GetRandomInteger((int)bonusCoinsRewards["reward2"][0], reward2Max);
-                int reward2 = (int)Utils.RoundToNearestMultiple((int)reward2Rand, 5);
-                double reward2Ratio = (double)reward2 / 100;
-
-                int reward3 = 100 - reward1 - reward2;
-                double reward3Ratio = (double)reward3 / 100;
-            
-                double freeReward = challengePlayerModel.betValue * (double)Settings.CommonSettings["bonusCoinsFreeRatio"];
-                double rvReward = challengePlayerModel.betValue * (double)Settings.CommonSettings["bonusCoinsRVRatio"];
-            
-                ChallengeWinnerBonusRewardsData rewards = challengePlayerModel.CreateChallengeWinnerBonusReward();
-                rewards.bonusCoinsFree1 = (int)Math.Round(freeReward * reward1Ratio);
-                rewards.bonusCoinsFree2 = (int)Math.Round(freeReward * reward2Ratio);
-                rewards.bonusCoinsFree3 = (int)Math.Round(freeReward * reward3Ratio);
-                rewards.bonusCoinsRV1 = (int)Math.Round(rvReward * reward1Ratio);
-                rewards.bonusCoinsRV2 = (int)Math.Round(rvReward * reward2Ratio);
-                rewards.bonusCoinsRV3 = (int)Math.Round(rvReward * reward3Ratio);
-                challengePlayerModel.winnerBonusRewards = rewards;
-
-                if (isJackpot)
-                    socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter = 0;
 
                 // Check for league promotion
                 int nextLeague = socialEdgePlayer.MiniProfile.League + 1;

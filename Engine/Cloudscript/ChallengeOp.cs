@@ -128,22 +128,19 @@ namespace SocialEdgeSDK.Server.Requests
                         Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, socialEdgePlayer, gameEndReason, winnerId, otherPlayerId);
                         var friendData = Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
                         opResult.challengeEndedInfo.playersData.Add(player.Key, new ChallengeEndPlayerModel(socialEdgePlayer.PlayerModel, socialEdgePlayer.MiniProfile, player.Value, friendData));
-                    }
-                }
 
-                if (!string.IsNullOrEmpty(winnerId))
-                {
-                    ChallengePlayerModel winnerChallengeModel = SocialEdgeChallenge.ChallengeModel.Challenge.playersData[winnerId];
-
-                    if (winnerChallengeModel.winnerBonusRewards != null)
-                    {
-                        opResult.challengeEndedInfo.winnerBonusRewards = new Dictionary<string, int>();
-                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree1", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree1);
-                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree2", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree2);
-                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsFree3", winnerChallengeModel.winnerBonusRewards.bonusCoinsFree3);
-                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV1", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV1);
-                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV2", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV2);
-                        opResult.challengeEndedInfo.winnerBonusRewards.Add("bonusCoinsRV3", winnerChallengeModel.winnerBonusRewards.bonusCoinsRV3);
+                        if(!string.IsNullOrEmpty(player.Value.tournamentId) && !string.IsNullOrEmpty(winnerId) && winnerId.Equals(player.Key))
+                        {
+                            var winnerBonusRewards = new Dictionary<string, int>();
+                            socialEdgePlayer.PlayerEconomy.ProcessWinnerBonusRewards(player.Value);
+                            winnerBonusRewards.Add("bonusCoinsFree1", player.Value.winnerBonusRewards.bonusCoinsFree1);
+                            winnerBonusRewards.Add("bonusCoinsFree2", player.Value.winnerBonusRewards.bonusCoinsFree2);
+                            winnerBonusRewards.Add("bonusCoinsFree3", player.Value.winnerBonusRewards.bonusCoinsFree3);
+                            winnerBonusRewards.Add("bonusCoinsRV1", player.Value.winnerBonusRewards.bonusCoinsRV1);
+                            winnerBonusRewards.Add("bonusCoinsRV2", player.Value.winnerBonusRewards.bonusCoinsRV2);
+                            winnerBonusRewards.Add("bonusCoinsRV3", player.Value.winnerBonusRewards.bonusCoinsRV3);
+                            opResult.challengeEndedInfo.winnerBonusRewards = winnerBonusRewards;
+                        }
                     }
                 }
             }

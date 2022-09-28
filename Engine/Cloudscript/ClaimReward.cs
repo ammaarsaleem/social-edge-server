@@ -401,9 +401,9 @@ namespace SocialEdgeSDK.Server.Requests
         {
             ClaimRewardResult result = new ClaimRewardResult();
             ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
-            ChallengePlayerModel playerChallengeData = challengeData.playersData[socialEdgePlayer.PlayerId];
+            ChallengePlayerModel playerChallengeData = challengeData.playersData.ContainsKey(socialEdgePlayer.PlayerId) ? challengeData.playersData[socialEdgePlayer.PlayerId] : null;
 
-            long betValue = playerChallengeData.betValue;
+            long betValue = playerChallengeData != null ? playerChallengeData.betValue : socialEdgePlayer.PlayerEconomy.GetDefaultBet();
             int betReturn = (int)Math.Round(betValue * double.Parse(Settings.CommonSettings["betLossAversionRatio"].ToString()));
             socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", betReturn);
 
