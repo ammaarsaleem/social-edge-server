@@ -33,6 +33,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("expireAt")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]               public DateTime _expireAt;
         [BsonElement("tournamentCollectionIndex")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)] public int _tournamentCollectionIndex;
         [BsonElement("tournamentSlot")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _tournamentSlot;
+        [BsonElement("playerId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]                 public string _playerId;
         #pragma warning restore format
         
         [BsonIgnore] public string shortCode { get => _shortCode; set { _shortCode = value; isDirty = true; } }
@@ -50,6 +51,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public DateTime expireAt { get => _expireAt; set { _expireAt = value; isDirty = true; } }
         [BsonIgnore] public int tournamentCollectionIndex { get => _tournamentCollectionIndex; set { _tournamentCollectionIndex = value; isDirty = true; } }
         [BsonIgnore] public int tournamentSlot { get => _tournamentSlot; set { _tournamentSlot = value; isDirty = true; } }
+        [BsonIgnore] public string playerId { get => _playerId; set { _playerId = value; isDirty = true; } }
 
         public void AppendEntryIds(List<string> pool)
         {

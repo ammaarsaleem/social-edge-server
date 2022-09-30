@@ -76,9 +76,36 @@ namespace SocialEdgeSDK.Server.Requests
 
             if (op == "startChallenge")
             {
-                SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.INFO, PlayerModelFields.CHALLENGE, PlayerModelFields.TOURNAMENT);
-                                                                            
+                SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.INFO, PlayerModelFields.CHALLENGE, PlayerModelFields.TOURNAMENT);                                                                
                 var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
+
+                //patch due a bug in client v6.34.22
+                //TODO: remove after mandatory update
+                var playerKeyToUpdate = string.Empty;
+                var newPlayerKey = string.Empty;
+
+                foreach(var player in challengeData.playersData)
+                {
+                    if(!player.Value.isBot && !player.Key.Equals(SocialEdgePlayer.PlayerId))
+                    {
+                        var tournamentModel = SocialEdgeTournament.TournamentModel.Get(player.Value.tournamentId);
+
+                        if(tournamentModel != null && !string.IsNullOrEmpty(tournamentModel.playerId) && !player.Key.Equals(tournamentModel.playerId))
+                        {
+                            playerKeyToUpdate = player.Key;
+                            newPlayerKey = tournamentModel.playerId;
+                        }
+                    }
+                }
+
+                if(!string.IsNullOrEmpty(playerKeyToUpdate))
+                {
+                    var playerValue = challengeData.playersData[playerKeyToUpdate];
+                    challengeData.playersData.Remove(playerKeyToUpdate);
+                    challengeData.playersData.Add(newPlayerKey, playerValue);
+                }
+                //patch end
+
                 var challengeId = SocialEdgeChallenge.ChallengeModel.Create(challengeData);
                 SocialEdgeChallenge.ChallengeModel.ReadOnly();
 
@@ -111,6 +138,7 @@ namespace SocialEdgeSDK.Server.Requests
                 string gameEndReason = data["gameEndReason"].ToString();
 
                 ChallengeData challengeData = SocialEdgeChallenge.ChallengeModel.Get(challengeId);
+                bool isAbandoned = !string.IsNullOrEmpty(challengeData.gameEndReason) && challengeData.gameEndReason.Equals("ABANDONED");
                 SocialEdgeChallenge.ChallengeModel.Challenge.winnerId = winnerId;
                 SocialEdgeChallenge.ChallengeModel.Challenge.gameEndReason = gameEndReason;
                 
@@ -124,6 +152,21 @@ namespace SocialEdgeSDK.Server.Requests
                     if(!player.Value.isBot)
                     {
                         var socialEdgePlayer = player.Key == SocialEdgePlayer.PlayerId ? SocialEdgePlayer : LoadPlayer(player.Key);
+
+                        //in case someone already abandoned the challenge,
+                        //reverting the already processed changes
+                        if(isAbandoned)
+                        {
+                            socialEdgePlayer.PlayerModel.Info.gamesLost = socialEdgePlayer.PlayerModel.Info.gamesLost - 1;
+                            socialEdgePlayer.PlayerModel.Info.eloScore = socialEdgePlayer.PlayerModel.Info.eloScore - player.Value.eloChange;
+                            socialEdgePlayer.PlayerModel.Economy.piggyBankGems = socialEdgePlayer.PlayerModel.Economy.piggyBankGems - player.Value.piggyBankReward;
+
+                            if (player.Value.isEventMatch) 
+                            {
+                                socialEdgePlayer.PlayerModel.Events.dailyEventState = "running";
+                            }
+                        }
+
                         var otherPlayerId = challengeData.playersData.Where(p => p.Key != socialEdgePlayer.PlayerId).Select(p => p.Key).FirstOrDefault();
                         Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, socialEdgePlayer, gameEndReason, winnerId, otherPlayerId);
                         var friendData = Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);

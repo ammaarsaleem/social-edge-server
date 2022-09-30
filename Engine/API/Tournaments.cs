@@ -44,7 +44,7 @@ namespace SocialEdgeSDK.Server.Api
             var durationSeconds = liveTournament.duration * 60;
             var waitTimeSeconds = liveTournament.waitTime * 60;
             var currentStartTimeUTCSeconds = CalculateCurrentStartTime(waitTimeSeconds, durationSeconds, startTimeSeconds) * 1000;
-            TournamentData tournamentModel = SetupTournamentModel(socialEdgeTournament, tournamentShortCode, liveTournament, currentStartTimeUTCSeconds, activeCollectionInfo.expiryTime, activeCollectionInfo.index);
+            TournamentData tournamentModel = SetupTournamentModel(socialEdgeTournament, tournamentShortCode, liveTournament, currentStartTimeUTCSeconds, activeCollectionInfo.expiryTime, activeCollectionInfo.index, socialEdgePlayer.PlayerId);
 
             int tournamentMaxScore = socialEdgePlayer.PlayerModel.Tournament.tournamentMaxScore;
             var tournamentSlot = TournamentCollectionManager.GetSlot(liveTournament.slotsData, tournamentMaxScore);
@@ -58,7 +58,7 @@ namespace SocialEdgeSDK.Server.Api
             return tournamentId;
         }
 
-        private static TournamentData SetupTournamentModel(SocialEdgeTournamentContext socialEdgeTournament, string tournamentShortCode, TournamentLiveData liveTourament, long currentStartTime, long expiryTime, int tournamentCollectionIdx)
+        private static TournamentData SetupTournamentModel(SocialEdgeTournamentContext socialEdgeTournament, string tournamentShortCode, TournamentLiveData liveTourament, long currentStartTime, long expiryTime, int tournamentCollectionIdx, string playerId)
         {
             socialEdgeTournament.TournamentModel.Create();
             var tournament = socialEdgeTournament.TournamentModel.Tournament;
@@ -77,6 +77,7 @@ namespace SocialEdgeSDK.Server.Api
             tournament.expireAt = Utils.EpochToDateTime(expiryTime);
             tournament.tournamentCollectionIndex = tournamentCollectionIdx;
             tournament.tournamentSlot = 0;  
+            tournament.playerId = playerId;
 
             return socialEdgeTournament.TournamentModel.Tournament;  
         }
@@ -235,10 +236,17 @@ namespace SocialEdgeSDK.Server.Api
             {
                 string tournamentId = item.Key;
                 ActiveTournament activeTournament = item.Value;
-
                 TournamentData tournamentModel = socialEdgeTournament.TournamentModel.Get(tournamentId);
+                
                 if (tournamentModel != null)
                 {
+                    //Patch for active championships ending before 3-oct-22
+                    if(!socialEdgePlayer.PlayerId.Equals(tournamentModel.playerId))
+                    {
+                        tournamentModel.playerId = socialEdgePlayer.PlayerId;
+                    }
+                    //Patch end
+
                     bool isEnded = (Utils.UTCNow() <  activeTournament.startTime) || // This case can occur if the tournament match ends after the tournament time is up
                                     (Utils.UTCNow() > (activeTournament.startTime + activeTournament.duration * 60 * 1000 ));
                     if (isEnded)
