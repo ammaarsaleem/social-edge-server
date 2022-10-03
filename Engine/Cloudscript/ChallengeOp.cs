@@ -86,7 +86,7 @@ namespace SocialEdgeSDK.Server.Requests
 
                 foreach(var player in challengeData.playersData)
                 {
-                    if(!player.Value.isBot && !player.Key.Equals(SocialEdgePlayer.PlayerId))
+                    if(!player.Value.isBot && !string.IsNullOrEmpty(player.Value.tournamentId) && !player.Key.Equals(SocialEdgePlayer.PlayerId))
                     {
                         var tournamentModel = SocialEdgeTournament.TournamentModel.Get(player.Value.tournamentId);
 
