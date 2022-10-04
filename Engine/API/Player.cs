@@ -49,12 +49,12 @@ namespace SocialEdgeSDK.Server.Api
             return await PlayFabServerAPI.GetPlayerProfileAsync(request);
         }
 
-        public static async Task<PlayFabResult<GetFriendsListResult>> GetFriendsList(string playerId)
+        public static async Task<PlayFabResult<GetFriendsListResult>> GetFriendsList(string playerId, bool includeFacebookFriends = true)
         {
             var request = new GetFriendsListRequest
             {
                 PlayFabId = playerId,
-                IncludeFacebookFriends = true,
+                IncludeFacebookFriends = includeFacebookFriends,
                 ProfileConstraints = new PlayerProfileViewConstraints
                 {
                     ShowAvatarUrl = true,
@@ -70,7 +70,14 @@ namespace SocialEdgeSDK.Server.Api
                 }
             };
 
-            return await PlayFabServerAPI.GetFriendsListAsync(request);
+            var task = await PlayFabServerAPI.GetFriendsListAsync(request);
+            
+            if(task.Error != null && task.Error.Error == PlayFabErrorCode.FacebookAPIError)
+            {
+                return await GetFriendsList(playerId, false);
+            }
+
+            return task;
         }   
 
         public static List<PublicProfileEx> GetFriendProfilesEx(List<FriendInfo> friends)
