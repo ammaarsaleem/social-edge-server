@@ -80,5 +80,25 @@ namespace SocialEdgeSDK.Server.Api
             string[] friendIds = new List<string>(notifyList.Keys).ToArray();
             new SocialEdgeMessage(socialEdgePlayer.PlayerId, null, "NotifyFriendsSync", friendIds).Send();
         }
+
+        public static void CleanUp(SocialEdgePlayerContext socialEdgePlayer)
+        {
+            Dictionary<string ,FriendData> recentlyPlayedFriends = socialEdgePlayer.PlayerModel.Friends.friends.Where(f => f.Value.friendType.Equals("COMMUNITY")).ToDictionary(f => f.Key, f => f.Value);
+
+            if(recentlyPlayedFriends != null && recentlyPlayedFriends.Count > 3)
+            {
+                recentlyPlayedFriends = recentlyPlayedFriends.OrderByDescending(f => f.Value.lastMatchTimestamp).ToDictionary(f => f.Key, f => f.Value);
+
+                int i = 0;
+                foreach(var f in recentlyPlayedFriends)
+                {
+                    i++;
+                    if(i <= 3) continue;
+                    
+                    socialEdgePlayer.PlayerModel.DBOpRemoveFriend(f.Key);
+                    RemoveFriend(f.Key, socialEdgePlayer.PlayerId);
+                }
+            }
+        }
     }
 }

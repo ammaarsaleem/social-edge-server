@@ -82,6 +82,7 @@ namespace SocialEdgeSDK.Server.Requests
             SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
             PlayerSearch.Register(SocialEdgePlayer);
             Challenge.ProcessAbandonedGame(SocialEdgePlayer, SocialEdgeChallenge, SocialEdgeTournament, this);
+            Friends.CleanUp(SocialEdgePlayer);
             Friends.SyncFriendsList(SocialEdgePlayer);
             SocialEdgePlayer.PlayerModel.Meta.clientVersion = clientVersion;
 
