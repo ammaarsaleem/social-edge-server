@@ -83,7 +83,7 @@ namespace SocialEdgeSDK.Server.Api
 
         public static void CleanUp(SocialEdgePlayerContext socialEdgePlayer)
         {
-            Dictionary<string ,FriendData> recentlyPlayedFriends = socialEdgePlayer.PlayerModel.Friends.friends.Where(f => f.Value.friendType.Equals("COMMUNITY")).ToDictionary(f => f.Key, f => f.Value);
+            Dictionary<string, FriendData> recentlyPlayedFriends = socialEdgePlayer.PlayerModel.Friends.friends.Where(f => f.Value.friendType == null || f.Value.friendType.Equals("COMMUNITY")).ToDictionary(f => f.Key, f => f.Value);
 
             if(recentlyPlayedFriends != null && recentlyPlayedFriends.Count > 3)
             {
@@ -95,8 +95,8 @@ namespace SocialEdgeSDK.Server.Api
                     i++;
                     if(i <= 3) continue;
                     
-                    socialEdgePlayer.PlayerModel.DBOpRemoveFriend(f.Key);
                     RemoveFriend(f.Key, socialEdgePlayer.PlayerId);
+                    socialEdgePlayer.PlayerModel.Friends.friends.Remove(f.Key);
                 }
             }
         }
