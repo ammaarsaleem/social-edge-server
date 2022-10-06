@@ -19,6 +19,8 @@ namespace SocialEdgeSDK.Server.DataService
         long Increment(string key, long value);
         bool KeyDelete(string key);
         long GetValue(string key);
+        bool SetExpiry(string key, double expireAfterSec);
+
 
 
     }

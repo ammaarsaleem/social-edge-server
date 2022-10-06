@@ -76,7 +76,21 @@ namespace SocialEdgeSDK.Server.Requests
 
             if (op == "startChallenge")
             {
-                SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.INFO, PlayerModelFields.CHALLENGE, PlayerModelFields.TOURNAMENT);                                                                
+                SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.INFO, PlayerModelFields.CHALLENGE, PlayerModelFields.TOURNAMENT); 
+
+                string theKey = "inMatch_" + SocialEdgePlayer.PlayerId;
+                ICache cacheDB = SocialEdge.DataService.GetCache();
+                long isPlayerInMatch = cacheDB.GetValue(theKey);
+
+                if(isPlayerInMatch != 0){
+                    SocialEdge.Log.LogInformation("MATCH ALREADY STARTED > > > > " + theKey + " VALUE : " + isPlayerInMatch);
+                    opResult.status = false;
+                    return opResult;
+                }
+
+                cacheDB.Increment(theKey, 1);
+                cacheDB.SetExpiry(theKey, 10);
+        
                 var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
 
                 //patch due a bug in client v6.34.22

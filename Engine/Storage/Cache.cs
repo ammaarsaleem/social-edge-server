@@ -129,5 +129,11 @@ namespace SocialEdgeSDK.Server.DataService
             return ((long)value); 
         }
 
+        public bool SetExpiry(string key, double expireAfterSec)
+        {
+            RedisValue value  = _cacheDb.KeyExpire(key, TimeSpan.FromSeconds(expireAfterSec));
+            return ((bool)value); 
+        }
+
     }
 }

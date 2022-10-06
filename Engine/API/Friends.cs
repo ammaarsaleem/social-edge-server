@@ -83,22 +83,30 @@ namespace SocialEdgeSDK.Server.Api
 
         public static void CleanUp(SocialEdgePlayerContext socialEdgePlayer)
         {
-            Dictionary<string, FriendData> recentlyPlayedFriends = socialEdgePlayer.PlayerModel.Friends.friends.Where(f => f.Value.friendType == null || f.Value.friendType.Equals("COMMUNITY")).ToDictionary(f => f.Key, f => f.Value);
+            CleanUpByType(socialEdgePlayer, "COMMUNITY", 3);
+            CleanUpByType(socialEdgePlayer, "FAVOURITE", 5);
+        }
 
-            if(recentlyPlayedFriends != null && recentlyPlayedFriends.Count > 3)
+        public static void CleanUpByType(SocialEdgePlayerContext socialEdgePlayer, string friendType, int maxCount)
+        {
+            Dictionary<string, FriendData> typedFriends = socialEdgePlayer.PlayerModel.Friends.friends.Where(f => f.Value.friendType == null || f.Value.friendType.Equals(friendType)).ToDictionary(f => f.Key, f => f.Value);
+
+            if(typedFriends != null && typedFriends.Count > maxCount)
             {
-                recentlyPlayedFriends = recentlyPlayedFriends.OrderByDescending(f => f.Value.lastMatchTimestamp).ToDictionary(f => f.Key, f => f.Value);
+                typedFriends = typedFriends.OrderByDescending(f => f.Value.lastMatchTimestamp).ToDictionary(f => f.Key, f => f.Value);
 
                 int i = 0;
-                foreach(var f in recentlyPlayedFriends)
+                foreach(var f in typedFriends)
                 {
                     i++;
-                    if(i <= 3) continue;
+                    if(i <= maxCount) continue;
                     
                     RemoveFriend(f.Key, socialEdgePlayer.PlayerId);
-                    socialEdgePlayer.PlayerModel.Friends.friends.Remove(f.Key);
+                    socialEdgePlayer.PlayerModel.Friends.Remove(f.Key);
                 }
             }
+
         }
+
     }
 }
