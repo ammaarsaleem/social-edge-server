@@ -80,15 +80,14 @@ namespace SocialEdgeSDK.Server.Requests
 
                 string theKey = "inMatch_" + SocialEdgePlayer.PlayerId;
                 ICache cacheDB = SocialEdge.DataService.GetCache();
-                long isPlayerInMatch = cacheDB.GetValue(theKey);
+                long isPlayerInMatch = cacheDB.Increment(theKey, 1);
 
-                if(isPlayerInMatch != 0){
+                if(isPlayerInMatch != 1){
                     SocialEdge.Log.LogInformation("MATCH ALREADY STARTED > > > > " + theKey + " VALUE : " + isPlayerInMatch);
                     opResult.status = false;
                     return opResult;
                 }
 
-                cacheDB.Increment(theKey, 1);
                 cacheDB.SetExpiry(theKey, 10);
         
                 var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
