@@ -140,6 +140,11 @@ namespace SocialEdgeSDK.Server.Requests
                     {
                         foreach (var id in friendsSubOp.friendIds)
                         {
+                            if(!SocialEdgePlayer.PlayerModel.Friends.friends.ContainsKey(id))
+                            {
+                                continue;
+                            }
+                            
                             if (SocialEdgePlayer.PlayerModel.Friends.friends[id].friendType == "COMMNUNITY")
                             {
                                 SocialEdgePlayer.PlayerModel.DBOpRemoveFriend(id);
