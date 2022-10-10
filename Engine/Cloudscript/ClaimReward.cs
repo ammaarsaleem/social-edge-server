@@ -96,6 +96,7 @@ namespace SocialEdgeSDK.Server.Requests
             else if (rewardType == "ratingBoostTier1")
             {   
                 string challengeId = data["userData"]["challengeId"].ToString();
+                challengeId = string.IsNullOrEmpty(challengeId) ? SocialEdgePlayer.PlayerModel.Challenge.lastPlayedChallengeId : challengeId;
                 int rewardPoints = int.Parse(rewardsTable[rewardType].ToString());
                 result = RewardRatingBoostTier1(rewardType, challengeId, rewardPoints, SocialEdgePlayer, SocialEdgeChallenge);
             }
@@ -117,11 +118,13 @@ namespace SocialEdgeSDK.Server.Requests
             else if (rewardType == "betCoinsReturn") 
             {
                 string challengeId = data["userData"]["challengeId"].ToString();
+                challengeId = string.IsNullOrEmpty(challengeId) ? SocialEdgePlayer.PlayerModel.Challenge.lastPlayedChallengeId : challengeId;
                 result = BetCoinsReturn(rewardType, challengeId, SocialEdgePlayer, SocialEdgeChallenge);
             }
             else if(rewardType.Contains("bonusCoins")) 
             {
                 string challengeId = data["userData"]["challengeId"].ToString();
+                challengeId = string.IsNullOrEmpty(challengeId) ? SocialEdgePlayer.PlayerModel.Challenge.lastPlayedChallengeId : challengeId;
                 result = BonusCoins(rewardType, challengeId, SocialEdgePlayer, SocialEdgeChallenge);
             }
             else if (rewardType == "balloonRVRewards") 
@@ -334,6 +337,7 @@ namespace SocialEdgeSDK.Server.Requests
                 if (rewardType == "ratingBoosterReward") 
                 {
                     string challengeId = data["userData"]["challengeId"].ToString();
+                    challengeId = string.IsNullOrEmpty(challengeId) ? socialEdgePlayer.PlayerModel.Challenge.lastPlayedChallengeId : challengeId;
                     ChallengeData challengeData = socialEdgeChallenge.ChallengeModel.Get(challengeId);
                     socialEdgeChallenge.ChallengeModel.ReadOnly(challengeId);
                     ChallengePlayerModel playerChallengeData = challengeData.playersData[socialEdgePlayer.PlayerId];

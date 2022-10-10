@@ -77,19 +77,18 @@ namespace SocialEdgeSDK.Server.Requests
             if (op == "startChallenge")
             {
                 SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.INFO, PlayerModelFields.CHALLENGE, PlayerModelFields.TOURNAMENT); 
-
                 string theKey = "inMatch_" + SocialEdgePlayer.PlayerId;
                 ICache cacheDB = SocialEdge.DataService.GetCache();
                 long isPlayerInMatch = cacheDB.Increment(theKey, 1);
 
-                if(isPlayerInMatch != 1){
+                if(isPlayerInMatch != 1)
+                {
                     SocialEdge.Log.LogInformation("MATCH ALREADY STARTED > > > > " + theKey + " VALUE : " + isPlayerInMatch);
                     opResult.status = false;
                     return opResult;
                 }
 
                 cacheDB.SetExpiry(theKey, 10);
-        
                 var challengeData = BsonSerializer.Deserialize<ChallengeData>(data["challengeData"].ToString());
 
                 //patch due a bug in client v6.34.22
@@ -149,7 +148,21 @@ namespace SocialEdgeSDK.Server.Requests
                 string challengeId = data["challengeId"].ToString();
                 string winnerId = data["winnerId"].ToString();
                 string gameEndReason = data["gameEndReason"].ToString();
+                string savedChallengeId = SocialEdgePlayer.PlayerModel.Challenge.currentChallengeId;
+                savedChallengeId = string.IsNullOrEmpty(savedChallengeId) ? SocialEdgePlayer.PlayerModel.Challenge.lastPlayedChallengeId : savedChallengeId;
+                challengeId = string.IsNullOrEmpty(savedChallengeId) ? challengeId : savedChallengeId;
 
+                string theKey = "endMatch_" + SocialEdgePlayer.PlayerId;
+                ICache cacheDB = SocialEdge.DataService.GetCache();
+                long isPlayerInMatch = cacheDB.Increment(theKey, 1);
+
+                if(isPlayerInMatch != 1 || string.IsNullOrEmpty(challengeId))
+                {
+                    opResult.status = false;
+                    return opResult;
+                }
+
+                cacheDB.SetExpiry(theKey, 10);
                 ChallengeData challengeData = SocialEdgeChallenge.ChallengeModel.Get(challengeId);
                 bool isAbandoned = !string.IsNullOrEmpty(challengeData.gameEndReason) && challengeData.gameEndReason.Equals("ABANDONED");
                 SocialEdgeChallenge.ChallengeModel.Challenge.winnerId = winnerId;

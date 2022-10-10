@@ -55,6 +55,7 @@ namespace SocialEdgeSDK.Server.Api
             }
 
             currentPlayerData.piggyBankReward = socialEdgePlayer.PlayerEconomy.ProcessPiggyBankReward(currentPlayerData);
+            socialEdgePlayer.PlayerModel.Challenge.lastPlayedChallengeId = socialEdgePlayer.PlayerModel.Challenge.currentChallengeId;
             socialEdgePlayer.PlayerModel.Challenge.currentChallengeId = null;
         }
 

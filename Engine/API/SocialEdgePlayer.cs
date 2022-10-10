@@ -258,6 +258,12 @@ namespace SocialEdgeSDK.Server.Context
             var resulT = Player.GetCombinedInfo(_playerId);
             resulT.Wait();
             _combinedInfo = resulT.Result.Result.InfoResultPayload;
+            
+            if(resulT.Result.Error != null)
+            {
+                SocialEdge.Log.LogInformation($"Task failed fetch COMBINED_INFO => {resulT.Result.Error.ErrorMessage} | {resulT.Result.Error.Error}");
+            }
+
             if (_combinedInfo != null && _combinedInfo.UserReadOnlyData != null)
             {
                 foreach(KeyValuePair<string, UserDataRecord> item in _combinedInfo.UserReadOnlyData)
@@ -265,6 +271,7 @@ namespace SocialEdgeSDK.Server.Context
                     _playerData.Add(item.Key, BsonDocument.Parse(item.Value.Value));
                 }
             }
+
             _fillMask |= _combinedInfo != null ? CachePlayerDataSegments.COMBINED_INFO : 0;
             SocialEdge.Log.LogInformation("Task fetch COMBINED_INFO");
             return _combinedInfo != null;

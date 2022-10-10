@@ -493,12 +493,14 @@ namespace SocialEdgeSDK.Server.Models
     public class PlayerDataChallenge : DataModelBase, IDataModelBase
     {        
         #pragma warning disable format                                                        
-        [BsonElement("currentChallengeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]   public string _currentChallengeId;
-        [BsonElement("activeChallenges")]                                                       public Dictionary<string, string> _activeChallenges;
-        [BsonElement("pendingChallenges")]                                                      public Dictionary<string, string> _pendingChallenges;
+        [BsonElement("currentChallengeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]       public string _currentChallengeId;
+        [BsonElement("lastPlayedChallengeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _lastPlayedChallengeId;
+        [BsonElement("activeChallenges")]                                                           public Dictionary<string, string> _activeChallenges;
+        [BsonElement("pendingChallenges")]                                                          public Dictionary<string, string> _pendingChallenges;
         #pragma warning restore format
 
         [BsonIgnore] public string currentChallengeId { get => _currentChallengeId; set { _currentChallengeId = value; isDirty = true; } }
+        [BsonIgnore] public string lastPlayedChallengeId { get => _lastPlayedChallengeId; set { _lastPlayedChallengeId = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> activeChallenges { get => _activeChallenges; set { _activeChallenges = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> pendingChallenges { get => _pendingChallenges; set { _pendingChallenges = value; isDirty = true; } }
 
