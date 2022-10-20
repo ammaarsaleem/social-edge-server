@@ -97,10 +97,10 @@ namespace SocialEdgeSDK.Server.DataService
             _storeItemsDict = _storeItems.Store.ToDictionary(m => m.ItemId, m => m);
 
             _leagueSettings = new LeagueSettingModel();
-            _leagueSettings.leagues = BsonSerializer.Deserialize<Dictionary<string, LeagueSettingsData>>(_titleDataDict["Leagues"].ToString());
+            _leagueSettings.leagues = JsonConvert.DeserializeObject<Dictionary<string, LeagueSettingsData>>(_titleDataDict["Leagues"].ToString());
 
             _economySettings = new EconomySettingsModel();
-            _economySettings = BsonSerializer.Deserialize<EconomySettingsModel>(_titleDataDict["Economy"].ToString());
+            _economySettings = JsonConvert.DeserializeObject<EconomySettingsModel>(_titleDataDict["Economy"].ToString());
 
             //Catalog Dictionary with shortCode
             _catalogItemsWihtShortCode = new Dictionary<string, CatalogItem>();
