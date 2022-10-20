@@ -100,6 +100,7 @@ namespace SocialEdgeSDK.Server.Context
         public int daysPerAutoSubscriptionDlgThreshold;
         public int sessionsBeforePregameAd;
         public int maxPregameAdsPerDay;
+        public int maxPostgameAdsPerDay;
         public int intervalsBetweenPregameAds;
         public int waitForPregameAdLoadSeconds;
         public bool showPregameOneMinute;
