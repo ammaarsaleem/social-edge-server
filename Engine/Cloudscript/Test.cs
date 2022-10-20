@@ -26,7 +26,7 @@ namespace SocialEdgeSDK.Server.Requests
 {
     public class Test : FunctionContext
     {
-        private static readonly HttpClient client = new HttpClient();
+       // private static readonly HttpClient client = new HttpClient();
 
         //IDbHelper _dbHelper;
         // IDataService _dataService;
@@ -38,13 +38,12 @@ namespace SocialEdgeSDK.Server.Requests
         public Test(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
         [FunctionName("Test")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequestMessage req, ILogger log)
+        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequestMessage req, ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request");
             InitContext(req, log);
             string userId   = Args["userId"];
             string name    = Args["name"];
-
             
           // await GetLatestStateFromGSServer("");
 
@@ -59,7 +58,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             // }
                 
-                TestSettings();
+         //       TestSettings();
          
             //TestDatabase();
             // TestRedis();
