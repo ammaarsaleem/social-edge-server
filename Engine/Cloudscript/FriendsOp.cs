@@ -228,6 +228,12 @@ namespace SocialEdgeSDK.Server.Requests
                     new SocialEdgeMessage(SocialEdgePlayer.PlayerId, msgData, nameof(MatchInviteMessageData), opponentId).Send();
                 }
             }
+            else if (op == "sendStar")
+            {
+                SocialEdgePlayer.PlayerModel.Info.lifeTimeStarsSent = SocialEdgePlayer.PlayerModel.Info.lifeTimeStarsSent + 1;
+                LoadPlayer(friendId).PlayerEconomy.IncreamentReceivedSocialStars();
+                result.status = true;
+            }
 
             CacheFlush();
             return result;

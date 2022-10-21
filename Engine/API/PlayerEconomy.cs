@@ -386,6 +386,7 @@ namespace SocialEdgeSDK.Server.Context
             ProcessPiggyBankExpiry();
             ProcessShopRvMaxReward();
             ProcessRvUnlockTimeStamp();
+            ProcessReceivedSocialStars();
         }
 
         public void ProcessWinnerBonusRewards(ChallengePlayerModel challengePlayerModel)
@@ -431,6 +432,55 @@ namespace SocialEdgeSDK.Server.Context
 
             if (isJackpot)
                 socialEdgePlayer.PlayerModel.Economy.jackpotNotCollectedCounter = 0;
+        }
+
+        public void ProcessReceivedSocialStars()
+        {
+            var currentTime = Utils.UTCNow();
+
+            if(socialEdgePlayer.PlayerModel.Info.dailyStarsExipryTimestamp == 0 || socialEdgePlayer.PlayerModel.Info.dailyStarsExipryTimestamp <= currentTime)
+            {
+                var hourToMilliseconds = 60 * 60 * 1000;
+                var expiryTimestamp = Utils.ToUTC(DateTime.UtcNow.Date.AddDays(1)) - (socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot * hourToMilliseconds);
+
+                if(expiryTimestamp < currentTime)
+                {
+                    expiryTimestamp = expiryTimestamp + 24 * hourToMilliseconds;
+                }
+                    
+                socialEdgePlayer.PlayerModel.Info.dailyStarsReceived = 0;
+                socialEdgePlayer.PlayerModel.Info.dailyStarsExipryTimestamp = expiryTimestamp;
+            }
+        }
+
+        public void IncreamentReceivedSocialStars()
+        {
+            ProcessReceivedSocialStars();
+            socialEdgePlayer.PlayerModel.Info.dailyStarsReceived = socialEdgePlayer.PlayerModel.Info.dailyStarsReceived + 1;
+            socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived = socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived + 1;
+            int lifeTimeStarsReceivedLevel = 0;
+
+            if(socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived > 0 && socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived < 10)
+            {
+                lifeTimeStarsReceivedLevel = 1;
+            }
+            else if(socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived > 10 && socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived < 30)
+            {
+                lifeTimeStarsReceivedLevel = 2;
+            }
+            else
+            {
+                lifeTimeStarsReceivedLevel = ((socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived - 30) / 50) + 2;
+            }
+
+            if(lifeTimeStarsReceivedLevel > socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel)
+            {
+                socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel = lifeTimeStarsReceivedLevel;
+                var message = Inbox.CreateMessage();
+                message.type = "RewardSocialStarsLevelPromotion";
+                message.reward = new Dictionary<string, int>() { ["gems"] = 10};
+                InboxModel.Add(message, socialEdgePlayer);
+            }
         }
     }
 }

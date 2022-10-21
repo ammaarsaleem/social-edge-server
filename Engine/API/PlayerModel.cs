@@ -275,7 +275,11 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("playDays")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                      public int _playDays;
         [BsonElement("lastPlayDay")][BsonRepresentation(MongoDB.Bson.BsonType.DateTime)]                public DateTime _lastPlayDay;
         [BsonElement("gamesPlayedPerDay")]                                                              public Dictionary<string, GameResults> _gamesPlayedPerDay;
-        
+        [BsonElement("dailyStarsReceived")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _dailyStarsReceived;
+        [BsonElement("lifeTimeStarsReceived")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _lifeTimeStarsReceived;
+        [BsonElement("lifeTimeStarsSent")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int _lifeTimeStarsSent;
+        [BsonElement("lifeTimeStarsReceivedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]    public int _lifeTimeStarsReceivedLevel;
+        [BsonElement("dailyStarsExipryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]     public long _dailyStarsExipryTimestamp;
         #pragma warning restore format
 
         [BsonIgnore] public string fbId { get => _fbId; set { _fbId = value; isDirty = true; } }
@@ -302,6 +306,11 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int playDays { get => _playDays; set { _playDays = value; isDirty = true; } }
         [BsonIgnore] public DateTime lastPlayDay { get => _lastPlayDay; set { _lastPlayDay = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, GameResults> gamesPlayedPerDay { get => _gamesPlayedPerDay; set {_gamesPlayedPerDay = value; isDirty = true; } }
+        [BsonIgnore] public int dailyStarsReceived { get => _dailyStarsReceived; set { _dailyStarsReceived = value; isDirty = true; } }
+        [BsonIgnore] public int lifeTimeStarsReceived { get => _lifeTimeStarsReceived; set { _lifeTimeStarsReceived = value; isDirty = true; } }
+        [BsonIgnore] public int lifeTimeStarsSent { get => _lifeTimeStarsSent; set { _lifeTimeStarsSent = value; isDirty = true; } }
+        [BsonIgnore] public int lifeTimeStarsReceivedLevel { get => _lifeTimeStarsReceivedLevel; set { _lifeTimeStarsReceivedLevel = value; isDirty = true; } }
+        [BsonIgnore] public long dailyStarsExipryTimestamp { get => _dailyStarsExipryTimestamp; set { _dailyStarsExipryTimestamp = value; isDirty = true; } }
 
         public PlayerDataInfo()
         {

@@ -33,6 +33,8 @@ namespace SocialEdgeSDK.Server.Requests
         public int totalGamesDrawn;
         public int trophies;
         public int league;
+        public int dailyStarsReceived;
+        public int lifeTimeStarsReceivedLevel;
         public long piggyBankReward;
         public long piggyBankExipryTimestamp;
         public PlayerDataEvent dailyEventData;
@@ -50,6 +52,8 @@ namespace SocialEdgeSDK.Server.Requests
             totalGamesDrawn = playerModel.Info.gamesDrawn;
             trophies = playerModel.Info.trophies;
             friendData = friend;
+            dailyStarsReceived = playerModel.Info.dailyStarsReceived;
+            lifeTimeStarsReceivedLevel = playerModel.Info.lifeTimeStarsReceivedLevel;
         }
     }
 
@@ -196,6 +200,7 @@ namespace SocialEdgeSDK.Server.Requests
                         var otherPlayerId = challengeData.playersData.Where(p => p.Key != socialEdgePlayer.PlayerId).Select(p => p.Key).FirstOrDefault();
                         Challenge.EndGame(SocialEdgeChallenge, SocialEdgeTournament, socialEdgePlayer, gameEndReason, winnerId, otherPlayerId);
                         var friendData = Friends.UpdateFriendsMatchTimestamp(otherPlayerId, socialEdgePlayer);
+                        socialEdgePlayer.PlayerEconomy.ProcessReceivedSocialStars();
                         opResult.challengeEndedInfo.playersData.Add(player.Key, new ChallengeEndPlayerModel(socialEdgePlayer.PlayerModel, socialEdgePlayer.MiniProfile, player.Value, friendData));
 
                         if(!string.IsNullOrEmpty(player.Value.tournamentId) && !string.IsNullOrEmpty(winnerId) && winnerId.Equals(player.Key))
