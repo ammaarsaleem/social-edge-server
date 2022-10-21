@@ -470,7 +470,7 @@ namespace SocialEdgeSDK.Server.Context
             }
             else
             {
-                lifeTimeStarsReceivedLevel = ((socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived - 30) / 50) + 2;
+                lifeTimeStarsReceivedLevel = ((socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived - 30) / 50) + 3;
             }
 
             if(lifeTimeStarsReceivedLevel > socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel)
