@@ -464,7 +464,7 @@ namespace SocialEdgeSDK.Server.Context
             {
                 lifeTimeStarsReceivedLevel = 1;
             }
-            else if(socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived > 10 && socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived < 30)
+            else if(socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived >= 10 && socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceived < 30)
             {
                 lifeTimeStarsReceivedLevel = 2;
             }
