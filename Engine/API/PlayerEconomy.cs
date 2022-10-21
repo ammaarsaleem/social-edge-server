@@ -476,10 +476,14 @@ namespace SocialEdgeSDK.Server.Context
             if(lifeTimeStarsReceivedLevel > socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel)
             {
                 socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel = lifeTimeStarsReceivedLevel;
-                var message = Inbox.CreateMessage();
-                message.type = "RewardSocialStarsLevelPromotion";
-                message.reward = new Dictionary<string, int>() { ["gems"] = 10};
-                InboxModel.Add(message, socialEdgePlayer);
+
+                if(lifeTimeStarsReceivedLevel > 1)
+                {
+                    var message = Inbox.CreateMessage();
+                    message.type = "RewardSocialStarsLevelPromotion";
+                    message.reward = new Dictionary<string, int>() { ["gems"] = 10};
+                    InboxModel.Add(message, socialEdgePlayer);
+                }
             }
         }
     }
