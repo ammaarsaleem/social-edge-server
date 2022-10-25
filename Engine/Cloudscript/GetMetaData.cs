@@ -119,7 +119,7 @@ namespace SocialEdgeSDK.Server.Requests
             }
             catch (Exception e)
             {
-                throw e;
+                 throw new Exception($"An error occured : " + e.Message);
             }
         }
     }  

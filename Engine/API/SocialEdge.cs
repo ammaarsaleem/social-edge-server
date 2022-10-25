@@ -12,6 +12,7 @@ using SocialEdgeSDK.Server.MessageService;
 using Microsoft.Extensions.Logging;
 using  SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.Common;
+using System.Collections.Generic;
 
 namespace SocialEdgeSDK.Server.Context
 {
@@ -103,6 +104,21 @@ namespace SocialEdgeSDK.Server.Context
             var taskT = _dataService.GetCache().Get(keyName);
             taskT.Wait();
             return taskT.Result != null ? int.Parse(taskT.Result) : 70000;
+        }
+
+         public static BsonDocument SearchPlayerByTag(string tag)
+        {
+            BsonDocument gsPlayerData = null;
+            string query = "PlayerSearchData.tag";
+            var collection =  SocialEdge.DataService.GetCollection<BsonDocument>("playerSearch");
+            var taskT = collection.FindOne(query, tag);
+            taskT.Wait(); 
+
+            if(taskT.Result != null){
+                    gsPlayerData = taskT.Result;
+                }
+
+            return gsPlayerData;
         }
     }
 }

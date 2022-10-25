@@ -21,13 +21,19 @@ namespace PlayFab.AzureFunctions
     using PlayFab.Json;
     using PlayFab.ProfilesModels;
 
-    public static class LocalExecuteFunction
+    public  class LocalExecuteFunction
     {
         private const string DEV_SECRET_KEY = "PLAYFAB_DEV_SECRET_KEY";
         private const string TITLE_ID = "PLAYFAB_TITLE_ID";
         private const string CLOUD_NAME = "PLAYFAB_CLOUD_NAME";
         private const string _defaultRoutePrefix = "api";
-        private static readonly HttpClient httpClient = new HttpClient();
+       // private static readonly HttpClient httpClient = new HttpClient();
+        private readonly HttpClient httpClient;
+
+        public LocalExecuteFunction(IHttpClientFactory httpClientFactory)
+        {
+            this.httpClient = httpClientFactory.CreateClient();
+        }
 
         /// <summary>
         /// A local implementation of the ExecuteFunction feature. Provides the ability to execute an Azure Function with a local URL with respect to the host
@@ -37,7 +43,7 @@ namespace PlayFab.AzureFunctions
         /// <param name="log">A logger object</param>
         /// <returns>The function execution result(s)</returns>
         [FunctionName("ExecuteFunction")]
-        public static async Task<HttpResponseMessage> ExecuteFunction(
+        public  async Task<HttpResponseMessage> ExecuteFunction(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "CloudScript/ExecuteFunction")] HttpRequest request, ILogger log)
         {
             // Extract the caller's entity token
@@ -126,7 +132,7 @@ namespace PlayFab.AzureFunctions
         /// </summary>
         /// <param name="callerEntityToken">The entity token of the entity profile being fetched</param>
         /// <returns>The entity's profile</returns>
-        private static async Task<EntityProfileBody> GetEntityProfile(string callerEntityToken, EntityKey entity)
+        private  async Task<EntityProfileBody> GetEntityProfile(string callerEntityToken, EntityKey entity)
         {
             // Construct the PlayFabAPI URL for GetEntityProfile
             var getProfileUrl = GetServerApiUri("/Profile/GetProfile");
@@ -176,7 +182,7 @@ namespace PlayFab.AzureFunctions
         /// ask the PlayFab server for a title entity token.
         /// </summary>
         /// <returns>The title's entity token</returns>
-        private static async Task<string> GetTitleEntityToken()
+        private  async Task<string> GetTitleEntityToken()
         {
             var titleEntityTokenRequest = new AuthenticationModels.GetEntityTokenRequest();
 
@@ -221,7 +227,7 @@ namespace PlayFab.AzureFunctions
         /// <param name="functionName">The name of the function to construct a URL for</param>
         /// <param name="appHost">The function's application host</param>
         /// <returns>The function's URI</returns>
-        private static string ConstructLocalAzureFunctionUri(string functionName, HostString appHost)
+        private  string ConstructLocalAzureFunctionUri(string functionName, HostString appHost)
         {
             // Assemble the target function's path in the current App
             string routePrefix = GetHostRoutePrefix();

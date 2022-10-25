@@ -3,18 +3,18 @@
   "Values": {
     "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=storageaccountchess812e;AccountKey=Y4gMwGaJVvdin1xywKyyLVCUbiN0zy6WAg3NW9owPD+l7TPdj/i5dJKr+MRlCEhVGOO3LhcjBKbmMcTZYWxQnQ==;EndpointSuffix=core.windows.net",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "PLAYFAB_TITLE_ID": "9F379",
-    "PLAYFAB_DEV_SECRET_KEY": "UY9Q9JPUXMWAJMERW7GPO6DZ4H1C6R8UI1JIJBCOTKMAKHUSKP",
+    "PLAYFAB_TITLE_ID": "6C597",
+    "PLAYFAB_DEV_SECRET_KEY": "OJXOSB6X7QZTN1QQINDEJXQT16CIDNC39HSMFJENWJHQ8JFTDW",
     "MONGO_CONNECTION_STRING": "mongodb+srv://MyMongoDBUser:MyMongoDBUserPassword@socialedgecluster.hsxfp.mongodb.net/Development?retryWrites=true&w=majority",
     "REDIS_CONNECTION_STRING": "socialedgeserver.redis.cache.windows.net:6380,password=Gf7aTTxpvRfk+IKGqCbQwW7j+bWIKcr5B6bXAqj+ZSQ=,ssl=True,abortConnect=False",
     "AzureSignalRConnectionString": "Endpoint=https://testsignalrservicechessstars.service.signalr.net;AccessKey=UGxyM+pxhZ0YY9GPpPoXrdduZHQKdzJt4Tbfw/v2BPM=;Version=1.0;",
-    "APPINSIGHTS_INSTRUMENTATIONKEY": "c88cdab5-793f-497b-b166-9019b409ab32",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "6ab8f28f-d5d7-4326-b7e9-91748b5be487",
     "AzureWebJobs.BlobTrigger1.Disabled": "1",
-    "FUNCTIONS_EXTENSION_VERSION": "~3",
+    "FUNCTIONS_EXTENSION_VERSION": "~4",
     "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "DefaultEndpointsProtocol=https;AccountName=socialedgeserverdevelopm;AccountKey=tHKZGUQxgezOKKZzqCcbDTBJA/LMft1Td5lpO5s3XZCCGT+Lb5Ey9lHkgPC6P33z3WO+NNAmEkGwe7tJzWCacA==;EndpointSuffix=core.windows.net",
-    "WEBSITE_CONTENTSHARE": "social-edge-server-development3521d9",
+    "WEBSITE_CONTENTSHARE": "socialedgeserver-stagingb534",
     "WEBSITE_RUN_FROM_PACKAGE": "1",
-    "MONGO_DATABASE_NAME": "default",
+    "MONGO_DATABASE_NAME": "staging",
     "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=6ab8f28f-d5d7-4326-b7e9-91748b5be487;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://westus.livediagnostics.monitor.azure.com/"
   }
 }

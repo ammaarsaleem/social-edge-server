@@ -21,29 +21,29 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Net;
+using SocialEdgeSDK.Server.Db;
 
 namespace SocialEdgeSDK.Server.Requests
 {
     public class Test : FunctionContext
     {
-       // private static readonly HttpClient client = new HttpClient();
-
-        //IDbHelper _dbHelper;
-        // IDataService _dataService;
-        // public Test(IDataService dataService)
+        // IDbHelper _dbHelper;
+        // // IDataService _dataService;
+    
+        // public Test(IDbHelper dbHelper)
         // {
-        //     _dataService = dataService;
-        //     // _dbHelper = dbHelper;
+        //     _dbHelper = dbHelper;
         // }
         public Test(ITitleContext titleContext, IDataService dataService) { Base(titleContext, dataService); }
 
         [FunctionName("Test")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequestMessage req, ILogger log)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequestMessage req, ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request");
             InitContext(req, log);
             string userId   = Args["userId"];
             string name    = Args["name"];
+
             
           // await GetLatestStateFromGSServer("");
 
@@ -57,11 +57,12 @@ namespace SocialEdgeSDK.Server.Requests
             //     log.LogInformation("C# HTTP trigger function processed a request");
 
             // }
+
+            getTag(name);
                 
-         //       TestSettings();
-         
+           //  TestSettings();
             //TestDatabase();
-            // TestRedis();
+            //TestRedis();
             //SavePlayerData(_dataService, documentId, documentData);
            // SocialEdge.FetchTodayActivePlayersCount();
             //int counter = SocialEdge.GetTodayActivePlayersCount();
@@ -83,24 +84,21 @@ namespace SocialEdgeSDK.Server.Requests
             //     log.LogInformation("NO UPDATE FOUND > > ");
             // }
 
-
-
+            // string deviceId = userId; //"604265AD-D11A-5EBB-9F36-345F72E5601D";
+            // string fbId     = ""; //2858067714211413";
+            // string appleId  = "";//"000283.ca22434d1e984cffb362e20dbe62e710.0649"; 
             // GSPlayerModelDocument gsPlayerData = GetGSPlayerData(deviceId, fbId, appleId);
             // if(gsPlayerData != null)
             // {
+            //     SocialEdge.Log.LogInformation("DOC FOUND > > > > ");
             //     BsonDocument playerDocument = gsPlayerData.document;
-            //     string userID   = Utils.GetString(playerDocument, "userId");
-            //     var postT = SocialEdge.HttpPostAsync(deviceId, fbId, appleId);
-            //     postT.Wait();
-            //     if(postT.Result != null){
-            //         playerDocument = postT.Result.AsBsonDocument;
-            //         log.LogInformation("DATA UPDATE DONE : playerDocument : "  + userID);
-            //     }
-            //     else{
-            //         log.LogInformation("NO UPDATE FOUND > > ");
-            //     }
-                
+            //     InitPlayerWithGsData((playerDocument));
+            // }
+            // else{
 
+            //     SocialEdge.Log.LogInformation("NO DOC FOUND > > > > " + deviceId);
+            // }
+                
                 // var postT = SocialEdge.HttpPostAsync(userID);
                 // postT.Wait();
                 // if(postT.Result != null){
@@ -124,68 +122,6 @@ namespace SocialEdgeSDK.Server.Requests
             return new OkObjectResult(responseMessage);
         }
 
-        public async Task<BsonDocument> PostAsyncCall(string userId)
-        {
-            //backend Ali
-            //string url = "https://E393182rk0mL.preview.gamesparks.net/rs/server-send/Cd8LDzlSDvRDxhZCFy325Z1WbEZa0rLr/LogEventRequest";
-            //string playerId = "5f44b3c1d6cbdd380c17a2ca";
-
-            //backend Live
-            string url = "https://X356692AvDZZ.live.gamesparks.net/rs/server-send/acbZTKyAuBKK6iy7ys2UuFblXswypab5/LogEventRequest";
-            string playerId = "5fb10e0ee453fd577d73cefe";
-
-            BsonDocument documentData = null;
-            var values = new Dictionary<string, string>{
-                { "@class", ".LogEventRequest" },
-                { "eventKey", "CRM_Events" },
-                { "playerId", playerId },
-                { "requestId", "getPlayerState" },
-                {"userId",userId}
-            };
-
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Method = "POST";
-
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream())){
-                string json = values.ToJson();
-                streamWriter.Write(json);
-            }
-
-            try
-            {
-                WebResponse response = await httpWebRequest.GetResponseAsync();
-                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
-                {
-                    string responseContent = reader.ReadToEnd();
-                    BsonDocument responseData = BsonDocument.Parse(responseContent);
-                    BsonDocument scriptData = Utils.GetDocument(responseData, "scriptData");
-                    BsonDocument result     = Utils.GetDocument(scriptData, "result");
-                    BsonDocument userData   = Utils.GetDocument(result, userId);
-                    if(userData != null){
-                        documentData  = Utils.GetDocument(userData, userId);
-                        SocialEdge.Log.LogInformation("Success responseContent ::: " + userId);
-                    }
-                    else{
-                        SocialEdge.Log.LogInformation("No Data found responseContent ::: " + responseContent);
-                    }
-                    
-                }
-            }
-            catch (WebException webException)
-            {
-                if (webException.Response != null){
-                    using (StreamReader reader = new StreamReader(webException.Response.GetResponseStream()))
-                    {
-                        string responseContent = reader.ReadToEnd();
-                        SocialEdge.Log.LogInformation("Error responseContent ::: " + responseContent);
-                    }
-                }
-            }
-
-            return documentData;
-        }
-
         // public bool SavePlayerData(IDataService dataService, string documentId, BsonDocument documentData)
         // {
         //     var collection =  dataService.GetCollection<GSTest>("usmantest");
@@ -200,14 +136,21 @@ namespace SocialEdgeSDK.Server.Requests
         //     }
         // }
 
+         public void getTag(string tag)
+         {
+            BsonDocument doc = SocialEdge.SearchPlayerByTag(tag);
+            SocialEdge.Log.LogInformation("DATA : " + doc.ToJson());
+         }
          public void TestRedis()
          {
-             string theKey = "tempKey";
+             string theKey = "tempKey_inMatch";
             ICache cacheDB = SocialEdge.DataService.GetCache();
+            //long counterVlaue = cacheDB.GetValue(theKey);
             //SocialEdge.Log.LogInformation("CounterValue ::: " + cacheDB.KeyDelete(theKey));
-            SocialEdge.Log.LogInformation("CounterValue GetValue::: " + cacheDB.GetValue(theKey));
+            //SocialEdge.Log.LogInformation("CounterValue GetValue::: " + counterVlaue);
             long CounterValue = cacheDB.Increment(theKey, 1);
             SocialEdge.Log.LogInformation("CounterValue ::: " + CounterValue);
+            SocialEdge.Log.LogInformation("EXPIRY SET ::: " + cacheDB.SetExpiry(theKey, 2));
 
          }
          public bool TestDatabase()
