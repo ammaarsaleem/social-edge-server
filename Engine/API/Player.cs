@@ -375,13 +375,13 @@ namespace SocialEdgeSDK.Server.Api
                 socialEdgePlayer.PlayerModel.Info.created = socialEdgePlayer.Created;
                 socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
-                CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinDark");
+                CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinWood");
                 PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
                 skinItem.kind = defaultSkin.Tags[0];
                 skinItem.key = defaultSkin.ItemId;
                 socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
 
-                var addInventoryT = GrantItem(playerId, "DefaultOwnedItems");
+                var addInventoryT = GrantItems(playerId, new List<string>{ "DefaultOwnedItems", "SkinWood"});
                 InboxModel.Init(socialEdgePlayer.InboxId);
 
                 socialEdgePlayer.MiniProfile.AvatarId = avatar;
