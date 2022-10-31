@@ -428,6 +428,15 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile._trophies = socialEdgePlayer.PlayerModel.Info.trophies;
             playerPublicProfile._trophies2 = socialEdgePlayer.PlayerModel.Info.trophies2;
             playerPublicProfile.playerMiniProfile = socialEdgePlayer.MiniProfile;
+            playerPublicProfile._clientVersion = socialEdgePlayer.PlayerModel.Meta.clientVersion;
+            playerPublicProfile._storeId = socialEdgePlayer.PlayerModel.Meta.storeId;
+
+            if(socialEdgePlayer.PlayerModel.Info.retentionData.Count <=7){
+                int dayNumber = (int)(DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.created).TotalDays;
+                socialEdgePlayer.PlayerModel.Info.retentionData.Add("D" + dayNumber);
+            }
+
+            playerPublicProfile._retentionData = socialEdgePlayer.PlayerModel.Info.retentionData;
 
             return playerPublicProfile;
         }

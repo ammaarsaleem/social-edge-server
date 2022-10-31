@@ -160,11 +160,15 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("isInitialized")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]     public bool _isInitialized;
         [BsonElement("clientVersion")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _clientVersion;
         [BsonElement("migrateToDeviceId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _migrateToDeviceId;
+        [BsonElement("storeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string _storeId;
+
 
         #pragma warning restore format
         [BsonIgnore] public bool isInitialized { get => _isInitialized; set { _isInitialized = value; isDirty = true; } }
         [BsonIgnore] public string clientVersion { get => _clientVersion; set { _clientVersion = value; isDirty = true; } }
         [BsonIgnore] public string migrateToDeviceId { get => _migrateToDeviceId; set { _migrateToDeviceId = value; isDirty = true; } }
+        [BsonIgnore] public string storeId { get => _storeId; set { _storeId = value; isDirty = true; } }
+
     }
 
     public class PlayerInventoryItem
@@ -280,6 +284,8 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("lifeTimeStarsSent")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int _lifeTimeStarsSent;
         [BsonElement("lifeTimeStarsReceivedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]    public int _lifeTimeStarsReceivedLevel;
         [BsonElement("dailyStarsExipryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]     public long _dailyStarsExipryTimestamp;
+        [BsonElement("retentionData")]                                                                public List<string> _retentionData;
+
         #pragma warning restore format
 
         [BsonIgnore] public string fbId { get => _fbId; set { _fbId = value; isDirty = true; } }
@@ -312,11 +318,15 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int lifeTimeStarsReceivedLevel { get => _lifeTimeStarsReceivedLevel; set { _lifeTimeStarsReceivedLevel = value; isDirty = true; } }
         [BsonIgnore] public long dailyStarsExipryTimestamp { get => _dailyStarsExipryTimestamp; set { _dailyStarsExipryTimestamp = value; isDirty = true; } }
 
+        [BsonIgnore] public List<string> retentionData { get => _retentionData; set { _retentionData = value; isDirty = true; } }
+
+
         public PlayerDataInfo()
         {
             activeInventory = new List<PlayerInventoryItem>();
             gamesPlayedPerDay = new Dictionary<string, GameResults>();
             videosProgress = new Dictionary<string, float>();
+            retentionData = new List<string>();
         }
 
         public PlayerInventoryItem CreatePlayerInventoryItem()

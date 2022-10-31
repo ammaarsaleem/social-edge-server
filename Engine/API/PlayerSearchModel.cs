@@ -33,6 +33,12 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _gamesLost;
         [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _gamesDrawn;
         [BsonElement("activeInventory")]                                                    public List<PlayerInventoryItem> _activeInventory;
+        [BsonElement("retentionData")]                                                    public List<string> _retentionData;
+        [BsonElement("clientVersion")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _clientVersion;
+        [BsonElement("storeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _storeId;
+
+
+
         #pragma warning restore format
 
         [BsonIgnore] public PlayerMiniProfileData playerMiniProfile { get => _playerMiniProfile; set { _playerMiniProfile = value; isDirty = true; } }
@@ -50,6 +56,9 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int gamesLost { get => _gamesLost; set { _gamesLost = value; isDirty = true; } }
         [BsonIgnore] public int gamesDrawn { get => _gamesDrawn; set { _gamesDrawn = value; isDirty = true; } }
         [BsonIgnore] public List<PlayerInventoryItem> activeInventory { get => _activeInventory; set { _activeInventory = value; isDirty = true; } }
+        [BsonIgnore] public List<string> retentionData { get => _retentionData; set { _retentionData = value; isDirty = true; } }
+        [BsonIgnore] public string clientVersion { get => _clientVersion; set { _clientVersion = value; isDirty = true; } }
+        [BsonIgnore] public string storeId { get => _storeId; set { _storeId = value; isDirty = true; } }
     }
 
     public class PlayerSearchData : DataModelBase
