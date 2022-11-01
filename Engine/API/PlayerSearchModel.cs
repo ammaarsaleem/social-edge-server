@@ -36,7 +36,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("retentionData")]                                                    public List<string> _retentionData;
         [BsonElement("clientVersion")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _clientVersion;
         [BsonElement("storeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _storeId;
-        [BsonElement("lifeTimeStarsReceivedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public int _lifeTimeStarsReceivedLevel;
+        [BsonElement("lifeTimeStarsReceivedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _lifeTimeStarsReceivedLevel;
 
 
 
