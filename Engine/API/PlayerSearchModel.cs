@@ -36,6 +36,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("retentionData")]                                                    public List<string> _retentionData;
         [BsonElement("clientVersion")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _clientVersion;
         [BsonElement("storeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _storeId;
+        [BsonElement("lifeTimeStarsReceivedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public int _lifeTimeStarsReceivedLevel;
 
 
 
@@ -59,6 +60,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public List<string> retentionData { get => _retentionData; set { _retentionData = value; isDirty = true; } }
         [BsonIgnore] public string clientVersion { get => _clientVersion; set { _clientVersion = value; isDirty = true; } }
         [BsonIgnore] public string storeId { get => _storeId; set { _storeId = value; isDirty = true; } }
+        [BsonIgnore] public int lifeTimeStarsReceivedLevel { get => _lifeTimeStarsReceivedLevel; set { _lifeTimeStarsReceivedLevel = value; isDirty = true; } }
     }
 
     public class PlayerSearchData : DataModelBase
