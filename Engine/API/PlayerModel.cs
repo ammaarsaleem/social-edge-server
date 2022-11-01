@@ -48,8 +48,9 @@ namespace SocialEdgeSDK.Server.Models
         public int gamesWon;
         public int gamesLost;
         public int gamesDrawn; 
+        public int lifeTimeStarsReceivedLevel;
 
-        public PublicProfileEx(bool isOnline, DateTime created, int eloScore, int trophies, int earnings, int gamesWon, int gamesLost, int gamesDrawn)
+        public PublicProfileEx(bool isOnline, DateTime created, int eloScore, int trophies, int earnings, int gamesWon, int gamesLost, int gamesDrawn, int lifeTimeStarsReceivedLevel)
         {
             this.isOnline = isOnline;
             this.created = created;
@@ -59,6 +60,7 @@ namespace SocialEdgeSDK.Server.Models
             this.gamesWon = gamesWon;
             this.gamesLost = gamesLost;
             this.gamesDrawn = gamesDrawn; 
+            this.lifeTimeStarsReceivedLevel = lifeTimeStarsReceivedLevel;
         }
     }
 

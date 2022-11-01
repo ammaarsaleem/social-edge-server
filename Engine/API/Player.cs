@@ -102,7 +102,8 @@ namespace SocialEdgeSDK.Server.Api
                                                                     item._model.Info.earnings,
                                                                     item._model.Info.gamesWon,
                                                                     item._model.Info.gamesLost,
-                                                                    item._model.Info.gamesDrawn));
+                                                                    item._model.Info.gamesDrawn,
+                                                                    item._model.Info.lifeTimeStarsReceivedLevel));
 
             return collection.Find(filter).Sort(sortById).Project(projection).ToList<PublicProfileEx>();
         }
@@ -377,7 +378,7 @@ namespace SocialEdgeSDK.Server.Api
 
                 CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinWood");
                 PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
-                skinItem.kind = defaultSkin.Tags[0];
+                skinItem.kind = defaultSkin.Tags[0].Replace("_", string.Empty);
                 skinItem.key = defaultSkin.ItemId;
                 socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
 
