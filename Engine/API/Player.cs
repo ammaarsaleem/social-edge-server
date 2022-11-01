@@ -430,6 +430,7 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile.playerMiniProfile = socialEdgePlayer.MiniProfile;
             playerPublicProfile._clientVersion = socialEdgePlayer.PlayerModel.Meta.clientVersion;
             playerPublicProfile._storeId = socialEdgePlayer.PlayerModel.Meta.storeId;
+            playerPublicProfile._lifeTimeStarsReceivedLevel = socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel;
 
             if(socialEdgePlayer.PlayerModel.Info.retentionData.Count <=7){
                 int dayNumber = (int)(DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.created).TotalDays;
