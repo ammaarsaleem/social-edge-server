@@ -103,7 +103,8 @@ namespace SocialEdgeSDK.Server.Api
                                                                     item._model.Info.gamesWon,
                                                                     item._model.Info.gamesLost,
                                                                     item._model.Info.gamesDrawn,
-                                                                    item._model.Info.lifeTimeStarsReceivedLevel));
+                                                                    item._model.Info.lifeTimeStarsReceivedLevel,
+                                                                    item._model.Info.activeInventory[0].key));
 
             return collection.Find(filter).Sort(sortById).Project(projection).ToList<PublicProfileEx>();
         }
@@ -433,7 +434,7 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile._clientVersion = socialEdgePlayer.PlayerModel.Meta.clientVersion;
             playerPublicProfile._storeId = socialEdgePlayer.PlayerModel.Meta.storeId;
             playerPublicProfile._lifeTimeStarsReceivedLevel = socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel;
-
+            
             if(socialEdgePlayer.PlayerModel.Info.retentionData.Count <=7){
                 int dayNumber = (int)(DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.created).TotalDays;
                 socialEdgePlayer.PlayerModel.Info.retentionData.Add("D" + dayNumber);
