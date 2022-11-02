@@ -346,7 +346,7 @@ namespace SocialEdgeSDK.Server.Api
             return randomColorCode.ToString();
         }
 
-        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, string deviceId, string fbId, string appleId)
+        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, string deviceId, string fbId, string appleId, string clientVersion)
         {
             string playerId = socialEdgePlayer.PlayerId;
             string entityToken = socialEdgePlayer.EntityToken;
@@ -376,13 +376,14 @@ namespace SocialEdgeSDK.Server.Api
                 socialEdgePlayer.PlayerModel.Info.created = socialEdgePlayer.Created;
                 socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
-                CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinWood");
+                string defaultSkinShortCode = Utils.CompareVersions("6.37.22", clientVersion) ? "SkinWood" : "SkinDark";
+                CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem(defaultSkinShortCode);
                 PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
                 skinItem.kind = defaultSkin.Tags[0].Replace("_", string.Empty);
                 skinItem.key = defaultSkin.ItemId;
                 socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
 
-                var addInventoryT = GrantItems(playerId, new List<string>{ "DefaultOwnedItems", "SkinWood"});
+                var addInventoryT = GrantItems(playerId, new List<string>{ "DefaultOwnedItems", defaultSkinShortCode});
                 InboxModel.Init(socialEdgePlayer.InboxId);
 
                 socialEdgePlayer.MiniProfile.AvatarId = avatar;

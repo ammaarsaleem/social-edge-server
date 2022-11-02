@@ -68,7 +68,7 @@ namespace SocialEdgeSDK.Server.Requests
             if (isNewlyCreated || !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId))
             {
                 deviceId = !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId) ? SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId : deviceId;
-                Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId);
+                Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId, clientVersion);
                 SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName = SocialEdgePlayer.DisplayName;
                 SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId = string.Empty;
                 isNewlyCreated = true;
