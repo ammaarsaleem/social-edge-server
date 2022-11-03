@@ -62,11 +62,13 @@ namespace SocialEdgeSDK.Server.Requests
             string fbId     = args["fbId"].ToString();
             string appleId  = args["appleId"].ToString();
             bool isResume = args["isResume"].ToBoolean();
-
+            int osCode = (int)args["operatingSystemCode"];
+            string storeId = osCode == 1 ? "apple" : osCode == 2 ? "android" : "unknown";
+         
             if (isNewlyCreated || !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId))
             {
                 deviceId = !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId) ? SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId : deviceId;
-                Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId);
+                Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId, clientVersion);
                 SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName = SocialEdgePlayer.DisplayName;
                 SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId = string.Empty;
                 isNewlyCreated = true;
@@ -75,6 +77,9 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.ALL);
             }
+
+            SocialEdgePlayer.PlayerModel.Meta.clientVersion = clientVersion;
+            SocialEdgePlayer.PlayerModel.Meta.storeId = storeId;
 
             Inbox.Validate(SocialEdgePlayer);
             SocialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot = playerTimeZoneSlot;

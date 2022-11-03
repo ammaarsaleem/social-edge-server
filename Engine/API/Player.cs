@@ -102,7 +102,9 @@ namespace SocialEdgeSDK.Server.Api
                                                                     item._model.Info.earnings,
                                                                     item._model.Info.gamesWon,
                                                                     item._model.Info.gamesLost,
-                                                                    item._model.Info.gamesDrawn));
+                                                                    item._model.Info.gamesDrawn,
+                                                                    item._model.Info.lifeTimeStarsReceivedLevel,
+                                                                    item._model.Info.activeInventory[0].key));
 
             return collection.Find(filter).Sort(sortById).Project(projection).ToList<PublicProfileEx>();
         }
@@ -345,7 +347,7 @@ namespace SocialEdgeSDK.Server.Api
             return randomColorCode.ToString();
         }
 
-        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, string deviceId, string fbId, string appleId)
+        public static void NewPlayerInit(SocialEdgePlayerContext socialEdgePlayer, SocialEdgeTournamentContext socialEdgeTournament, string deviceId, string fbId, string appleId, string clientVersion)
         {
             string playerId = socialEdgePlayer.PlayerId;
             string entityToken = socialEdgePlayer.EntityToken;
@@ -375,13 +377,14 @@ namespace SocialEdgeSDK.Server.Api
                 socialEdgePlayer.PlayerModel.Info.created = socialEdgePlayer.Created;
                 socialEdgePlayer.PlayerModel.Info.eloScore = 775;
 
-                CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem("SkinDark");
+                string defaultSkinShortCode = Utils.CompareVersions("6.37.22", clientVersion) ? "SkinWood" : "SkinDark";
+                CatalogItem defaultSkin = SocialEdge.TitleContext.GetCatalogItem(defaultSkinShortCode);
                 PlayerInventoryItem skinItem = socialEdgePlayer.PlayerModel.Info.CreatePlayerInventoryItem();
-                skinItem.kind = defaultSkin.Tags[0];
+                skinItem.kind = defaultSkin.Tags[0].Replace("_", string.Empty);
                 skinItem.key = defaultSkin.ItemId;
                 socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
 
-                var addInventoryT = GrantItem(playerId, "DefaultOwnedItems");
+                var addInventoryT = GrantItems(playerId, new List<string>{ "DefaultOwnedItems", defaultSkinShortCode});
                 InboxModel.Init(socialEdgePlayer.InboxId);
 
                 socialEdgePlayer.MiniProfile.AvatarId = avatar;
@@ -428,6 +431,17 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile._trophies = socialEdgePlayer.PlayerModel.Info.trophies;
             playerPublicProfile._trophies2 = socialEdgePlayer.PlayerModel.Info.trophies2;
             playerPublicProfile.playerMiniProfile = socialEdgePlayer.MiniProfile;
+            playerPublicProfile._clientVersion = socialEdgePlayer.PlayerModel.Meta.clientVersion;
+            playerPublicProfile._storeId = socialEdgePlayer.PlayerModel.Meta.storeId;
+            playerPublicProfile._lifeTimeStarsReceivedLevel = socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel;
+            playerPublicProfile._totalEarnings = GetTotalEarnings(socialEdgePlayer);
+            
+            if(socialEdgePlayer.PlayerModel.Info.retentionData.Count <=7){
+                int dayNumber = (int)(DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.created).TotalDays;
+                socialEdgePlayer.PlayerModel.Info.retentionData.Add("D" + dayNumber);
+            }
+
+            playerPublicProfile._retentionData = socialEdgePlayer.PlayerModel.Info.retentionData;
 
             return playerPublicProfile;
         }
@@ -758,6 +772,17 @@ namespace SocialEdgeSDK.Server.Api
                     }
                 }
             }
+         }
+
+         private static long GetTotalEarnings(SocialEdgePlayerContext socialEdgePlayer)
+         {
+            if(socialEdgePlayer.CombinedInfo.PlayerStatistics == null)
+            {
+                return 0;
+            }
+
+            var allStarLeaderboardStats = socialEdgePlayer.CombinedInfo.PlayerStatistics.FirstOrDefault(s => s.StatisticName.Equals("score"));
+            return allStarLeaderboardStats != null ? (long)allStarLeaderboardStats.Value : 0;
          }
     }
 }

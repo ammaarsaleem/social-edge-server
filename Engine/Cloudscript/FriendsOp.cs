@@ -231,7 +231,12 @@ namespace SocialEdgeSDK.Server.Requests
             else if (op == "sendStar")
             {
                 SocialEdgePlayer.PlayerModel.Info.lifeTimeStarsSent = SocialEdgePlayer.PlayerModel.Info.lifeTimeStarsSent + 1;
-                LoadPlayer(friendId).PlayerEconomy.IncreamentReceivedSocialStars();
+                
+                if(!friendId.Contains("bot"))
+                {
+                    LoadPlayer(friendId).PlayerEconomy.IncreamentReceivedSocialStars();
+                }
+
                 result.status = true;
             }
 
