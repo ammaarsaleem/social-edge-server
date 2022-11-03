@@ -434,6 +434,7 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile._clientVersion = socialEdgePlayer.PlayerModel.Meta.clientVersion;
             playerPublicProfile._storeId = socialEdgePlayer.PlayerModel.Meta.storeId;
             playerPublicProfile._lifeTimeStarsReceivedLevel = socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel;
+            playerPublicProfile._totalEarnings = GetTotalEarnings(socialEdgePlayer);
             
             if(socialEdgePlayer.PlayerModel.Info.retentionData.Count <=7){
                 int dayNumber = (int)(DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.created).TotalDays;
@@ -771,6 +772,17 @@ namespace SocialEdgeSDK.Server.Api
                     }
                 }
             }
+         }
+
+         private static long GetTotalEarnings(SocialEdgePlayerContext socialEdgePlayer)
+         {
+            if(socialEdgePlayer.CombinedInfo.PlayerStatistics == null)
+            {
+                return 0;
+            }
+
+            var allStarLeaderboardStats = socialEdgePlayer.CombinedInfo.PlayerStatistics.FirstOrDefault(s => s.StatisticName.Equals("score"));
+            return allStarLeaderboardStats != null ? (long)allStarLeaderboardStats.Value : 0;
          }
     }
 }

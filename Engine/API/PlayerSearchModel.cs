@@ -32,14 +32,12 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("gamesWon")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _gamesWon;
         [BsonElement("gamesLost")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _gamesLost;
         [BsonElement("gamesDrawn")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _gamesDrawn;
+        [BsonElement("totalEarnings")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]     public long _totalEarnings;
         [BsonElement("activeInventory")]                                                    public List<PlayerInventoryItem> _activeInventory;
-        [BsonElement("retentionData")]                                                    public List<string> _retentionData;
-        [BsonElement("clientVersion")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _clientVersion;
-        [BsonElement("storeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _storeId;
-        [BsonElement("lifeTimeStarsReceivedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int _lifeTimeStarsReceivedLevel;
-
-
-
+        [BsonElement("retentionData")]                                                      public List<string> _retentionData;
+        [BsonElement("clientVersion")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _clientVersion;
+        [BsonElement("storeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]          public string _storeId;
+        [BsonElement("lifeTimeStarsReceivedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)] public int _lifeTimeStarsReceivedLevel;
         #pragma warning restore format
 
         [BsonIgnore] public PlayerMiniProfileData playerMiniProfile { get => _playerMiniProfile; set { _playerMiniProfile = value; isDirty = true; } }
@@ -48,7 +46,6 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public string location { get => _location; set { _location = value; isDirty = true; } }
         [BsonIgnore] public DateTime created { get => _created; set { _created = value; isDirty = true; } }
         [BsonIgnore] public DateTime lastLogin { get => _lastLogin; set { _lastLogin = value; isDirty = true; } }
-
         [BsonIgnore] public int eloScore { get => _eloScore; set { _eloScore = value; isDirty = true; } }
         [BsonIgnore] public int trophies { get => _trophies; set { _trophies = value; isDirty = true; } }
         [BsonIgnore] public int trophies2 { get => _trophies2; set { _trophies2 = value; isDirty = true; } }
@@ -56,6 +53,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int gamesWon { get => _gamesWon; set { _gamesWon = value; isDirty = true; } }
         [BsonIgnore] public int gamesLost { get => _gamesLost; set { _gamesLost = value; isDirty = true; } }
         [BsonIgnore] public int gamesDrawn { get => _gamesDrawn; set { _gamesDrawn = value; isDirty = true; } }
+        [BsonIgnore] public long totalEarnings { get => _totalEarnings; set { _totalEarnings = value; isDirty = true; } }
         [BsonIgnore] public List<PlayerInventoryItem> activeInventory { get => _activeInventory; set { _activeInventory = value; isDirty = true; } }
         [BsonIgnore] public List<string> retentionData { get => _retentionData; set { _retentionData = value; isDirty = true; } }
         [BsonIgnore] public string clientVersion { get => _clientVersion; set { _clientVersion = value; isDirty = true; } }
