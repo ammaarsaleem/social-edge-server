@@ -436,9 +436,17 @@ namespace SocialEdgeSDK.Server.Api
             playerPublicProfile._lifeTimeStarsReceivedLevel = socialEdgePlayer.PlayerModel.Info.lifeTimeStarsReceivedLevel;
             playerPublicProfile._totalEarnings = GetTotalEarnings(socialEdgePlayer);
             
+            //TODO : remove this
+            if(socialEdgePlayer.PlayerModel.Info.retentionData.Count > 0){
+                socialEdgePlayer.PlayerModel.Info.retentionData = socialEdgePlayer.PlayerModel.Info.retentionData.Distinct().ToList();
+            }
+            
             if(socialEdgePlayer.PlayerModel.Info.retentionData.Count <=7){
                 int dayNumber = (int)(DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.created).TotalDays;
-                socialEdgePlayer.PlayerModel.Info.retentionData.Add("D" + dayNumber);
+                string saveDayNumber = "D" + dayNumber;
+                if(!socialEdgePlayer.PlayerModel.Info.retentionData.Contains(saveDayNumber)){
+                    socialEdgePlayer.PlayerModel.Info.retentionData.Add(saveDayNumber);
+                }   
             }
 
             playerPublicProfile._retentionData = socialEdgePlayer.PlayerModel.Info.retentionData;

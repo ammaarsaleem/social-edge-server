@@ -27,6 +27,7 @@ namespace SocialEdgeSDK.Server.DataService
         StoreItem GetStoreItem(string ItemId);
         string GetShortCodeFromItemId(string itemId);
         Dictionary<string, CatalogItem> GetCatalogItemDictionary();
+        Dictionary<string, string> GetTitleDataDict();
         LeagueSettingModel LeagueSettings { get; }
         EconomySettingsModel EconomySettings { get; }
 
@@ -192,6 +193,11 @@ namespace SocialEdgeSDK.Server.DataService
         public Dictionary<string, CatalogItem> GetCatalogItemDictionary()
         {
             return CurrentBuffer.catalogItemsWihtShortCode;
+        }
+
+        public Dictionary<string, string> GetTitleDataDict()
+        {
+            return CurrentBuffer.titleData.Data;
         }
     }
 }
