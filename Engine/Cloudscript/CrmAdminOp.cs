@@ -56,6 +56,13 @@ namespace SocialEdgeSDK.Server.Requests
                     data = CommonModel.CRM_UpdatePlayer(userId, amount, "CN");
                 }
             }
+            else if(requestId == "getTitle")
+            {
+                data.Clear();
+                data.Add("CatalogItem", SocialEdge.TitleContext.GetCatalogItemDictionary());
+                data.Add("TitleData", SocialEdge.TitleContext.GetTitleDataDict());
+
+            }
 
             data.Add("request", Args);
             
