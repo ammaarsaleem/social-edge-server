@@ -218,6 +218,11 @@ namespace SocialEdgeSDK.Server.Requests
                     }
                 }
             }
+            else if (op == "saveCpuProgress")
+            {
+                var cpuStatsModel = BsonSerializer.Deserialize<CPUStatsModel>(data["cpuStatsModel"].ToString());
+                SocialEdgePlayer.PlayerModel.Challenge.cpuStats = cpuStatsModel;
+            }
 
             CacheFlush();
             return opResult;

@@ -71,6 +71,27 @@ namespace SocialEdgeSDK.Server.Models
 
     }
 
+    public class CPUGameModel
+    {
+        [BsonElement("playerColor")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]       public int playerColor;
+        [BsonElement("opponentColor")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int opponentColor;
+        [BsonElement("freeHints")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]         public int freeHints;
+        [BsonElement("usedHelp")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]        public bool usedHelp;
+        [BsonElement("powerMode")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]       public bool powerMode;
+        [BsonElement("movesList")]                                                          public List<string> movesList;
+        [BsonElement("trimmedMovesList")]                                                   public List<string> trimmedMovesList;
+    }
+
+    public class CPUStatsModel
+    {
+        [BsonElement("totalGames")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int totalGames;
+        [BsonElement("unlockedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int unlockedLevel;
+        [BsonElement("currentLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]      public int currentLevel;
+        [BsonElement("inProgress")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]      public bool inProgress;
+        [BsonElement("performance")]                                                        public List<int> performance;
+        [BsonElement("savedGame")]                                                          public CPUGameModel savedGame;
+    }
+
     public class DailyEventRewards
     {
         #pragma warning disable format
@@ -520,13 +541,14 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("lastPlayedChallengeId")][BsonRepresentation(MongoDB.Bson.BsonType.String)]    public string _lastPlayedChallengeId;
         [BsonElement("activeChallenges")]                                                           public Dictionary<string, string> _activeChallenges;
         [BsonElement("pendingChallenges")]                                                          public Dictionary<string, string> _pendingChallenges;
+        [BsonElement("cpuStats")]                                                                   public CPUStatsModel _cpuStats;
         #pragma warning restore format
 
         [BsonIgnore] public string currentChallengeId { get => _currentChallengeId; set { _currentChallengeId = value; isDirty = true; } }
         [BsonIgnore] public string lastPlayedChallengeId { get => _lastPlayedChallengeId; set { _lastPlayedChallengeId = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> activeChallenges { get => _activeChallenges; set { _activeChallenges = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> pendingChallenges { get => _pendingChallenges; set { _pendingChallenges = value; isDirty = true; } }
-
+        [BsonIgnore] public CPUStatsModel cpuStats {get => _cpuStats; set { _cpuStats = value; isDirty = true; } }
         // Note: Default constructor must be defined when there is another constructor defined. 
         // Otherwiese mongo driver does not call the base constructor
         public PlayerDataChallenge() 
