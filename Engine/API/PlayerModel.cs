@@ -70,6 +70,11 @@ namespace SocialEdgeSDK.Server.Models
     {
 
     }
+    public class CPUPerformanceModel
+    {
+        public int played;
+        public int rank;
+    }
 
     public class CPUGameModel
     {
@@ -88,7 +93,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("unlockedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int unlockedLevel;
         [BsonElement("currentLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]      public int currentLevel;
         [BsonElement("inProgress")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]      public bool inProgress;
-        [BsonElement("performance")]                                                        public List<int> performance;
+        [BsonElement("performance")]                                                        public List<CPUPerformanceModel> performance;
         [BsonElement("savedGame")]                                                          public CPUGameModel savedGame;
     }
 
