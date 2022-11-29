@@ -20,6 +20,8 @@ namespace SocialEdgeSDK.Server.Requests
 {
     public class ChallengeEndDataModel
     {
+        public string gameEndReason;
+        public string winnerId;
         public Dictionary<string, int> winnerBonusRewards;
         public Dictionary<string, ChallengeEndPlayerModel> playersData;
     }
@@ -176,7 +178,9 @@ namespace SocialEdgeSDK.Server.Requests
                 opResult.challengeId = challengeId;
                 opResult.challengeEndedInfo = new ChallengeEndDataModel();
                 opResult.challengeEndedInfo.playersData = new Dictionary<string, ChallengeEndPlayerModel>();
-
+                opResult.challengeEndedInfo.winnerId = winnerId;
+                opResult.challengeEndedInfo.gameEndReason = gameEndReason;
+                
                 foreach(var player in challengeData.playersData)
                 {
                     if(!player.Value.isBot)
