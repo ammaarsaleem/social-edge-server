@@ -85,6 +85,7 @@ namespace SocialEdgeSDK.Server.Context
         public int freeFullGameAnalysis;
         public int rvAnalysisReward;
         public int betCoinsReturn;
+        public LeagueDailyRewardData onboardingReward;
     }
 
     public class EconomyAds

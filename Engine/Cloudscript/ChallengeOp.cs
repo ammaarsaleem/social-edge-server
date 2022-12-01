@@ -227,6 +227,13 @@ namespace SocialEdgeSDK.Server.Requests
                 var cpuStatsModel = BsonSerializer.Deserialize<CPUStatsModel>(data["cpuStatsModel"].ToString());
                 SocialEdgePlayer.PlayerModel.Challenge.cpuStats = cpuStatsModel;
             }
+            else if (op == "endOnboarding")
+            {
+                var onboardingReward = SocialEdge.TitleContext.EconomySettings.Rewards.onboardingReward;
+                SocialEdgePlayer.PlayerModel.Info.isOnboardingCompleted = true;
+                SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", onboardingReward.coins);
+                SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", onboardingReward.gems);
+            }
 
             CacheFlush();
             return opResult;

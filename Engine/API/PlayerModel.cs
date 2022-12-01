@@ -314,7 +314,8 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("lifeTimeStarsSent")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]             public int _lifeTimeStarsSent;
         [BsonElement("lifeTimeStarsReceivedLevel")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]    public int _lifeTimeStarsReceivedLevel;
         [BsonElement("dailyStarsExipryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]     public long _dailyStarsExipryTimestamp;
-        [BsonElement("retentionData")]                                                                public List<string> _retentionData;
+        [BsonElement("retentionData")]                                                                  public List<string> _retentionData;
+        [BsonElement("isOnboardingCompleted")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]       public bool _isOnboardingCompleted;
 
         #pragma warning restore format
 
@@ -347,7 +348,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public int lifeTimeStarsSent { get => _lifeTimeStarsSent; set { _lifeTimeStarsSent = value; isDirty = true; } }
         [BsonIgnore] public int lifeTimeStarsReceivedLevel { get => _lifeTimeStarsReceivedLevel; set { _lifeTimeStarsReceivedLevel = value; isDirty = true; } }
         [BsonIgnore] public long dailyStarsExipryTimestamp { get => _dailyStarsExipryTimestamp; set { _dailyStarsExipryTimestamp = value; isDirty = true; } }
-
+        [BsonIgnore] public bool isOnboardingCompleted { get => _isOnboardingCompleted; set { _isOnboardingCompleted = value; isDirty = true; } }
         [BsonIgnore] public List<string> retentionData { get => _retentionData; set { _retentionData = value; isDirty = true; } }
 
 
