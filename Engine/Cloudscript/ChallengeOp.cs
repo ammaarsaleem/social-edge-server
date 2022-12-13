@@ -233,6 +233,7 @@ namespace SocialEdgeSDK.Server.Requests
                 SocialEdgePlayer.PlayerModel.Info.isOnboardingCompleted = true;
                 SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", onboardingReward.coins);
                 SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", onboardingReward.gems);
+                opResult.status = true;
             }
 
             CacheFlush();

@@ -371,6 +371,11 @@ namespace SocialEdgeSDK.Server.Models
         {
             foreach (var item in _activeInventory)
                 item._parent = this;
+        }
+
+        public int GetTotalGames()
+        {
+            return gamesDrawn + gamesLost + gamesWon;
         } 
     }
 

@@ -384,7 +384,7 @@ namespace SocialEdgeSDK.Server.Api
                 skinItem.key = defaultSkin.ItemId;
                 socialEdgePlayer.PlayerModel.Info.activeInventory.Add(skinItem);
 
-                var addInventoryT = GrantItems(playerId, new List<string>{ "DefaultOwnedItems", defaultSkinShortCode});
+                var addInventoryT = GrantItem(playerId, "DefaultOwnedItems");
                 InboxModel.Init(socialEdgePlayer.InboxId);
 
                 socialEdgePlayer.MiniProfile.AvatarId = avatar;

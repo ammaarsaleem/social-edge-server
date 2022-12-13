@@ -80,6 +80,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             SocialEdgePlayer.PlayerModel.Meta.clientVersion = clientVersion;
             SocialEdgePlayer.PlayerModel.Meta.storeId = storeId;
+            SocialEdgePlayer.PlayerModel.Info.isOnboardingCompleted = SocialEdgePlayer.PlayerModel.Info.GetTotalGames() > 0;
 
             Inbox.Validate(SocialEdgePlayer);
             SocialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot = playerTimeZoneSlot;
