@@ -48,14 +48,15 @@ namespace SocialEdgeSDK.Server.Models
 
     public static class Inbox
     {
-        public static InboxDataMessage CreateMessage()
+        public static InboxDataMessage CreateMessage(long msgStartTime = 0)
         {
+            msgStartTime = msgStartTime == 0 ? Utils.UTCNow() : msgStartTime;
             return new InboxDataMessage()
             {
                 msgId = Guid.NewGuid().ToString(),
-                time = Utils.UTCNow(),
+                time = msgStartTime,
                 reward = new Dictionary<string, int>() {},
-                startTime = Utils.UTCNow()
+                startTime = msgStartTime
             };
         }
 
@@ -130,7 +131,7 @@ namespace SocialEdgeSDK.Server.Models
             {
                 var leagueId = socialEdgePlayer.MiniProfile.League.ToString();
                 var reward = Leagues.GetDailyReward(leagueId);
-                InboxDataMessage newMsgInfo = Inbox.CreateMessage();
+                InboxDataMessage newMsgInfo = Inbox.CreateMessage(Utils.ToUTC(Utils.EndOfDay(DateTime.Now)));
                 newMsgInfo.type = "RewardDailyLeague";
                 newMsgInfo.league = Leagues.GetLeague(leagueId)["name"].ToString();
                 newMsgInfo.isDaily = true;
