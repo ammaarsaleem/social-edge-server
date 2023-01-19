@@ -195,5 +195,13 @@ namespace SocialEdgeSDK.Server.Common
             // }            
             // return returnValue;
         }
+
+        public static string getDateFormat(long timeStamp)
+        {
+            DateTime start = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime date = start.AddMilliseconds(timeStamp).ToLocalTime();
+            var dateString = date.ToString("dd-MM-yyyy");
+            return dateString;
+        }
     }
 }

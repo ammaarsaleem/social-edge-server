@@ -52,48 +52,48 @@ namespace SocialEdgeSDK.Server.Requests
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
             ILogger log)
         {
-            InitContext<FunctionExecutionContext<dynamic>>(req, log);
-            var data = Args["data"];
-            BsonDocument args = BsonDocument.Parse(data["parameters"].ToString());
-            bool isNewlyCreated = SocialEdgePlayer.PublicData.isInitialized == false;
-            var clientVersion = args["clientVersion"].ToString();
-            int playerTimeZoneSlot = args["timeZone"].ToInt32();
-            string deviceId = args["deviceId"].ToString();
-            string fbId     = args["fbId"].ToString();
-            string appleId  = args["appleId"].ToString();
-            bool isResume = args["isResume"].ToBoolean();
-            int osCode = (int)args["operatingSystemCode"];
-            string storeId = osCode == 1 ? "apple" : osCode == 2 ? "android" : "unknown";
-         
-            if (isNewlyCreated || !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId))
-            {
-                deviceId = !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId) ? SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId : deviceId;
-                Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId, clientVersion);
-                SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName = SocialEdgePlayer.DisplayName;
-                SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId = string.Empty;
-                isNewlyCreated = true;
-            }
-            else
-            {
-                SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.ALL);
-            }
-
-            SocialEdgePlayer.PlayerModel.Meta.clientVersion = clientVersion;
-            SocialEdgePlayer.PlayerModel.Meta.storeId = storeId;
-            SocialEdgePlayer.PlayerModel.Info.isOnboardingCompleted |= SocialEdgePlayer.PlayerModel.Info.GetTotalGames() > 0;
-
-            Inbox.Validate(SocialEdgePlayer);
-            SocialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot = playerTimeZoneSlot;
-            Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
-            SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
-            PlayerSearch.Register(SocialEdgePlayer);
-            Challenge.ProcessAbandonedGame(SocialEdgePlayer, SocialEdgeChallenge, SocialEdgeTournament, this);
-            Friends.CleanUp(SocialEdgePlayer);
-            Friends.SyncFriendsList(SocialEdgePlayer);
-            SocialEdgePlayer.PlayerModel.Meta.clientVersion = clientVersion;
-
             try
             {
+                InitContext<FunctionExecutionContext<dynamic>>(req, log);
+                var data = Args["data"];
+                BsonDocument args = BsonDocument.Parse(data["parameters"].ToString());
+                bool isNewlyCreated = SocialEdgePlayer.PublicData.isInitialized == false;
+                var clientVersion = args["clientVersion"].ToString();
+                int playerTimeZoneSlot = args["timeZone"].ToInt32();
+                string deviceId = args["deviceId"].ToString();
+                string fbId     = args["fbId"].ToString();
+                string appleId  = args["appleId"].ToString();
+                bool isResume = args["isResume"].ToBoolean();
+                int osCode = (int)args["operatingSystemCode"];
+                string storeId = osCode == 1 ? "apple" : osCode == 2 ? "android" : "unknown";
+            
+                if (isNewlyCreated || !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId))
+                {
+                    deviceId = !string.IsNullOrEmpty(SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId) ? SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId : deviceId;
+                    Player.NewPlayerInit(SocialEdgePlayer, SocialEdgeTournament, deviceId, fbId, appleId, clientVersion);
+                    SocialEdgePlayer.CombinedInfo.PlayerProfile.DisplayName = SocialEdgePlayer.DisplayName;
+                    SocialEdgePlayer.PlayerModel.Meta.migrateToDeviceId = string.Empty;
+                    isNewlyCreated = true;
+                }
+                else
+                {
+                    SocialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.ALL);
+                }
+
+                SocialEdgePlayer.PlayerModel.Meta.clientVersion = clientVersion;
+                SocialEdgePlayer.PlayerModel.Meta.storeId = storeId;
+                SocialEdgePlayer.PlayerModel.Info.isOnboardingCompleted |= SocialEdgePlayer.PlayerModel.Info.GetTotalGames() > 0;
+
+                Inbox.Validate(SocialEdgePlayer);
+                SocialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot = playerTimeZoneSlot;
+                Tournaments.UpdateTournaments(SocialEdgePlayer, SocialEdgeTournament);
+                SocialEdgePlayer.PlayerEconomy.ProcessEconomyInit();
+                PlayerSearch.Register(SocialEdgePlayer);
+                Challenge.ProcessAbandonedGame(SocialEdgePlayer, SocialEdgeChallenge, SocialEdgeTournament, this);
+                Friends.CleanUp(SocialEdgePlayer);
+                Friends.SyncFriendsList(SocialEdgePlayer);
+                SocialEdgePlayer.PlayerModel.Meta.clientVersion = clientVersion;
+
                 GetMetaDataResult result = new GetMetaDataResult();
                 result.friends = SocialEdgePlayer.Friends;
                 result.friendsProfilesEx = SocialEdgePlayer.FriendsProfilesEx;
@@ -125,7 +125,7 @@ namespace SocialEdgeSDK.Server.Requests
             }
             catch (Exception e)
             {
-                 throw new Exception($"An error occured : " + e.Message);
+                 throw new Exception($"An error occured : " + e.Message + " [StackTrace] : " + e.StackTrace + " [PlayerID] : " + SocialEdgePlayer.PlayerId);
             }
         }
     }  
