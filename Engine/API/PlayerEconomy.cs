@@ -156,6 +156,12 @@ namespace SocialEdgeSDK.Server.Context
             var taskT = Player.SubtractVirtualCurrency(socialEdgePlayer.PlayerId, amount, currencyType);
         }
 
+        private bool HasAllThemes => SocialEdge.TitleContext.CatalogItems.Catalog.Count(s => s.ItemClass.Equals("skinShopItems")) == socialEdgePlayer.Inventory.Count(s => s.ItemClass.Equals("skinShopItems"));
+
+        private bool OwnsAllThemes => IsSubscriber || HasItemIdInInventory("com.turbolabz.instantchess.allthemespack") || HasAllThemes;
+
+        private bool IsSubscriber => socialEdgePlayer.PlayerModel.Economy.subscriptionExpiryTime > Utils.UTCNow();
+
         public void ProcessDailyEvent()
         {
             var currentTime = Utils.UTCNow();
@@ -181,6 +187,25 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
+        public int GetMaxBet()
+        {
+            var bettingIncrementSettings = SocialEdge.TitleContext.EconomySettings.BettingIncrements; 
+            var totalCoins = (int)socialEdgePlayer.VirtualCurrency["CN"];
+            var betIndex = 0;
+
+            for(int i = 0; i < bettingIncrementSettings.Count; i++)
+            {
+                if(totalCoins <= bettingIncrementSettings[i])
+                {
+                    betIndex = i > 0 ? i - 1 : i;
+                    break;
+                }
+
+                betIndex = i;
+            }
+
+            return bettingIncrementSettings[betIndex];
+        }
 
         public int GetDefaultBet()
         {
@@ -378,6 +403,85 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
+        public void ProcessFreeSpinTimestamp()
+        {
+            var currentTime = Utils.UTCNow();
+            var hourToMilliseconds = 60 * 60 * 1000;
+            var availableTimestamp = Utils.ToUTC(DateTime.UtcNow.Date.AddDays(1)) - (socialEdgePlayer.PlayerModel.Tournament.playerTimeZoneSlot * hourToMilliseconds);
+            
+            if(availableTimestamp < currentTime)
+            {
+                availableTimestamp = availableTimestamp + 24 * hourToMilliseconds;
+            }
+            
+            socialEdgePlayer.PlayerModel.Economy.freeSpinTimestamp = availableTimestamp;
+        }
+
+        public void ProcessSpinWheelRewards()
+        {
+            var maxBet = GetMaxBet();
+            var ownAllThemes = OwnsAllThemes;
+            ProcessSpinWheelRewards(SocialEdge.TitleContext.EconomySettings.spinWheel.freeRewards, socialEdgePlayer.PlayerModel.Economy.freeSpinRewards, maxBet, ownAllThemes, socialEdgePlayer.PlayerModel.Economy.freeSpinCounter, true);
+            ProcessSpinWheelRewards(SocialEdge.TitleContext.EconomySettings.spinWheel.fortuneRewards, socialEdgePlayer.PlayerModel.Economy.fortuneSpinRewards, maxBet, ownAllThemes, socialEdgePlayer.PlayerModel.Economy.fortuneSpinCounter, false);
+        }
+
+        private void ProcessSpinWheelRewards(List<SpinWheelReward> serverSettings, List<SpinWheelReward> playerData, int maxBet, bool ownAllThemes, int counter, bool isFree)
+        {
+            var extraRewardIndex = 0;
+            playerData.Clear();
+
+            for(int i = 0; i < serverSettings.Count; i++)
+            {
+                var reward = serverSettings[i];
+
+                if(reward.type.Equals("theme") && ownAllThemes)
+                {
+                    reward = SocialEdge.TitleContext.EconomySettings.spinWheel.extraRewards[extraRewardIndex];
+                    extraRewardIndex++;
+                }
+
+                var newReward = new SpinWheelReward();
+                newReward.type = reward.type;
+                newReward.color = reward.color;
+                newReward.label = reward.label;
+                newReward.value = reward.type.Equals("coins") ? maxBet * reward.value : reward.value;
+
+                if(counter == 0)
+                {
+                    if(isFree)
+                    {
+                        newReward.probability = i == 2 ? 100 : 0;
+                    }
+                    else 
+                    {
+                        newReward.probability = i == 4 ? 100 : 0;
+                    }
+                }
+                else if(counter == 1 && !isFree)
+                {
+                    if(socialEdgePlayer.MiniProfile.League < int.Parse(Settings.CommonSettings["piggyBankUnlocksAtLeague"].ToString()) 
+                        && socialEdgePlayer.Inventory.Where(item => item.ItemId.Contains("PiggyBank")).FirstOrDefault() != null)
+                    {
+                        newReward.probability = i == 7 ? 100 : 0;
+                    }
+                    else if(socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp > 0)
+                    {
+                        newReward.probability = i == 2 ? 100 : 0;
+                    }
+                    else
+                    {
+                        newReward.probability = i == 6 ? 100 : 0;
+                    }
+                }
+                else
+                {
+                    newReward.probability = reward.probability;
+                }
+
+                playerData.Add(newReward);
+            }
+        }
+
         public void ProcessEconomyInit()
         {
             ProcessPlayDays();
@@ -387,6 +491,7 @@ namespace SocialEdgeSDK.Server.Context
             ProcessShopRvMaxReward();
             ProcessRvUnlockTimeStamp();
             ProcessReceivedSocialStars();
+            ProcessSpinWheelRewards();
         }
 
         public void ProcessWinnerBonusRewards(ChallengePlayerModel challengePlayerModel)

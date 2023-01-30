@@ -42,6 +42,9 @@ namespace SocialEdgeSDK.Server.Requests
         public string dailyEventState;
         public int dailyEventRing;
         public PlayerDataEvent playerDataEvent;
+        public long freeSpinTimestamp;
+        public List<SpinWheelReward> freeSpinRewards;
+        public List<SpinWheelReward> fortuneSpinRewards;
     }
 
     public class ClaimReward : FunctionContext
@@ -155,6 +158,18 @@ namespace SocialEdgeSDK.Server.Requests
             else if (rewardType == "dailyEventReward") 
             {
                 result = DailyEventReward(rewardType, SocialEdgePlayer);
+            }
+            else if (rewardType == "freeSpin") 
+            {
+                int index = int.Parse(data["userData"]["index"].ToString());
+                string skinShortCode = data["userData"]["skinShortCode"].ToString();
+                result = FreeSpinReward(rewardType, index, skinShortCode, SocialEdgePlayer);
+            }
+            else if (rewardType == "fortuneSpin") 
+            {
+                int index = int.Parse(data["userData"]["index"].ToString());
+                string skinShortCode = data["userData"]["skinShortCode"].ToString();
+                result = FortuneSpinReward(rewardType, index, skinShortCode, SocialEdgePlayer);
             }
 
             CacheFlush();
@@ -641,6 +656,96 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 result.error = "invalidCoinPurchaseReward";
                 result.coins = currentCoins;
+            }
+
+            return result;
+        }
+
+        private ClaimRewardResult FreeSpinReward(string rewardType, int index, string skinShortCode, SocialEdgePlayerContext socialEdgePlayer)
+        {
+            socialEdgePlayer.PlayerModel.Economy.freeSpinCounter = socialEdgePlayer.PlayerModel.Economy.freeSpinCounter + 1;
+            var result = ProcessSpinRewards(rewardType, socialEdgePlayer.PlayerModel.Economy.freeSpinRewards, index, skinShortCode, socialEdgePlayer);
+            socialEdgePlayer.PlayerEconomy.ProcessSpinWheelRewards();
+            socialEdgePlayer.PlayerEconomy.ProcessFreeSpinTimestamp();
+            result.freeSpinTimestamp = socialEdgePlayer.PlayerModel.Economy.freeSpinTimestamp;
+            result.freeSpinRewards = socialEdgePlayer.PlayerModel.Economy.freeSpinRewards;
+            return result;
+        }
+
+        private ClaimRewardResult FortuneSpinReward(string rewardType, int index, string skinShortCode, SocialEdgePlayerContext socialEdgePlayer)
+        {
+            socialEdgePlayer.PlayerModel.Economy.fortuneSpinCounter = socialEdgePlayer.PlayerModel.Economy.fortuneSpinCounter + 1;
+            var result = ProcessSpinRewards(rewardType, socialEdgePlayer.PlayerModel.Economy.fortuneSpinRewards, index, skinShortCode, socialEdgePlayer);
+            socialEdgePlayer.PlayerEconomy.ProcessSpinWheelRewards();
+            result.fortuneSpinRewards = socialEdgePlayer.PlayerModel.Economy.fortuneSpinRewards;
+            return result;
+        }
+
+        private ClaimRewardResult ProcessSpinRewards(string rewardType, List<SpinWheelReward> rewards, int index, string skinShortCode, SocialEdgePlayerContext socialEdgePlayer)
+        {
+            ClaimRewardResult result = new ClaimRewardResult();
+            
+            if(index < rewards.Count)
+            {
+                var reward = rewards[index];
+
+                switch(reward.type)
+                {
+                    case "coins":
+                        result.rewards = new Dictionary<string, int>();
+                        socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", (int)reward.value);
+                        result.claimRewardType = rewardType;
+                        result.rewards.Add("coins", (int)reward.value);
+                        break;
+
+                    case "gems":
+                        result.rewards = new Dictionary<string, int>();
+                        socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", (int)reward.value);
+                        result.claimRewardType = rewardType;
+                        result.rewards.Add("gems", (int)reward.value);
+                        break;
+
+                    case "theme":
+                        result.rewards = new Dictionary<string, int>();
+                        socialEdgePlayer.PlayerEconomy.Grant(skinShortCode, 1);
+                        result.claimRewardType = rewardType;
+                        result.rewards.Add(skinShortCode, 1);
+                        break;
+
+                    case "piggybank":
+                        long ms = (int)reward.value * 1000 * 60 * 60;
+        
+                        if (socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp > Utils.UTCNow()) 
+                        {
+                            socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp = socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp + ms;
+                        }
+                        else 
+                        {
+                            socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp = Utils.UTCNow() + ms;
+                        }
+
+                        result.rewardsLong = new Dictionary<string, long>();
+                        result.claimRewardType = "spinPiggyBank";
+                        result.rewardsLong.Add("piggyBankDoublerExipryTimestamp", socialEdgePlayer.PlayerModel.Economy.piggyBankDoublerExipryTimestamp);
+                        break;
+
+                    case "powerplay":
+                        long ms1 = (int)reward.value * 1000 * 60 * 60;
+        
+                        if(socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp > Utils.UTCNow()) 
+                        {
+                            socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp = socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp + ms1;
+                        }
+                        else 
+                        {
+                            socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp = Utils.UTCNow() + ms1;
+                        }
+                    
+                        result.rewardsLong = new Dictionary<string, long> ();
+                        result.claimRewardType = "spinPowerPlay";
+                        result.rewardsLong.Add("freePowerPlayExipryTimestamp", socialEdgePlayer.PlayerModel.Economy.freePowerPlayExipryTimestamp);
+                        break;
+                }
             }
 
             return result;

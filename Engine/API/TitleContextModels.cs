@@ -177,5 +177,23 @@ namespace SocialEdgeSDK.Server.Context
         public List<EcomonyDailyEventReward> DailyEventRewards;
         public Dictionary<string, EconomyBalloonReward> balloonRewards;
         public List<string> balloonRewardsProbability;
+        public SpinWheelRewards spinWheel;
+    }
+
+    public class SpinWheelReward
+    {
+        public string type;
+        public float value;
+        public int probability;
+        public string color;
+        public string label;
+    }
+
+    public class SpinWheelRewards
+    {
+        public int unlockAfterGames;
+        public List<SpinWheelReward> freeRewards;
+        public List<SpinWheelReward> fortuneRewards;
+        public List<SpinWheelReward> extraRewards;
     }
 }

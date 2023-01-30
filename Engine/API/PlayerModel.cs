@@ -408,7 +408,6 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("dynamicBundleDisplayTier")][BsonRepresentation(MongoDB.Bson.BsonType.String)]         public string _dynamicBundleDisplayTier;
         [BsonElement("dynamicBundlePurchaseTierNew")][BsonRepresentation(MongoDB.Bson.BsonType.String)]     public string _dynamicBundlePurchaseTierNew;
         [BsonElement("lastBundleUpdatePlayDay")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]           public int _lastBundleUpdatePlayDay;
-
         [BsonElement("shopRvRewardClaimedCount")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int _shopRvRewardClaimedCount;
         [BsonElement("shopRVRewardClaimedDay")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int _shopRVRewardClaimedDay;
         [BsonElement("shopRvDefaultBet")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                  public int _shopRvDefaultBet;
@@ -428,7 +427,11 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("adsRewardData")]                                                                      public AdRewardsData _adsRewardData;
         [BsonElement("jackpotNotCollectedCounter")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]        public int _jackpotNotCollectedCounter;
         [BsonElement("balloonReward")]                                                                      public BalloonReward _balloonReward;
-
+        [BsonElement("freeSpinCounter")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                   public int _freeSpinCounter;
+        [BsonElement("fortuneSpinCounter")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                public int _fortuneSpinCounter;
+        [BsonElement("freeSpinTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]                 public long _freeSpinTimestamp;
+        [BsonElement("freeSpinRewards")]                                                                    public List<SpinWheelReward> _freeSpinRewards;
+        [BsonElement("fortuneSpinRewards")]                                                                 public List<SpinWheelReward> _fortuneSpinRewards;
         #pragma warning restore format
 
         [BsonIgnore] public bool isPremium { get => _isPremium; set { _isPremium = value; isDirty = true; } }
@@ -459,10 +462,17 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public AdRewardsData adsRewardData { get => _adsRewardData; set { _adsRewardData = value; isDirty = true; } }
         [BsonIgnore] public int jackpotNotCollectedCounter { get => _jackpotNotCollectedCounter; set { _jackpotNotCollectedCounter = value; isDirty = true; } }
         [BsonIgnore] public BalloonReward balloonReward { get => _balloonReward; set { _balloonReward = value; isDirty = true; } }
+        [BsonIgnore] public int freeSpinCounter { get => _freeSpinCounter; set { _freeSpinCounter = value; isDirty = true; } }
+        [BsonIgnore] public int fortuneSpinCounter { get => _fortuneSpinCounter; set { _fortuneSpinCounter = value; isDirty = true; } } 
+        [BsonIgnore] public long freeSpinTimestamp { get => _freeSpinTimestamp; set { _freeSpinTimestamp = value; isDirty = true; } }
+        [BsonIgnore] public List<SpinWheelReward> freeSpinRewards { get => _freeSpinRewards; set { _freeSpinRewards = value; isDirty = true; } }
+        [BsonIgnore] public List<SpinWheelReward> fortuneSpinRewards { get => _fortuneSpinRewards; set { _fortuneSpinRewards = value; isDirty = true; } }
 
         public PlayerDataEconomy()
         {
             adsRewardData = new AdRewardsData();
+            freeSpinRewards = new List<SpinWheelReward>();
+            fortuneSpinRewards = new List<SpinWheelReward>();
         }
     }
 
