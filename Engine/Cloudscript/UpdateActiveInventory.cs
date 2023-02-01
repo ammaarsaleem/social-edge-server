@@ -12,12 +12,15 @@ using Microsoft.Extensions.Logging;
 using PlayFab.Samples;
 using SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.DataService;
+using SocialEdgeSDK.Server.Context;
 
 namespace SocialEdgeSDK.Server.Requests
 {
     public class UpdateActiveInventoryResult
     {
         public bool status;
+        public List<SpinWheelReward> freeSpinRewards;
+        public List<SpinWheelReward> fortuneSpinRewards;
     }
 
     public class UpdateActiveInventory : FunctionContext
@@ -43,6 +46,13 @@ namespace SocialEdgeSDK.Server.Requests
                     item.key = activeSkinId;
                     result.status = true;
                 }
+            }
+            else if(data.ContainsKey("updateSpinWheelRewards"))
+            {
+                SocialEdgePlayer.PlayerEconomy.ProcessSpinWheelRewards();
+                result.freeSpinRewards = SocialEdgePlayer.PlayerModel.Economy.freeSpinRewards;
+                result.fortuneSpinRewards = SocialEdgePlayer.PlayerModel.Economy.fortuneSpinRewards;
+                result.status = true;
             }
 
             CacheFlush();
