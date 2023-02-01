@@ -130,10 +130,10 @@ namespace SocialEdgeSDK.Server.Context
             return Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(gemSpotBundleBson.ToString());
         }
 
-        public bool HasItemIdInInventory(string itemId)
+        public bool HasItemIdInInventory(string itemId, bool checkRemainingUses = true)
         {
             ItemInstance object1 = socialEdgePlayer.Inventory.FirstOrDefault(i => i.ItemId == itemId);
-            return object1 != null && object1.RemainingUses > 0;
+            return object1 != null && (!checkRemainingUses || object1.RemainingUses > 0);
         }
 
         public ItemInstance GetInventoryItem(SocialEdgePlayerContext socialEdgePlayer, string intanceId)
@@ -158,7 +158,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private bool HasAllThemes => SocialEdge.TitleContext.CatalogItems.Catalog.Count(s => s.ItemClass.Equals("skinShopItems")) == socialEdgePlayer.Inventory.Count(s => s.ItemClass.Equals("skinShopItems"));
 
-        private bool OwnsAllThemes => IsSubscriber || HasItemIdInInventory("com.turbolabz.instantchess.allthemespack") || HasAllThemes;
+        private bool OwnsAllThemes => IsSubscriber || HasItemIdInInventory("com.turbolabz.instantchess.allthemespack", false) || HasAllThemes;
 
         private bool IsSubscriber => socialEdgePlayer.PlayerModel.Economy.subscriptionExpiryTime > Utils.UTCNow();
 
