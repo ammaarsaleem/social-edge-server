@@ -253,7 +253,7 @@ namespace SocialEdgeSDK.Server.Models
 
             double dollarPrice =  Math.Round((productPrice/dollarRate), 3);
             serverData.Add("dollarPrice", dollarPrice);
-            SocialEdge.Log.LogInformation("FindDocument conversion_rates for  : " + currencyCode  + " ::  " + dollarRate + " dollarPrice: " + dollarPrice);
+            SocialEdge.Log.LogInformation($"FindDocument conversion_rates for: {currencyCode} :: {dollarRate} dollarPrice: {dollarPrice}");
 
             PlayerInappDocument inappData = new PlayerInappDocument();
             inappData.inappData = serverData;

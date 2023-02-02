@@ -683,6 +683,7 @@ namespace SocialEdgeSDK.Server.Requests
 
         private ClaimRewardResult ProcessSpinRewards(string rewardType, List<SpinWheelReward> rewards, int index, string skinShortCode, SocialEdgePlayerContext socialEdgePlayer)
         {
+            try{
             ClaimRewardResult result = new ClaimRewardResult();
             
             if(index < rewards.Count)
@@ -749,6 +750,11 @@ namespace SocialEdgeSDK.Server.Requests
             }
 
             return result;
+            }
+            catch (Exception e)
+            {
+                 throw new Exception($"An error occured: {e.Message} => rewards: {rewards} => playerId: {socialEdgePlayer.PlayerId} => stackTrace: {e.StackTrace}");
+            }
         }
     }
 }

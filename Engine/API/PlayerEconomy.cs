@@ -428,7 +428,15 @@ namespace SocialEdgeSDK.Server.Context
         private void ProcessSpinWheelRewards(List<SpinWheelReward> serverSettings, List<SpinWheelReward> playerData, int maxBet, bool ownAllThemes, int counter, bool isFree)
         {
             var extraRewardIndex = 0;
-            playerData.Clear();
+            
+            if(playerData == null)
+            {
+                playerData = new List<SpinWheelReward>();
+            }
+            else
+            {
+                playerData.Clear();
+            }
 
             for(int i = 0; i < serverSettings.Count; i++)
             {

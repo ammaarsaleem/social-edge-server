@@ -125,7 +125,7 @@ namespace SocialEdgeSDK.Server.Requests
             }
             catch (Exception e)
             {
-                 throw new Exception($"An error occured : " + e.Message + " [StackTrace] : " + e.StackTrace + " [PlayerID] : " + SocialEdgePlayer.PlayerId);
+                 throw new Exception($"An error occured: {e.Message} => stackTrace: {e.StackTrace} => playerId: {SocialEdgePlayer.PlayerId}");
             }
         }
     }  

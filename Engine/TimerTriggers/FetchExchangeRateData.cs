@@ -33,7 +33,7 @@ namespace SocialEdgeSDK.Server.Requests
                 //{
                     SocialEdge.Init(null, null, _dataService);
                     SocialEdge.FetchExchangeRateData();
-                    log.LogInformation("[FetchExchangeRateData]" + $"C# Timer trigger function executed at: {DateTime.Now}");
+                    log.LogInformation($"[FetchExchangeRateData] C# Timer trigger function executed at: {DateTime.Now}");
                 //}
             }
         }
