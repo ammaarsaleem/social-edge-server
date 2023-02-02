@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using  SocialEdgeSDK.Server.Models;
 using SocialEdgeSDK.Server.Common;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace SocialEdgeSDK.Server.Context
 {
@@ -120,5 +122,119 @@ namespace SocialEdgeSDK.Server.Context
 
             return gsPlayerData;
         }
+
+        public static async Task<string> GetHttpURI(Uri url)
+        {
+            var response = string.Empty;
+            try{
+                using(HttpClient client = new HttpClient())
+                {
+                    HttpResponseMessage result = await client.GetAsync(url);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        response = await result.Content.ReadAsStringAsync();
+                    }
+
+                    return response;
+                }
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"An error occured : " + e.Message);
+            }
+        }
+
+        public static void FetchExchangeRateData()
+        {
+            string COLLECTION_NAME = "conversionRates";
+            string exchange_url    = "https://v6.exchangerate-api.com/v6/18762844ed64a418a57b8bc1/latest/USD";
+
+            try{
+                var getDataT =  GetHttpURI(new Uri(exchange_url));
+                getDataT.Wait();
+
+                if(getDataT.Result != String.Empty)
+                {
+                    long currentTimeSeconds = Utils.UTCNow();
+                    long expiryTime = currentTimeSeconds + (20 * 24 * 3600 * 1000);
+                    BsonDocument responseData = BsonDocument.Parse(getDataT.Result.ToString());
+                    responseData.Add("currentTime",DateTime.Now);
+                    responseData.Add("expireAt",Utils.EpochToDateTime(expiryTime));
+                    ExchangeRateDocument newDoc = new ExchangeRateDocument();
+                    newDoc._data = responseData.ToBsonDocument();
+                    var collection = SocialEdge.DataService.GetCollection<ExchangeRateDocument>(COLLECTION_NAME);
+                    var taskT = collection.InsertOne(newDoc);
+                    taskT.Wait(); 
+
+                    if(taskT.Result == true){
+                        //SocialEdge.Log.LogInformation("Task Insert FetchExchangeRateData SUCCESS : " + newDoc.ToJson());
+                    }
+                    else{
+                        //SocialEdge.Log.LogInformation("Task Insert FetchExchangeRateData  ERROR : " + newDoc.ToJson());
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"An error occured FetchExchangeRateData : " + e.Message);
+            }
+        }
+
+        public static void SavePlayerInappData(PlayerInappDocument inappData)
+        {
+            string COLLECTION_NAME = "inappData";
+            try
+            {   
+                var collection = SocialEdge.DataService.GetCollection<PlayerInappDocument>(COLLECTION_NAME);
+                var taskT = collection.InsertOne(inappData);
+                taskT.Wait(); 
+
+                if(taskT.Result == true){
+                    SocialEdge.Log.LogInformation("Task Insert SavePlayerInappData SUCCESS : " + inappData.ToJson());
+                }
+                else{
+                    SocialEdge.Log.LogInformation("Task Insert SavePlayerInappData  ERROR : " + inappData.ToJson());
+                }
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"An error occured SavePlayerInappData: " + e.Message);
+            }
+        }
+
+        public static bool SaveDocument(BsonDocument saveData, string collectionName)
+        {
+            var collection =  _dataService.GetCollection<BsonDocument>(collectionName);
+            var taskT = collection.InsertOne(saveData);
+            taskT.Wait();
+
+            if(taskT.Result == true){
+                SocialEdge.Log.LogInformation("doc saved " + saveData);
+                return false;
+            }
+            else{   
+                SocialEdge.Log.LogInformation("doc exxor ");
+                return true;
+            }
+        }
+
+        public static BsonDocument GetExchangeRateData()
+        {
+            BsonDocument documemtData = null;
+            string COLLECTION_NAME = "conversionRates";
+            var collection = SocialEdge.DataService.GetDatabase().GetCollection<ExchangeRateDocument>(COLLECTION_NAME);
+            FilterDefinition<ExchangeRateDocument> filter = Builders<ExchangeRateDocument>.Filter.Eq("ExchangeRateData.result","success");
+            var sortByScore = Builders<ExchangeRateDocument>.Sort.Descending("_id");
+            var projection = Builders<ExchangeRateDocument>.Projection.Include("ExchangeRateData");
+            List<BsonDocument> data = collection.Find(filter).Sort(sortByScore).Limit(1).Project(projection).ToList<BsonDocument>();
+            if(data.Count > 0){
+                documemtData =  data[0].ToBsonDocument();
+            }
+            else{
+                SocialEdge.Log.LogInformation("FindDocument ::: No data found");
+            }
+            return documemtData;
+        }
+
     }
 }

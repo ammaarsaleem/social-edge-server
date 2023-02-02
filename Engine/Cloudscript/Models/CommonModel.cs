@@ -18,9 +18,24 @@ using PlayFab.ServerModels;
 
 namespace SocialEdgeSDK.Server.Models
 {
+    public class ExchangeRateDocument
+    {
+        #pragma warning disable format                                                        
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]    public string _id;
+        [BsonElement("ExchangeRateData")]                       public BsonDocument _data;
+        #pragma warning restore format
+    }
+
+    public class PlayerInappDocument
+    {
+        #pragma warning disable format                                                        
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]    public string _id;
+        [BsonElement("inappData")]                       public BsonDocument inappData;
+        #pragma warning restore format
+    }
+ 
     public static class CommonModel
     {
- 
         public static  Dictionary<string, object> CRM_SearchPlayerByTag(string tag)
         {
             string query = "PlayerSearchData.tag";
@@ -186,5 +201,63 @@ namespace SocialEdgeSDK.Server.Models
             return await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
         }
 
+        public static void SavePlayerInappData(SocialEdgePlayerContext SocialEdgePlayer,  dynamic data)
+        {
+            BsonDocument cData = BsonDocument.Parse(data.ToString());
+            string remoteProductId  =  Utils.GetString(cData, "itemId");
+            string currencyCode     =  Utils.GetString(cData, "currencyCode");
+            double productPrice     = (double)Utils.Getfloat(cData, "productPrice");
+            long currentTime        = Utils.UTCNow();
+
+             BsonDocument serverData = new BsonDocument() // Create BSON document which document name is "Book"  
+            .Add("clientdata", cData) 
+            .Add("shortCode", SocialEdge.TitleContext.GetShortCodeFromItemId(remoteProductId)) 
+            .Add("gems", SocialEdgePlayer.VirtualCurrency["GM"].ToString()) 
+            .Add("playerId", SocialEdgePlayer.PlayerDBId)
+            .Add("eloScore", SocialEdgePlayer.PlayerModel.Info.eloScore) 
+            .Add("playDays", SocialEdgePlayer.PlayerModel.Info.playDays) 
+            .Add("clientVersion", SocialEdgePlayer.PlayerModel.Meta.clientVersion) 
+            .Add("storeId", SocialEdgePlayer.PlayerModel.Meta.storeId) 
+            .Add("country", SocialEdgePlayer.PublicProfile.location) 
+            .Add("displayName", SocialEdgePlayer.PublicProfile.displayName) 
+            .Add("playerCreated", SocialEdgePlayer.PublicProfile.created) 
+            .Add("tag", SocialEdgePlayer.PlayerModel.Info.tag) 
+            .Add("currentTime", DateTime.Now)
+            .Add("currentDate", Utils.getDateFormat(currentTime))
+            
+            .Add("productPrice", productPrice) 
+            .Add("currencyCode", currencyCode); 
+            
+            double dollarRate = 1;
+            if(productPrice > 0)
+            {
+                BsonDocument exchangeRateDocument = SocialEdge.GetExchangeRateData();
+                if(exchangeRateDocument != null){
+
+                    BsonDocument exchangeRateData = Utils.GetDocument(exchangeRateDocument, "ExchangeRateData");
+                    long time_last_update_unix = Utils.GetLong(exchangeRateData, "time_last_update_unix");
+                    string theDate = Utils.getDateFormat(time_last_update_unix * 1000);
+                    BsonDocument conversion_rates = Utils.GetDocument(exchangeRateData, "conversion_rates");
+                    SocialEdge.Log.LogInformation("FindDocument conversion_rates : " + conversion_rates.ToJson());
+                    dollarRate = (double) Utils.Getfloat(conversion_rates, currencyCode);
+
+                    serverData.Add("dollarRate", dollarRate);
+                    serverData.Add("conversionDate", theDate);
+                    serverData.Add("conversionTimestamp", time_last_update_unix);
+                }
+            }
+
+            if(dollarRate <= 0 ){
+                dollarRate = 1;
+            }
+
+            double dollarPrice =  Math.Round((productPrice/dollarRate), 3);
+            serverData.Add("dollarPrice", dollarPrice);
+            SocialEdge.Log.LogInformation("FindDocument conversion_rates for  : " + currencyCode  + " ::  " + dollarRate + " dollarPrice: " + dollarPrice);
+
+            PlayerInappDocument inappData = new PlayerInappDocument();
+            inappData.inappData = serverData;
+            SocialEdge.SavePlayerInappData(inappData);
+        }
     }
 }

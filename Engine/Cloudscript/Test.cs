@@ -22,6 +22,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Net;
 using SocialEdgeSDK.Server.Db;
+using System.Globalization;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -42,8 +43,47 @@ namespace SocialEdgeSDK.Server.Requests
             log.LogInformation("C# HTTP trigger function processed a request");
             InitContext(req, log);
             string userId   = Args["userId"];
-            string name    = Args["name"];
+            string name    = Args["userTag"];
+            double price    = Args["price"];
+            string countryCode    = Args["code"];
+            BsonDocument clientData = BsonDocument.Parse(Args["iapData"].ToString());
 
+            //  BsonDocument clientData = new BsonDocument() // Create BSON document which document name is "Book"  
+            //  //.Add("data", clientData.ToBsonDocument()) 
+            // .Add("price", price) 
+            // .Add(" countryCode", countryCode); 
+
+            //CommonModel.SavePlayerInappData(Args);
+
+            //long currentTimeSeconds = Utils.UTCNow();
+            //long expiryTime = currentTimeSeconds + (14 * 24 * 3600 * 1000);
+            //SocialEdge.Log.LogInformation("expiryTime :::  " + expiryTime);
+           
+            SocialEdge.FetchExchangeRateData();
+
+            // double dollarRate = 0;
+            // BsonDocument exchangeRateDocument = SocialEdge.GetExchangeRateData();
+            // if(exchangeRateDocument != null)
+            // {
+            //     BsonDocument exchangeRateData = Utils.GetDocument(exchangeRateDocument, "ExchangeRateData");
+            //     long time_last_update_unix = Utils.GetLong(exchangeRateData, "time_last_update_unix");
+            //     string theDate = Utils.getDateFormat(time_last_update_unix * 1000);
+            //     BsonDocument conversion_rates = Utils.GetDocument(exchangeRateData, "conversion_rates");
+            //     SocialEdge.Log.LogInformation("FindDocument conversion_rates : " + conversion_rates.ToJson());
+            //     dollarRate = (double) Utils.Getfloat(conversion_rates, countryCode);
+
+            //     clientData.Add("dollarRate", dollarRate);
+            //     clientData.Add("conversionDate", theDate);
+            //     clientData.Add("conversionTimestamp", time_last_update_unix);
+            // }
+
+            // double dollarPrice = Math.Round((price/dollarRate), 3);
+            // clientData.Add("dollarPrice", dollarPrice);
+            // SocialEdge.Log.LogInformation("FindDocument conversion_rates for  : " + countryCode  + " ::  " + dollarRate + " dollarPrice: " + dollarPrice);
+
+            // PlayerInappDocument inappData = new PlayerInappDocument();
+            // inappData.inappData = clientData;
+            // SocialEdge.SavePlayerInappData(inappData);
             
           // await GetLatestStateFromGSServer("");
 
@@ -58,7 +98,7 @@ namespace SocialEdgeSDK.Server.Requests
 
             // }
 
-            getTag(name);
+            //getTag(name);
                 
            //  TestSettings();
             //TestDatabase();
@@ -121,6 +161,90 @@ namespace SocialEdgeSDK.Server.Requests
 
             return new OkObjectResult(responseMessage);
         }
+
+        public async Task<string> GetURI(Uri u)
+        {
+            var response = string.Empty;
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage result = await client.GetAsync(u);
+                if (result.IsSuccessStatusCode)
+                {
+                    response = await result.Content.ReadAsStringAsync();
+                }
+            }
+
+            return response;
+        }
+        public string ToFormattedCurrencyString(decimal currencyAmount,string isoCurrencyCode,CultureInfo userCulture)
+        {
+            var userCurrencyCode = new RegionInfo(userCulture.Name).ISOCurrencySymbol;
+
+            if (userCurrencyCode == isoCurrencyCode)
+            {
+                return currencyAmount.ToString("C", userCulture);
+            }
+
+            return string.Format("{0} {1}", isoCurrencyCode, currencyAmount.ToString("N2", userCulture));
+        }
+   
+
+        public bool SaveDocument(BsonDocument saveData, string collectionName)
+        {
+            var collection =  SocialEdge.DataService.GetCollection<BsonDocument>(collectionName);
+            var taskT = collection.InsertOne(saveData);
+            taskT.Wait();
+
+            if(taskT.Result == true){
+                SocialEdge.Log.LogInformation("doc saved " + saveData);
+                return false;
+            }
+            else{   
+                SocialEdge.Log.LogInformation("doc exxor ");
+                return true;
+            }
+        }
+
+        public bool SaveDocumentById(string documentId, BsonDocument documentData, string collectionName)
+        {
+            var collection =   SocialEdge.DataService.GetCollection<BsonDocument>(collectionName);
+            var taskT = collection.UpdateOneById<BsonDocument>(documentId, "data", documentData, true);
+            taskT.Wait();
+
+            if(taskT.Result == null){
+                return false;
+            }
+            else{   
+                return true;
+            }
+        }
+
+         public void findLatest(string collectionName)
+        {
+            // var collection =  SocialEdge.DataService.GetCollection<BsonDocument>(collectionName);
+            // var query = "date";
+            // var findId ="18-01-2023";
+            // var taskT = collection.FindOne(query, findId);
+            // taskT.Wait(); 
+
+            // if(taskT.Result != null){
+            //     SocialEdge.Log.LogInformation("findLatest DATA : " + taskT.Result.ToJson());
+            // }
+            // else{
+            //     SocialEdge.Log.LogInformation("NO DATA FOUND");
+            // }
+
+            string PLAYERMODEL_COLLECTION_NAME = collectionName;
+            var collection = SocialEdge.DataService.GetDatabase().GetCollection<BsonDocument>(PLAYERMODEL_COLLECTION_NAME);
+            var sortById = Builders<BsonDocument>.Sort.Descending("_id");
+            FilterDefinition<BsonDocument> filter = "{}";
+    
+            var data = collection.Find(filter).Sort(sortById).Limit(1);
+            SocialEdge.Log.LogInformation("findLatest DATA : " + data.ToJson());
+
+        }
+
+        
 
         // public bool SavePlayerData(IDataService dataService, string documentId, BsonDocument documentData)
         // {

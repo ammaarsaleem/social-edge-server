@@ -130,11 +130,15 @@ namespace SocialEdgeSDK.Server.Requests
 
                     log.LogInformation("AFTER VerifyRemoteStorePurchase : VirtualCurrency GM : " + SocialEdgePlayer.VirtualCurrency["GM"].ToString());
                     log.LogInformation("VerifyRemoteStorePurchase : called addedGems : " + result.ToString());
+                    
+                    //To save players inapp data  
+                    CommonModel.SavePlayerInappData(SocialEdgePlayer, data);
+
                     return result;
                 }
                 catch (Exception e)
                  {
-                     throw new Exception($"An error occured : " + e.Message);
+                     throw new Exception($"An error occured : " + e.Message + " StackTrace : " + e.StackTrace);
                  }
 
             }
