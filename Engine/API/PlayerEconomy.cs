@@ -156,9 +156,11 @@ namespace SocialEdgeSDK.Server.Context
             var taskT = Player.SubtractVirtualCurrency(socialEdgePlayer.PlayerId, amount, currencyType);
         }
 
+        private bool HasAllThemesExceptSkinWood => socialEdgePlayer.Inventory.Count(s => s.ItemClass.Equals("skinShopItems")) == SocialEdge.TitleContext.CatalogItems.Catalog.Count(s => s.ItemClass.Equals("skinShopItems")) - 1 && !HasItemIdInInventory("SkinWood");
+
         private bool HasAllThemes => SocialEdge.TitleContext.CatalogItems.Catalog.Count(s => s.ItemClass.Equals("skinShopItems")) == socialEdgePlayer.Inventory.Count(s => s.ItemClass.Equals("skinShopItems"));
 
-        private bool OwnsAllThemes => IsSubscriber || HasItemIdInInventory("com.turbolabz.instantchess.allthemespack", false) || HasAllThemes;
+        private bool OwnsAllThemes => IsSubscriber || HasItemIdInInventory("com.turbolabz.instantchess.allthemespack", false) || HasAllThemes || HasAllThemesExceptSkinWood;
 
         private bool IsSubscriber => socialEdgePlayer.PlayerModel.Economy.subscriptionExpiryTime > Utils.UTCNow();
 
@@ -428,7 +430,7 @@ namespace SocialEdgeSDK.Server.Context
         private void ProcessSpinWheelRewards(List<SpinWheelReward> serverSettings, List<SpinWheelReward> playerData, int maxBet, bool ownAllThemes, int counter, bool isFree)
         {
             var extraRewardIndex = 0;
-            
+
             if(playerData == null)
             {
                 playerData = new List<SpinWheelReward>();
