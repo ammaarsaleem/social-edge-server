@@ -235,6 +235,11 @@ namespace SocialEdgeSDK.Server.Requests
                 SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", onboardingReward.gems);
                 opResult.status = true;
             }
+            else if (op == "endPuzzle")
+            {
+                SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex = SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex + 1;
+                opResult.status = true;
+            }
 
             CacheFlush();
             return opResult;

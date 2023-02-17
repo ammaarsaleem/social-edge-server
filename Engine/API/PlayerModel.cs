@@ -97,6 +97,12 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("savedGame")]                                                          public CPUGameModel savedGame;
     }
 
+    public class ChessPuzzle
+    {
+        public string fen;
+        public List<string> moves;
+    }
+
     public class DailyEventRewards
     {
         #pragma warning disable format
@@ -563,13 +569,18 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("activeChallenges")]                                                           public Dictionary<string, string> _activeChallenges;
         [BsonElement("pendingChallenges")]                                                          public Dictionary<string, string> _pendingChallenges;
         [BsonElement("cpuStats")]                                                                   public CPUStatsModel _cpuStats;
+        [BsonElement("puzzle")]                                                                     public ChessPuzzle _puzzle;
+        [BsonElement("puzzleIndex")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]               public int _puzzleIndex;
         #pragma warning restore format
 
         [BsonIgnore] public string currentChallengeId { get => _currentChallengeId; set { _currentChallengeId = value; isDirty = true; } }
         [BsonIgnore] public string lastPlayedChallengeId { get => _lastPlayedChallengeId; set { _lastPlayedChallengeId = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> activeChallenges { get => _activeChallenges; set { _activeChallenges = value; isDirty = true; } }
         [BsonIgnore] public Dictionary<string, string> pendingChallenges { get => _pendingChallenges; set { _pendingChallenges = value; isDirty = true; } }
-        [BsonIgnore] public CPUStatsModel cpuStats {get => _cpuStats; set { _cpuStats = value; isDirty = true; } }
+        [BsonIgnore] public CPUStatsModel cpuStats { get => _cpuStats; set { _cpuStats = value; isDirty = true; } }
+        [BsonIgnore] public ChessPuzzle puzzle { get => _puzzle; set { _puzzle = value; isDirty = true; } }
+        [BsonIgnore] public int puzzleIndex { get => _puzzleIndex; set { _puzzleIndex = value; isDirty = true; } }
+
         // Note: Default constructor must be defined when there is another constructor defined. 
         // Otherwiese mongo driver does not call the base constructor
         public PlayerDataChallenge() 
