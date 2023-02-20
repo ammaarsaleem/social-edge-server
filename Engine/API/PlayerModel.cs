@@ -101,6 +101,7 @@ namespace SocialEdgeSDK.Server.Models
     {
         public string fen;
         public List<string> moves;
+        public string description;
     }
 
     public class DailyEventRewards

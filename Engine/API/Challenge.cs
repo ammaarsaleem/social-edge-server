@@ -220,7 +220,8 @@ namespace SocialEdgeSDK.Server.Api
             var puzzle = new ChessPuzzle();
             puzzle.fen = "1n3rk1/Q4pp1/2pbp2p/3n4/7P/4BN2/Pq3PP1/RN2K2R w KQ - 0 15";
             puzzle.moves = new List<string>() { "e3d4", "b2c1", "e1e2", "d5f4" };
-
+            puzzle.description = "Mate in Two";
+            
             SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex = 0;
             SocialEdgePlayer.PlayerModel.Challenge.puzzle = puzzle;
         }
