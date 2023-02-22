@@ -10,6 +10,7 @@ using SocialEdgeSDK.Server.Common;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SocialEdgeSDK.Server.Api
 {
@@ -217,12 +218,13 @@ namespace SocialEdgeSDK.Server.Api
 
         public static void ProcessChessPuzzle(SocialEdgePlayerContext SocialEdgePlayer)
         {
+            SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex = SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex == 0 ? 1 : SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex;
             var puzzle = new ChessPuzzle();
-            puzzle.fen = "1n3rk1/Q4pp1/2pbp2p/3n4/7P/4BN2/Pq3PP1/RN2K2R w KQ - 0 15";
-            puzzle.moves = new List<string>() { "e3d4", "b2c1", "e1e2", "d5f4" };
-            puzzle.description = "Mate in Two";
-            
-            SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex = 0;
+            var puzzleDocumentT = CommonModel.GetPuzzle(SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex);
+            puzzleDocumentT.Wait();
+            puzzle.fen = puzzleDocumentT.Result.fen;
+            puzzle.moves = puzzleDocumentT.Result.moves.Split(' ').ToList();
+            puzzle.description = puzzleDocumentT.Result.description;
             SocialEdgePlayer.PlayerModel.Challenge.puzzle = puzzle;
         }
     }

@@ -33,7 +33,19 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("inappData")]                       public BsonDocument inappData;
         #pragma warning restore format
     }
- 
+    
+    public class ChessPuzzleDocument
+    {
+         #pragma warning disable format     
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]                                public string _id;
+        [BsonElement("fen")][BsonRepresentation(MongoDB.Bson.BsonType.String)]              public string fen;
+        [BsonElement("moves")][BsonRepresentation(MongoDB.Bson.BsonType.String)]            public string moves;
+        [BsonElement("description")][BsonRepresentation(MongoDB.Bson.BsonType.String)]      public string description;
+        [BsonElement("rating")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]            public int rating;
+        [BsonElement("puzzleId")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]          public int puzzleId;
+        #pragma warning restore format
+    }
+
     public static class CommonModel
     {
         public static  Dictionary<string, object> CRM_SearchPlayerByTag(string tag)
@@ -259,5 +271,20 @@ namespace SocialEdgeSDK.Server.Models
             inappData.inappData = serverData;
             SocialEdge.SavePlayerInappData(inappData);
         }
+
+        public static Task<ChessPuzzleDocument> GetPuzzle(int puzzleId)
+        {
+            try
+            {
+                var collection =  SocialEdge.DataService.GetCollection<ChessPuzzleDocument>("chessPuzzles");
+                var totalPuzzles = collection.DocumentCount;
+                puzzleId = puzzleId > totalPuzzles ? new Random().Next((int)totalPuzzles/2, (int)totalPuzzles) : puzzleId;
+                return collection.FindOne("puzzleId", puzzleId);
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"An error occured GetPuzzle: " + e.Message);
+            }
+        }    
     }
 }
