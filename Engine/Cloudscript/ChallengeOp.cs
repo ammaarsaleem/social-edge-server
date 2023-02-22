@@ -15,6 +15,7 @@ using SocialEdgeSDK.Server.Models;
 using MongoDB.Bson.Serialization;
 using SocialEdgeSDK.Server.Context;
 using System.Linq;
+using SocialEdgeSDK.Server.Common;
 
 namespace SocialEdgeSDK.Server.Requests
 {
@@ -238,6 +239,7 @@ namespace SocialEdgeSDK.Server.Requests
             else if (op == "endPuzzle")
             {
                 SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex = SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex + 1;
+                SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", (int)Settings.CommonSettings["puzzleCompletedCoinsReward"]);
                 opResult.status = true;
             }
 

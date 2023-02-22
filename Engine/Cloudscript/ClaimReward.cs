@@ -85,7 +85,7 @@ namespace SocialEdgeSDK.Server.Requests
                 EconomyMinMax reward = (EconomyMinMax)rewardsTable[rewardType];
                 int rewardPoints = rand.Next(reward.min, reward.max + 1);
 
-                result = RewardChest(SocialEdgePlayer, rewardType, rewardPoints, data, SocialEdgePlayer);
+                result = RewardChest(SocialEdgePlayer, rewardType, rewardPoints, data);
             }
             else if (rewardType == "dailyReward")
             {
@@ -171,6 +171,16 @@ namespace SocialEdgeSDK.Server.Requests
                 string skinShortCode = data["userData"]["skinShortCode"].ToString();
                 result = FortuneSpinReward(rewardType, index, skinShortCode, SocialEdgePlayer);
             }
+            else if (rewardType == "puzzleReward") 
+            {
+                Random rand = new Random();
+                EconomyMinMax reward = (EconomyMinMax)rewardsTable["chestGemsReward"];
+                int rewardPoints = rand.Next(reward.min, reward.max + 1);
+                SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", rewardPoints);
+                result.claimRewardType = rewardType;
+                result.rewards = new Dictionary<string, int>();
+                result.rewards.Add("gems", rewardPoints);
+            }
 
             CacheFlush();
             return result;
@@ -213,7 +223,7 @@ namespace SocialEdgeSDK.Server.Requests
             return result;
         }
 
-        private object RewardChest(SocialEdgePlayerContext socialEdgePlayer, string rewardType, int amount, dynamic data, SocialEdgePlayerContext playerContext)
+        private object RewardChest(SocialEdgePlayerContext socialEdgePlayer, string rewardType, int amount, dynamic data)
         {
             var economy = SocialEdge.TitleContext.GetTitleDataProperty("Economy");
             var ads = economy["Ads"];
@@ -236,8 +246,8 @@ namespace SocialEdgeSDK.Server.Requests
             else
             {
                 // TODO avoid unnecessary requests
-                var coins = playerContext.VirtualCurrency["CN"];
-                var gems = playerContext.VirtualCurrency["GM"];
+                var coins = socialEdgePlayer.VirtualCurrency["CN"];
+                var gems = socialEdgePlayer.VirtualCurrency["GM"];
                 result.error = "invalidChestReward";
                 result.claimRewardType = rewardType;
                 result.coins = coins;
