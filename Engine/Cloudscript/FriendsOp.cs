@@ -32,6 +32,7 @@ namespace SocialEdgeSDK.Server.Requests
         public List<PlayerSearchDataModelDocument> searchList;
         public List<FriendInfo> friends;
         public List<PublicProfileEx> friendsProfilesEx;
+        public Dictionary<string, bool> friendsOnlineData;
     }
 
     public static class SubOpType
@@ -217,15 +218,39 @@ namespace SocialEdgeSDK.Server.Requests
 
                 if (msg != string.Empty)
                 {
-                    MatchInviteMessageData msgData = new MatchInviteMessageData();
-                    msgData.creationTimestamp = Utils.UTCNow();
-                    msgData.senderMiniProfile = SocialEdgePlayer.MiniProfile;
-                    msgData.senderPlayerId = SocialEdgePlayer.PlayerId;
-                    msgData.title = challengerDisplayName + msg;
-                    msgData.body = "Make your move.";
-                    msgData.actionCode = actionCode;
+                    // MatchInviteMessageData msgData = new MatchInviteMessageData();
+                    // msgData.creationTimestamp = Utils.UTCNow();
+                    // msgData.senderMiniProfile = SocialEdgePlayer.MiniProfile;
+                    // msgData.senderPlayerId = SocialEdgePlayer.PlayerId;
+                    // msgData.title = challengerDisplayName + msg;
+                    // msgData.body = "Make your move.";
+                    // msgData.actionCode = actionCode;
 
-                    new SocialEdgeMessage(SocialEdgePlayer.PlayerId, msgData, nameof(MatchInviteMessageData), opponentId).Send();
+                    // new SocialEdgeMessage(SocialEdgePlayer.PlayerId, msgData, nameof(MatchInviteMessageData), opponentId).Send();
+
+                    string matchGroup = string.Compare(SocialEdgePlayer.PlayerId, opponentId) > 0 ? string.Concat(SocialEdgePlayer.PlayerId, opponentId) : string.Concat(opponentId, SocialEdgePlayer.PlayerId);
+
+                    BsonDocument customData = new BsonDocument() // Create BSON document which document name is "Book"  
+                    .Add("creationTimestamp", Utils.UTCNow().ToString()) 
+                    .Add("actionCode", actionCode) 
+                    .Add("senderPlayerId", SocialEdgePlayer.PlayerId) 
+                    //.Add("challengeId", "") 
+                    .Add("matchGroup", matchGroup) 
+                    .Add("senderMiniProfile", SocialEdgePlayer.MiniProfile.ToBsonDocument()); 
+
+                    var request = new SendPushNotificationRequest();
+                    request.Recipient = opponentId;
+                    request.Subject = challengerDisplayName + msg;
+                    //request.Message = "Make your move.";
+
+                    PushNotificationPackage package = new PushNotificationPackage();
+                    package.Message = "Make your move.";
+                    package.Title = "Alert";
+                    package.CustomData = customData.ToJson();
+                    request.Package = package;
+                    
+                    var taskT =  CommonModel.SendPushNotification(request);
+                    taskT.Wait();
                 }
             }
             else if (op == "sendStar")
@@ -238,6 +263,22 @@ namespace SocialEdgeSDK.Server.Requests
                 }
 
                 result.status = true;
+            }
+            else if (op == "friendsStatus")
+            {
+                if(SocialEdgePlayer.Friends.Count > 0)
+                {
+                    Dictionary<string, bool> friendsData = new Dictionary<string, bool>();
+                    for(int i=0; i<SocialEdgePlayer.Friends.Count; i++)
+                    {
+                        FriendInfo friend = SocialEdgePlayer.Friends[i];
+                        PublicProfileEx profileEx = SocialEdgePlayer.FriendsProfilesEx[i];
+                        friendsData.Add(friend.FriendPlayFabId, profileEx.isOnline );
+                    }
+
+                    result.friendsOnlineData = friendsData;
+                    result.status = true;
+                }
             }
 
             CacheFlush();

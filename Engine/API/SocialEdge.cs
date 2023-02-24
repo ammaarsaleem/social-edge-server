@@ -15,6 +15,7 @@ using SocialEdgeSDK.Server.Common;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using PlayFab.ServerModels;
 
 namespace SocialEdgeSDK.Server.Context
 {
@@ -234,6 +235,15 @@ namespace SocialEdgeSDK.Server.Context
                 SocialEdge.Log.LogInformation("FindDocument ::: No data found");
             }
             return documemtData;
+        }
+
+        public static async Task<PlayFabResult<SetTitleDataResult>> SetTitleData(string key, string myDict)
+        {               
+            var request = new SetTitleDataRequest();
+            request.Key = key;
+            request.Value = myDict;
+            var result = await PlayFabServerAPI.SetTitleDataAsync(request);
+            return result;
         }
 
     }

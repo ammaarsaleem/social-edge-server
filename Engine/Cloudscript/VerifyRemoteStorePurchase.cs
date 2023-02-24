@@ -132,7 +132,7 @@ namespace SocialEdgeSDK.Server.Requests
                     log.LogInformation("VerifyRemoteStorePurchase : called addedGems : " + result.ToString());
                     
                     //To save players inapp data  
-                    CommonModel.SavePlayerInappData(SocialEdgePlayer, data);
+                    CommonModel.SavePlayerInappData(SocialEdgePlayer, data, purchaseItem);
 
                     return result;
                 }

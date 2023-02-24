@@ -213,7 +213,7 @@ namespace SocialEdgeSDK.Server.Models
             return await PlayFab.PlayFabServerAPI.AddUserVirtualCurrencyAsync(request);
         }
 
-        public static void SavePlayerInappData(SocialEdgePlayerContext SocialEdgePlayer,  dynamic data)
+        public static void SavePlayerInappData(SocialEdgePlayerContext SocialEdgePlayer,  dynamic data, CatalogItem purchaseItem)
         {
             BsonDocument cData = BsonDocument.Parse(data.ToString());
             string remoteProductId  =  Utils.GetString(cData, "itemId");
@@ -264,6 +264,13 @@ namespace SocialEdgeSDK.Server.Models
             }
 
             double dollarPrice =  Math.Round((productPrice/dollarRate), 3);
+
+            if(dollarPrice <= 0 && purchaseItem != null){
+                if(purchaseItem.VirtualCurrencyPrices.ContainsKey("RM")){
+                    double cPrice = (double)purchaseItem.VirtualCurrencyPrices["RM"];
+                    dollarPrice = cPrice/100;
+                }
+            }
             serverData.Add("dollarPrice", dollarPrice);
             SocialEdge.Log.LogInformation($"FindDocument conversion_rates for: {currencyCode} :: {dollarRate} dollarPrice: {dollarPrice}");
 
@@ -286,5 +293,37 @@ namespace SocialEdgeSDK.Server.Models
                 throw new Exception($"An error occured GetPuzzle: " + e.Message);
             }
         }    
+        public static void GetInappDataDailyCount(string theDate)
+        {
+            string COLLECTION_NAME = "inappData";
+            try
+            {  
+                //BsonDocument documemtData = null;
+                var collection = SocialEdge.DataService.GetDatabase().GetCollection<PlayerInappDocument>(COLLECTION_NAME);
+                FilterDefinition<PlayerInappDocument> filter = Builders<PlayerInappDocument>.Filter.Eq("inappData.currentDate", theDate);
+                var sortByScore = Builders<PlayerInappDocument>.Sort.Descending("_id");
+                var projection = Builders<PlayerInappDocument>.Projection.Exclude("inappData.clientdata");
+                List<BsonDocument> data = collection.Find(filter).Sort(sortByScore).Project(projection).ToList<BsonDocument>();
+                if(data.Count > 0){
+                   // documemtData =  data.ToBsonDocument();
+                    SocialEdge.Log.LogInformation("documemtData ::: " + data);
+
+                }
+                else{
+                    SocialEdge.Log.LogInformation("FindDocument ::: No data found");
+                }                
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"An error occured SavePlayerInappData: " + e.Message);
+            }
+        }
+
+        public static async Task<PlayFabResult<SendPushNotificationResult>> SendPushNotification(SendPushNotificationRequest request)
+         {
+            var result = await PlayFabServerAPI.SendPushNotificationAsync(request);
+            SocialEdge.Log.LogInformation("RESULT : " + result.ToJson());
+            return result;  
+         }
     }
 }
