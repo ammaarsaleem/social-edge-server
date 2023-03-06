@@ -37,34 +37,34 @@ namespace SocialEdgeSDK.Server.MessageService
             await Clients.Users(userIds).SendAsync("OnMessageRecieved", message);
         }
 
-        // [FunctionName("negotiate")]
-        // public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequest req)
-        // {
-        //     return Negotiate(req.Headers["x-ms-signalr-user-id"]);
-        // }
+        [FunctionName("negotiate")]
+        public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequest req)
+        {
+            return Negotiate(req.Headers["x-ms-signalr-user-id"]);
+        }
 
         [FunctionName(nameof(OnConnected))]
         public void OnConnected([SignalRTrigger]InvocationContext invocationContext)
         {
-            // SocialEdge.Init(null, null, _dataService, this);
-            // SocialEdgePlayerContext socialEdgePlayer = new FunctionContext().LoadPlayer(invocationContext.UserId);
-            // socialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.FRIENDS, PlayerModelFields.INFO);
-            // socialEdgePlayer.PlayerModel.Info.isOnline = true;
+            SocialEdge.Init(null, null, _dataService, this);
+            SocialEdgePlayerContext socialEdgePlayer = new FunctionContext().LoadPlayer(invocationContext.UserId);
+            socialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.FRIENDS, PlayerModelFields.INFO);
+            socialEdgePlayer.PlayerModel.Info.isOnline = true;
 
-            // Player.NotifyOnlineStatus(socialEdgePlayer, isOnline : true);
-            // socialEdgePlayer.CacheFlush();
+            Player.NotifyOnlineStatus(socialEdgePlayer, isOnline : true);
+            socialEdgePlayer.CacheFlush();
         }
 
         [FunctionName(nameof(OnDisconnected))]
         public void OnDisconnected([SignalRTrigger]InvocationContext invocationContext)
         {
-            // SocialEdge.Init(null, null, _dataService, this);
-            // SocialEdgePlayerContext socialEdgePlayer = new FunctionContext().LoadPlayer(invocationContext.UserId);
-            // socialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.FRIENDS, PlayerModelFields.INFO);
-            // socialEdgePlayer.PlayerModel.Info.isOnline = false;
+            SocialEdge.Init(null, null, _dataService, this);
+            SocialEdgePlayerContext socialEdgePlayer = new FunctionContext().LoadPlayer(invocationContext.UserId);
+            socialEdgePlayer.PlayerModel.Prefetch(PlayerModelFields.FRIENDS, PlayerModelFields.INFO);
+            socialEdgePlayer.PlayerModel.Info.isOnline = false;
 
-            // Player.NotifyOnlineStatus(socialEdgePlayer, isOnline : false);
-            // socialEdgePlayer.CacheFlush();
+            Player.NotifyOnlineStatus(socialEdgePlayer, isOnline : false);
+            socialEdgePlayer.CacheFlush();
         }
     }
 }
