@@ -123,6 +123,33 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
+        private void ProcessSaleBundles()
+        {
+            var economyData = socialEdgePlayer.PlayerModel.Economy;
+            var dayInMs = 24 * 60 * 60 * 1000;
+
+            if(economyData.bundleSaleEndTimestamp <= Utils.UTCNow())
+            {
+                economyData.activeBundleSales.Clear();
+            }
+
+            if((economyData.lastPurchasedGems == 0 
+                || socialEdgePlayer.VirtualCurrency["GM"] <= economyData.lastPurchasedGems * 0.3)
+                && economyData.nextBundleSaleStartTimestamp <= Utils.UTCNow())
+            {
+                var availableSales = Settings.DynamicSaleBundles[economyData.dynamicBundlePurchaseTier];
+                economyData.activeBundleSales.Add(availableSales[0].ToString());
+                economyData.activeBundleSales.Add(availableSales[1].ToString());
+                economyData.bundleSaleEndTimestamp = Utils.UTCNow() + (3 * dayInMs);
+                economyData.nextBundleSaleStartTimestamp = Utils.UTCNow() + (6 * dayInMs);
+
+                if(availableSales.Count > 2)
+                {
+                    economyData.activeBundleSales.Add(availableSales[Utils.GetRandomInteger(2, availableSales.Count)].ToString());
+                }
+            }
+        }
+
         public Dictionary<string, string> GetDynamicGemSpotBundle()
         {
             SetupDynamicBundleTier();
@@ -502,6 +529,7 @@ namespace SocialEdgeSDK.Server.Context
             ProcessRvUnlockTimeStamp();
             ProcessReceivedSocialStars();
             ProcessSpinWheelRewards();
+            ProcessSaleBundles();
         }
 
         public void ProcessWinnerBonusRewards(ChallengePlayerModel challengePlayerModel)

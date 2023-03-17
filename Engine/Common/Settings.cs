@@ -17,6 +17,6 @@ namespace SocialEdgeSDK.Server.Common
         public static dynamic DynamicDisplayBundles => DynamicBundles["displayBundle"];
         public static dynamic DynamicGemSpotBundles => DynamicBundles["gemSpotBundle"];
         public static dynamic DynamicPurchaseTiers  => DynamicBundles["purchaseTiers"];
-      
+        public static dynamic DynamicSaleBundles => DynamicBundles["saleBundles"];
     }
 }

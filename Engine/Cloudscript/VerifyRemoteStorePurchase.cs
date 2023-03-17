@@ -93,6 +93,7 @@ namespace SocialEdgeSDK.Server.Requests
 
                         SocialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp = 0;
                         SocialEdgePlayer.PlayerModel.Economy.piggyBankGems = 0;
+                        SocialEdgePlayer.PlayerModel.Economy.lastPurchasedGems = gemsCredit;
                     }
 
                     result.boughtItem = new Dictionary<string, object>();
@@ -125,6 +126,15 @@ namespace SocialEdgeSDK.Server.Requests
                     result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle();
                     result.rvUnlockTimestamp = SocialEdgePlayer.PlayerModel.Economy.rvUnlockTimestamp;
                     result.piggyBankExpiryTimestamp = SocialEdgePlayer.PlayerModel.Economy.piggyBankExpiryTimestamp; 
+
+                    CatalogItem catalogItemData = SocialEdge.TitleContext.GetCatalogItem(remoteProductId);
+                    if(catalogItemData.Bundle != null && catalogItemData.Bundle.BundledVirtualCurrencies != null)
+                    {
+                        if(catalogItemData.Bundle.BundledVirtualCurrencies.ContainsKey("GM"))
+                        {
+                            SocialEdgePlayer.PlayerModel.Economy.lastPurchasedGems = (int)catalogItemData.Bundle.BundledVirtualCurrencies["GM"];
+                        }
+                    }
 
                     SocialEdgePlayer.CacheFlush();
 

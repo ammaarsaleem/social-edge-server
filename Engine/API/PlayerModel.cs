@@ -439,6 +439,10 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("freeSpinTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]                 public long _freeSpinTimestamp;
         [BsonElement("freeSpinRewards")]                                                                    public List<SpinWheelReward> _freeSpinRewards;
         [BsonElement("fortuneSpinRewards")]                                                                 public List<SpinWheelReward> _fortuneSpinRewards;
+        [BsonElement("lastPurchasedGems")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]                 public int _lastPurchasedGems;
+        [BsonElement("bundleSaleEndTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]            public long _bundleSaleEndTimestamp;
+        [BsonElement("nextBundleSaleStartTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]      public long _nextBundleSaleStartTimestamp;
+        [BsonElement("activeBundleSales")]                                                                  public List<string> _activeBundleSales;
         #pragma warning restore format
 
         [BsonIgnore] public bool isPremium { get => _isPremium; set { _isPremium = value; isDirty = true; } }
@@ -474,12 +478,17 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public long freeSpinTimestamp { get => _freeSpinTimestamp; set { _freeSpinTimestamp = value; isDirty = true; } }
         [BsonIgnore] public List<SpinWheelReward> freeSpinRewards { get => _freeSpinRewards; set { _freeSpinRewards = value; isDirty = true; } }
         [BsonIgnore] public List<SpinWheelReward> fortuneSpinRewards { get => _fortuneSpinRewards; set { _fortuneSpinRewards = value; isDirty = true; } }
+        [BsonIgnore] public int lastPurchasedGems {get => _lastPurchasedGems; set { _lastPurchasedGems = value; isDirty = true; }}
+        [BsonIgnore] public long bundleSaleEndTimestamp {get => _bundleSaleEndTimestamp; set { _bundleSaleEndTimestamp = value; isDirty = true; }}
+        [BsonIgnore] public long nextBundleSaleStartTimestamp {get => _nextBundleSaleStartTimestamp; set { _nextBundleSaleStartTimestamp = value; isDirty = true; }}
+        [BsonIgnore] public List<string> activeBundleSales {get => _activeBundleSales; set { _activeBundleSales = value; isDirty = true; }}
 
         public PlayerDataEconomy()
         {
             adsRewardData = new AdRewardsData();
             freeSpinRewards = new List<SpinWheelReward>();
             fortuneSpinRewards = new List<SpinWheelReward>();
+            activeBundleSales = new List<string>();
         }
     }
 
