@@ -73,7 +73,8 @@ namespace SocialEdgeSDK.Server.Requests
                 {"ratingBoosterReward", rewardsData.rvBoosterReward},
                 {"chestGemsReward", rewardsData.chestGemsReward},
                 {"analysisReward", rewardsData.rvAnalysisReward},
-                {"betCoinsReturn", rewardsData.betCoinsReturn}
+                {"betCoinsReturn", rewardsData.betCoinsReturn},
+                {"paydayReward", rewardsData.paydayRewardGems}
             };
 
             ClaimRewardResult result = new ClaimRewardResult();
@@ -176,6 +177,14 @@ namespace SocialEdgeSDK.Server.Requests
                 Random rand = new Random();
                 EconomyMinMax reward = (EconomyMinMax)rewardsTable["chestGemsReward"];
                 int rewardPoints = rand.Next(reward.min, reward.max + 1);
+                SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", rewardPoints);
+                result.claimRewardType = rewardType;
+                result.rewards = new Dictionary<string, int>();
+                result.rewards.Add("gems", rewardPoints);
+            }
+            else if (rewardType == "paydayReward") 
+            {
+                int rewardPoints = int.Parse(rewardsTable[rewardType].ToString());
                 SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", rewardPoints);
                 result.claimRewardType = rewardType;
                 result.rewards = new Dictionary<string, int>();
