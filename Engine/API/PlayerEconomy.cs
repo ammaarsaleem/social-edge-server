@@ -127,26 +127,41 @@ namespace SocialEdgeSDK.Server.Context
         {
             var economyData = socialEdgePlayer.PlayerModel.Economy;
             var dayInMs = 24 * 60 * 60 * 1000;
+            var currentTime = Utils.UTCNow();
 
-            if(economyData.bundleSaleEndTimestamp <= Utils.UTCNow())
+            if(economyData.bundleSaleEndTimestamp <= currentTime)
             {
                 economyData.activeBundleSales.Clear();
             }
 
             if((economyData.lastPurchasedGems == 0 
                 || socialEdgePlayer.VirtualCurrency["GM"] <= economyData.lastPurchasedGems * 0.3)
-                && economyData.nextBundleSaleStartTimestamp <= Utils.UTCNow())
+                && economyData.nextBundleSaleStartTimestamp <= currentTime)
             {
                 var availableSales = Settings.DynamicSaleBundles[economyData.dynamicBundlePurchaseTier];
                 economyData.activeBundleSales.Add(availableSales[0].ToString());
                 economyData.activeBundleSales.Add(availableSales[1].ToString());
-                economyData.bundleSaleEndTimestamp = Utils.UTCNow() + (3 * dayInMs);
-                economyData.nextBundleSaleStartTimestamp = Utils.UTCNow() + (6 * dayInMs);
+                economyData.bundleSaleEndTimestamp = currentTime + (3 * dayInMs);
+                economyData.nextBundleSaleStartTimestamp = currentTime + (6 * dayInMs);
 
                 if(availableSales.Count > 2)
                 {
                     economyData.activeBundleSales.Add(availableSales[Utils.GetRandomInteger(2, availableSales.Count)].ToString());
                 }
+            }
+        }
+
+        private void ProcessRemoveAdsSale()
+        {
+            var economyData = socialEdgePlayer.PlayerModel.Economy;
+            var dayInMs = 24 * 60 * 60 * 1000;
+            var currentTime = Utils.UTCNow();
+            var daysSinceCreation = (DateTime.UtcNow - socialEdgePlayer.PlayerModel.Info.created).TotalDays;
+
+            if(daysSinceCreation > 7 && economyData.nextRemoveAdsSaleStartTimestamp <= currentTime)
+            {
+                economyData.removeAdsSaleEndTimestamp = currentTime + (2 * dayInMs);
+                economyData.nextRemoveAdsSaleStartTimestamp = currentTime + (5 * dayInMs);
             }
         }
 
@@ -530,6 +545,7 @@ namespace SocialEdgeSDK.Server.Context
             ProcessReceivedSocialStars();
             ProcessSpinWheelRewards();
             ProcessSaleBundles();
+            ProcessRemoveAdsSale();
         }
 
         public void ProcessWinnerBonusRewards(ChallengePlayerModel challengePlayerModel)

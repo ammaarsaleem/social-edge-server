@@ -443,6 +443,8 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("bundleSaleEndTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]            public long _bundleSaleEndTimestamp;
         [BsonElement("nextBundleSaleStartTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]      public long _nextBundleSaleStartTimestamp;
         [BsonElement("activeBundleSales")]                                                                  public List<string> _activeBundleSales;
+        [BsonElement("removeAdsSaleEndTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]         public long _removeAdsSaleEndTimestamp;
+        [BsonElement("nextRemoveAdsSaleStartTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]   public long _nextRemoveAdsSaleStartTimestamp;
         #pragma warning restore format
 
         [BsonIgnore] public bool isPremium { get => _isPremium; set { _isPremium = value; isDirty = true; } }
@@ -482,6 +484,8 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public long bundleSaleEndTimestamp {get => _bundleSaleEndTimestamp; set { _bundleSaleEndTimestamp = value; isDirty = true; }}
         [BsonIgnore] public long nextBundleSaleStartTimestamp {get => _nextBundleSaleStartTimestamp; set { _nextBundleSaleStartTimestamp = value; isDirty = true; }}
         [BsonIgnore] public List<string> activeBundleSales {get => _activeBundleSales; set { _activeBundleSales = value; isDirty = true; }}
+        [BsonIgnore] public long removeAdsSaleEndTimestamp {get => _removeAdsSaleEndTimestamp; set { _removeAdsSaleEndTimestamp = value; isDirty = true; }}
+        [BsonIgnore] public long nextRemoveAdsSaleStartTimestamp {get => _nextRemoveAdsSaleStartTimestamp; set { _nextRemoveAdsSaleStartTimestamp = value; isDirty = true; }}
 
         public PlayerDataEconomy()
         {
