@@ -285,12 +285,13 @@ namespace SocialEdgeSDK.Server.Requests
                         msg.time = msg.startTime;
                         var taskInboxT = InboxModel.Set(socialEdgePlayer.InboxId, socialEdgePlayer.Inbox);
             
-                        var reward = Leagues.GetDailyReward(socialEdgePlayer.MiniProfile.League.ToString());
+                        var reward = Leagues.GetDailyRewardDictionary(socialEdgePlayer.MiniProfile.League.ToString(), Settings.CommonSettings["dailyRewardProgression"], socialEdgePlayer.PlayerModel.Info.dailyRewardCollectCounter);
                         int numCoins = (int)reward["coins"] * 2;
                         int numGems = (int)reward["gems"] * 2;
                         socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("CN", numCoins);
                         socialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", numGems);
-            
+                        socialEdgePlayer.PlayerModel.Info.dailyRewardCollectCounter = socialEdgePlayer.PlayerModel.Info.dailyRewardCollectCounter + 1;
+                        
                         result.claimRewardType = rewardType;
                         result.rewards = new Dictionary<string, int>();
                         result.rewards.Add("coins", numCoins);

@@ -323,7 +323,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("dailyStarsExipryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]     public long _dailyStarsExipryTimestamp;
         [BsonElement("retentionData")]                                                                  public List<string> _retentionData;
         [BsonElement("isOnboardingCompleted")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]       public bool _isOnboardingCompleted;
-
+        [BsonElement("dailyRewardCollectCounter")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _dailyRewardCollectCounter;
         #pragma warning restore format
 
         [BsonIgnore] public string fbId { get => _fbId; set { _fbId = value; isDirty = true; } }
@@ -357,7 +357,7 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public long dailyStarsExipryTimestamp { get => _dailyStarsExipryTimestamp; set { _dailyStarsExipryTimestamp = value; isDirty = true; } }
         [BsonIgnore] public bool isOnboardingCompleted { get => _isOnboardingCompleted; set { _isOnboardingCompleted = value; isDirty = true; } }
         [BsonIgnore] public List<string> retentionData { get => _retentionData; set { _retentionData = value; isDirty = true; } }
-
+        [BsonIgnore] public int dailyRewardCollectCounter { get => _dailyRewardCollectCounter; set { _dailyRewardCollectCounter = value; isDirty = true; }}
 
         public PlayerDataInfo()
         {

@@ -72,9 +72,10 @@ namespace SocialEdgeSDK.Server.Models
             if (msg.isDaily == true)
             {
                 var league = socialEdgePlayer.MiniProfile.League;
-                msg.reward = Leagues.GetDailyRewardDictionary(league.ToString());
+                msg.reward = Leagues.GetDailyRewardDictionary(league.ToString(), Settings.CommonSettings["dailyRewardProgression"], socialEdgePlayer.PlayerModel.Info.dailyRewardCollectCounter);
                 msg.startTime = Utils.ToUTC(Utils.EndOfDay(DateTime.Now));
                 msg.time = msg.startTime;
+                socialEdgePlayer.PlayerModel.Info.dailyRewardCollectCounter = socialEdgePlayer.PlayerModel.Info.dailyRewardCollectCounter + 1;
                 socialEdgePlayer.SetDirtyBit(CachePlayerDataSegments.INBOX);
             }
             else // Remove 
@@ -127,10 +128,11 @@ namespace SocialEdgeSDK.Server.Models
         private static void ValidateDailyReward(SocialEdgePlayerContext socialEdgePlayer)
         {
             string msgInfo = InboxModel.FindOne("RewardDailyLeague", socialEdgePlayer);
+            var leagueId = socialEdgePlayer.MiniProfile.League.ToString();
+
             if (msgInfo == null)
             {
-                var leagueId = socialEdgePlayer.MiniProfile.League.ToString();
-                var reward = Leagues.GetDailyReward(leagueId);
+                var reward = Leagues.GetDailyRewardDictionary(leagueId, Settings.CommonSettings["dailyRewardProgression"], socialEdgePlayer.PlayerModel.Info.dailyRewardCollectCounter);
                 InboxDataMessage newMsgInfo = Inbox.CreateMessage(Utils.ToUTC(Utils.EndOfDay(DateTime.Now)));
                 newMsgInfo.type = "RewardDailyLeague";
                 newMsgInfo.league = Leagues.GetLeague(leagueId)["name"].ToString();
@@ -142,6 +144,13 @@ namespace SocialEdgeSDK.Server.Models
                     };
 
                 InboxModel.Add(newMsgInfo, socialEdgePlayer);
+            }
+            else
+            {
+                // Update league rewards
+                var msg = socialEdgePlayer.Inbox[msgInfo];
+                msg.reward = Leagues.GetDailyRewardDictionary(leagueId, Settings.CommonSettings["dailyRewardProgression"], socialEdgePlayer.PlayerModel.Info.dailyRewardCollectCounter);
+                InboxModel.Update(msgInfo, msg, socialEdgePlayer);
             }
         }
 

@@ -18,13 +18,13 @@ namespace SocialEdgeSDK.Server.Api
             return SocialEdge.TitleContext.GetTitleDataProperty("Leagues")[leagueId]["dailyReward"];
         }
 
-        public static Dictionary<string, int> GetDailyRewardDictionary(string leagueId)
+        public static Dictionary<string, int> GetDailyRewardDictionary(string leagueId, dynamic progression, int index)
         {
             Dictionary<string, int>  outDict = new Dictionary<string, int>();
             var dict = SocialEdge.TitleContext.GetTitleDataProperty("Leagues")[leagueId]["dailyReward"];
 
             foreach(var item in dict)
-                outDict.Add(item.Name, (int)item.Value);
+                outDict.Add(item.Name, (int)((int)item.Value + Math.Ceiling((double)progression[index % progression.Count] * (int)item.Value)));
 
             return outDict;
         }
