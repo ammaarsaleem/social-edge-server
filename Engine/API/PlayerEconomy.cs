@@ -125,6 +125,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private void ProcessSaleBundles()
         {
+            SetupDynamicBundleTier();
             var economyData = socialEdgePlayer.PlayerModel.Economy;
             var dayInMs = 24 * 60 * 60 * 1000;
             var currentTime = Utils.UTCNow();
