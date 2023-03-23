@@ -24,7 +24,7 @@ namespace SocialEdgeSDK.Server.Api
             var dict = SocialEdge.TitleContext.GetTitleDataProperty("Leagues")[leagueId]["dailyReward"];
 
             foreach(var item in dict)
-                outDict.Add(item.Name, (int)((int)item.Value + Math.Ceiling((double)progression[index % progression.Count] * (int)item.Value)));
+                outDict.Add(item.Name, (int)((int)item.Value + Math.Ceiling(double.Parse(progression[index % progression.Count].ToString()) * (int)item.Value)));
 
             return outDict;
         }
