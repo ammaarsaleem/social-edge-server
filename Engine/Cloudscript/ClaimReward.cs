@@ -176,7 +176,7 @@ namespace SocialEdgeSDK.Server.Requests
             {
                 Random rand = new Random();
                 EconomyMinMax reward = (EconomyMinMax)rewardsTable["chestGemsReward"];
-                int rewardPoints = rand.Next(reward.min, reward.max + 1);
+                int rewardPoints = (int)(rand.Next(reward.min, reward.max + 1) * 0.7);
                 SocialEdgePlayer.PlayerEconomy.AddVirtualCurrency("GM", rewardPoints);
                 result.claimRewardType = rewardType;
                 result.rewards = new Dictionary<string, int>();
