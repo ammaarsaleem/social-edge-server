@@ -54,6 +54,12 @@ namespace SocialEdgeSDK.Server.Requests
                 result.fortuneSpinRewards = SocialEdgePlayer.PlayerModel.Economy.fortuneSpinRewards;
                 result.status = true;
             }
+            else if(data.ContainsKey("selectedEmojiId"))
+            {
+                int selectedEmojiId = int.Parse(data["selectedEmojiId"].ToString());
+                SocialEdgePlayer.PlayerModel.Info.selectedEmojiId = selectedEmojiId;
+                result.status = true;
+            }
 
             CacheFlush();
             return result;

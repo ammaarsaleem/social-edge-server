@@ -45,6 +45,7 @@ namespace SocialEdgeSDK.Server.Requests
         public long freeSpinTimestamp;
         public List<SpinWheelReward> freeSpinRewards;
         public List<SpinWheelReward> fortuneSpinRewards;
+        public long premiumEmojiExipryTimestamp;
     }
 
     public class ClaimReward : FunctionContext
@@ -189,6 +190,13 @@ namespace SocialEdgeSDK.Server.Requests
                 result.claimRewardType = rewardType;
                 result.rewards = new Dictionary<string, int>();
                 result.rewards.Add("gems", rewardPoints);
+            }
+            else if (rewardType == "premiumEmoji") 
+            {
+                long expiryTimestamp = Utils.UTCNow() + (12 * 60 * 60 * 1000);
+                SocialEdgePlayer.PlayerModel.Info.selectedEmojiExpiryTimestamp = expiryTimestamp;
+                result.claimRewardType = rewardType;
+                result.premiumEmojiExipryTimestamp = expiryTimestamp;
             }
 
             CacheFlush();

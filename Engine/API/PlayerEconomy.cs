@@ -166,6 +166,14 @@ namespace SocialEdgeSDK.Server.Context
             }
         }
 
+        private void ProcessSelectedEmoji()
+        {
+            if(socialEdgePlayer.PlayerModel.Info.selectedEmojiExpiryTimestamp <= Utils.UTCNow())
+            {
+                socialEdgePlayer.PlayerModel.Info.selectedEmojiId = 0;
+            }
+        }
+
         public Dictionary<string, string> GetDynamicGemSpotBundle()
         {
             SetupDynamicBundleTier();
@@ -547,6 +555,7 @@ namespace SocialEdgeSDK.Server.Context
             ProcessSpinWheelRewards();
             ProcessSaleBundles();
             ProcessRemoveAdsSale();
+            ProcessSelectedEmoji();
         }
 
         public void ProcessWinnerBonusRewards(ChallengePlayerModel challengePlayerModel)

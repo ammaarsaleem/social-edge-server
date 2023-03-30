@@ -324,6 +324,8 @@ namespace SocialEdgeSDK.Server.Models
         [BsonElement("retentionData")]                                                                  public List<string> _retentionData;
         [BsonElement("isOnboardingCompleted")][BsonRepresentation(MongoDB.Bson.BsonType.Boolean)]       public bool _isOnboardingCompleted;
         [BsonElement("dailyRewardCollectCounter")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]     public int _dailyRewardCollectCounter;
+        [BsonElement("selectedEmojiId")][BsonRepresentation(MongoDB.Bson.BsonType.Int32)]               public int _selectedEmojiId;
+        [BsonElement("selectedEmojiExpiryTimestamp")][BsonRepresentation(MongoDB.Bson.BsonType.Int64)]  public long _selectedEmojiExpiryTimestamp;
         #pragma warning restore format
 
         [BsonIgnore] public string fbId { get => _fbId; set { _fbId = value; isDirty = true; } }
@@ -358,6 +360,8 @@ namespace SocialEdgeSDK.Server.Models
         [BsonIgnore] public bool isOnboardingCompleted { get => _isOnboardingCompleted; set { _isOnboardingCompleted = value; isDirty = true; } }
         [BsonIgnore] public List<string> retentionData { get => _retentionData; set { _retentionData = value; isDirty = true; } }
         [BsonIgnore] public int dailyRewardCollectCounter { get => _dailyRewardCollectCounter; set { _dailyRewardCollectCounter = value; isDirty = true; }}
+        [BsonIgnore] public int selectedEmojiId { get => _selectedEmojiId; set { _selectedEmojiId = value; isDirty = true; }}
+        [BsonIgnore] public long selectedEmojiExpiryTimestamp { get => _selectedEmojiExpiryTimestamp; set { _selectedEmojiExpiryTimestamp = value; isDirty = true; } }
 
         public PlayerDataInfo()
         {
