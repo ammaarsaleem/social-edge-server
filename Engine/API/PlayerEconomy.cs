@@ -168,7 +168,7 @@ namespace SocialEdgeSDK.Server.Context
 
         private void ProcessSelectedEmoji()
         {
-            if(socialEdgePlayer.PlayerModel.Info.selectedEmojiExpiryTimestamp <= Utils.UTCNow())
+            if(socialEdgePlayer.PlayerModel.Info.selectedEmojiId > 2 && socialEdgePlayer.PlayerModel.Info.selectedEmojiExpiryTimestamp <= Utils.UTCNow())
             {
                 socialEdgePlayer.PlayerModel.Info.selectedEmojiId = 0;
             }
