@@ -227,5 +227,15 @@ namespace SocialEdgeSDK.Server.Api
             puzzle.description = puzzleDocumentT.Result.description;
             SocialEdgePlayer.PlayerModel.Challenge.puzzle = puzzle;
         }
+
+        public static void ProcessCpuStats(SocialEdgePlayerContext SocialEdgePlayer)
+        {
+            var unlockedLevel = SocialEdgePlayer.PlayerModel.Challenge.cpuStats.unlockedLevel;
+            var currentLevel = SocialEdgePlayer.PlayerModel.Challenge.cpuStats.currentLevel;
+            unlockedLevel = unlockedLevel > 10 ? 10 : unlockedLevel;
+            currentLevel = currentLevel > 10 ? 10 : currentLevel;
+            SocialEdgePlayer.PlayerModel.Challenge.cpuStats.unlockedLevel = unlockedLevel;
+            SocialEdgePlayer.PlayerModel.Challenge.cpuStats.currentLevel = currentLevel;
+        }
     }
 }
