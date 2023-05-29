@@ -1,0 +1,6 @@
+projectKey=chessstars-live
+serverUrl=http://localhost:9000
+serverVersion=10.0.0.68432
+dashboardUrl=http://localhost:9000/dashboard?id=chessstars-live
+ceTaskId=AYhnmz89Ahye2zK7gOdW
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AYhnmz89Ahye2zK7gOdW
