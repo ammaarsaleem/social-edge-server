@@ -337,7 +337,7 @@ namespace SocialEdgeSDK.Server.Api
         public static string GetAbbriviatedName(string name)
         {
             string[] split = name.Trim().Split(" ");
-            return split.Length == 1 ? name : split[0] + " " + split[1].Substring(0, 1) + ".";
+            return split.Length == 1 ? name : string.Concat(split[0], " " , split[1].AsSpan(0, 1), ".");
         }
 
         private static string GenerateAvatarBgColor()

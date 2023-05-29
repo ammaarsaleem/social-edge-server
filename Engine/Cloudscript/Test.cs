@@ -85,7 +85,7 @@ namespace SocialEdgeSDK.Server.Requests
             // inappData.inappData = clientData;
             // SocialEdge.SavePlayerInappData(inappData);
             
-          // await GetLatestStateFromGSServer("");
+            //await GetLatestStateFromGSServer("");
 
             // var getDataT = GetLatestStateFromGSServer("");
             // getDataT.Wait();
@@ -154,6 +154,7 @@ namespace SocialEdgeSDK.Server.Requests
             // else{
             //       SocialEdge.Log.LogInformation("PLAYER NOT FOUND");
             // }
+            await GetURI(null);
 
             string responseMessage = string.IsNullOrEmpty(userId)
                 ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."

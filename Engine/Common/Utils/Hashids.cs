@@ -62,7 +62,7 @@ namespace SocialEdgeSDK.Server.Common
         public Hashids(string salt = "", int minHashLength = 0, string alphabet = DEFAULT_ALPHABET, string seps = DEFAULT_SEPS)
         {
             if (string.IsNullOrWhiteSpace(alphabet))
-                throw new ArgumentNullException("alphabet");
+                throw new ArgumentNullException(nameof(alphabet));
 
             this.salt = salt;
             this.alphabet = string.Join(string.Empty, alphabet.Distinct());
@@ -70,7 +70,7 @@ namespace SocialEdgeSDK.Server.Common
             this.minHashLength = minHashLength;
 
             if (this.alphabet.Length < 16)
-                throw new ArgumentException("alphabet must contain atleast 4 unique characters.", "alphabet");
+                throw new ArgumentException("alphabet must contain atleast 4 unique characters.", nameof(alphabet));
 
             SetupSeps();
             SetupGuards();
@@ -208,7 +208,7 @@ namespace SocialEdgeSDK.Server.Common
             var numbers = this.Decode(hash);
 
             foreach (var number in numbers)
-                ret.Append(string.Format("{0:X}", number).Substring(1));
+                ret.Append(string.Format("{0:X}", number).AsSpan(1));
 
             return ret.ToString();
         }
@@ -272,7 +272,7 @@ namespace SocialEdgeSDK.Server.Common
             while (ret.Length < this.minHashLength)
             {
                 alphabet = ConsistentShuffle(alphabet, alphabet);
-                ret = alphabet.Substring(halfLength) + ret + alphabet.Substring(0, halfLength);
+                ret = string.Concat(alphabet.AsSpan(halfLength), ret, alphabet.AsSpan(0, halfLength));
 
                 var excess = ret.Length - this.minHashLength;
                 if (excess > 0)
@@ -317,7 +317,7 @@ namespace SocialEdgeSDK.Server.Common
         {
 
             if (string.IsNullOrWhiteSpace(hash))
-                return new int[0];
+                return Array.Empty<int>();
 
             var alphabet =  this.alphabet.Clone().ToString();
             var ret = new List<int>();
