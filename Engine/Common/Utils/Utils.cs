@@ -76,7 +76,7 @@ namespace SocialEdgeSDK.Server.Common
 
         public static string AppendItemId(string itemId)
         {
-            return "com.turbolabz.instantchess." + itemId;
+            return $"{SocialEdge.TitleContext.EconomySettings.PurchaseItemPrefix}{itemId}";
         }
 
          public static string GetShortCode(string tempId)

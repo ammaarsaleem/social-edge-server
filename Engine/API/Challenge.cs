@@ -222,10 +222,14 @@ namespace SocialEdgeSDK.Server.Api
             var puzzle = new ChessPuzzle();
             var puzzleDocumentT = CommonModel.GetPuzzle(SocialEdgePlayer.PlayerModel.Challenge.puzzleIndex);
             puzzleDocumentT.Wait();
-            puzzle.fen = puzzleDocumentT.Result.fen;
-            puzzle.moves = puzzleDocumentT.Result.moves.Split(' ').ToList();
-            puzzle.description = puzzleDocumentT.Result.description;
-            SocialEdgePlayer.PlayerModel.Challenge.puzzle = puzzle;
+
+            if(puzzleDocumentT != null && puzzleDocumentT.Result != null)
+            {
+                puzzle.fen = puzzleDocumentT.Result.fen;
+                puzzle.moves = puzzleDocumentT.Result.moves.Split(' ').ToList();
+                puzzle.description = puzzleDocumentT.Result.description;
+                SocialEdgePlayer.PlayerModel.Challenge.puzzle = puzzle;
+            }
         }
 
         public static void ProcessCpuStats(SocialEdgePlayerContext SocialEdgePlayer)

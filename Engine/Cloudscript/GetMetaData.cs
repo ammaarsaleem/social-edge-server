@@ -105,7 +105,7 @@ namespace SocialEdgeSDK.Server.Requests
                 result.liveTournaments = SocialEdgeTournament.TournamentLiveModel.Fetch();
                 result.dynamicBundleToDisplay = SocialEdgePlayer.PlayerEconomy.ProcessDynamicDisplayBundle();
                 result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle();
-                result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC).GetContentList();
+                // result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC).GetContentList();
                 result.playerDataModel = SocialEdgePlayer.PlayerModel;
                 result.todayGamesCount = SocialEdge.GetTodayGamesCount();
                 result.todayActivePlayersCount = SocialEdge.GetTodayActivePlayersCount();

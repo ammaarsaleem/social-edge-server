@@ -166,6 +166,7 @@ namespace SocialEdgeSDK.Server.Context
     {
         public string CatalogId;
         public string StoreId;
+        public string PurchaseItemPrefix;
         public EconomyPlayerDefaults PlayerDefaults;
         public List<EconomyOwnedItem> PlayerDefaultOwnedItems;
         public EconomyRewards Rewards;
