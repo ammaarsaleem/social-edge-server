@@ -104,22 +104,24 @@ namespace SocialEdgeSDK.Server.Common
         
         public static bool CompareVersions(string v1, string v2)
         {
-            var v1Split = v1.Split('.');
-            var v2Split = v2.Split('.');
-
-            if(v1Split.Length > v2Split.Length)
+            var version1Parts = v1.Split('.');
+            var version2Parts = v2.Split('.');
+            
+            for (int i = 0; i < Math.Max(version1Parts.Length, version2Parts.Length); i++)
             {
-                return false;
-            }
-
-            for (var i = 0; i < v1Split.Length; ++i)
-            {
-                if (int.Parse(v1Split[i]) > int.Parse(v2Split[i]))
-                { 
+                int version1Part = (i < version1Parts.Length) ? int.Parse(version1Parts[i]) : 0;
+                int version2Part = (i < version2Parts.Length) ? int.Parse(version2Parts[i]) : 0;
+                
+                if (version1Part < version2Part)
+                {
+                    return true;
+                }
+                else if (version1Part > version2Part)
+                {
                     return false;
                 }
             }
-
+        
             return true;
         }
 
