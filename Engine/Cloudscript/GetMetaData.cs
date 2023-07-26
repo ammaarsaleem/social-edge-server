@@ -107,8 +107,8 @@ namespace SocialEdgeSDK.Server.Requests
                 result.dynamicGemSpotBundle = SocialEdgePlayer.PlayerEconomy.GetDynamicGemSpotBundle();
                 // result.contentData = SocialEdge.DataService.GetBlobStorage(Constants.Constant.CONTAINER_DLC).GetContentList();
                 result.playerDataModel = SocialEdgePlayer.PlayerModel;
-                result.todayGamesCount = SocialEdge.GetTodayGamesCount();
-                result.todayActivePlayersCount = SocialEdge.GetTodayActivePlayersCount();
+                result.todayGamesCount = SocialEdge.GetTodayGamesCount() * 98;
+                result.todayActivePlayersCount = SocialEdge.GetTodayActivePlayersCount() * 98;
 
                 if (isNewlyCreated == true || isResume == true)
                 {

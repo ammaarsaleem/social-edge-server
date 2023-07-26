@@ -155,8 +155,10 @@ namespace SocialEdgeSDK.Server.Api
             // Check if user joined tournamnet on last day add the active players in leaderboards
             var daysLeft = GetTournamentDaysLeftWhenJoined(socialEdgePlayer, tournamentShortCode, joinedTime);
   
-            FilterDefinition<TournamentEntryData> filter = Builders<TournamentEntryData>.Filter.Eq(typeof(TournamentEntryData).Name + ".tournamentSlot", tournamentSlot);
-            filter = filter & Builders<TournamentEntryData>.Filter.Nin<ObjectId>("_id", alreadyIncludedArray);
+            FilterDefinition<TournamentEntryData> filter = 
+            //Builders<TournamentEntryData>.Filter.Eq(typeof(TournamentEntryData).Name + ".tournamentSlot", tournamentSlot);
+            //filter = filter & 
+            Builders<TournamentEntryData>.Filter.Nin<ObjectId>("_id", alreadyIncludedArray);
             var sortByJoinTime = Builders<TournamentEntryData>.Sort.Ascending("joinTime");
             var sortByLastActive = Builders<TournamentEntryData>.Sort.Ascending("lastActiveTime");
             var projection = Builders<TournamentEntryData>.Projection.Include("_id");
