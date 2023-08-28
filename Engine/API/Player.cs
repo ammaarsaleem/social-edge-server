@@ -54,7 +54,7 @@ namespace SocialEdgeSDK.Server.Api
             var request = new GetFriendsListRequest
             {
                 PlayFabId = playerId,
-                IncludeFacebookFriends = includeFacebookFriends,
+                ExternalPlatformFriends = includeFacebookFriends ? ExternalFriendSources.Facebook : ExternalFriendSources.None,
                 ProfileConstraints = new PlayerProfileViewConstraints
                 {
                     ShowAvatarUrl = true,

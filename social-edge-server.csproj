@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.10" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
     <PackageReference Include="MongoDB.Driver" Version="2.11.5" />
-    <PackageReference Include="PlayFabAllSDK" Version="1.84.201027" />
+    <PackageReference Include="PlayFabAllSDK" Version="1.161.230818" />
     <PackageReference Include="StackExchange.Redis" Version="2.1.58" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SignalRService" Version="1.8.0" />
